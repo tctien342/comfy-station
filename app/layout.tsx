@@ -3,7 +3,6 @@ import './globals.scss'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import TRPCLayout from './TRPCLayout'
-
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
