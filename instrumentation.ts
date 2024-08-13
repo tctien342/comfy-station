@@ -1,5 +1,13 @@
-import { ComfyPoolInstance } from './services/comfyui'
+export async function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    /**
+     * Server-side instrumentation
+     * Initialize the services that need to be started
+     */
+    const { ComfyPoolInstance } = await import('./services/comfyui')
+    const { MikroORMInstance } = await import('./services/mikro-orm')
 
-export function register() {
-  ComfyPoolInstance.getInstance()
+    await MikroORMInstance.getInstance().getORM()
+    ComfyPoolInstance.getInstance()
+  }
 }

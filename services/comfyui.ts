@@ -1,22 +1,44 @@
-import { ComfyPool } from '@saintno/comfyui-sdk'
+import { ComfyApi, ComfyPool } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
+import { MikroORMInstance } from './mikro-orm'
+import { Node } from '@/entities/node'
 
 export class ComfyPoolInstance {
-  static instance: ComfyPoolInstance
   public pool: ComfyPool
   private logger: Logger
 
   static getInstance() {
-    if (!ComfyPoolInstance.instance) {
-      ComfyPoolInstance.instance = new ComfyPoolInstance()
+    if (!(global as any).__ComfyPool__) {
+      ;(global as any).__ComfyPool__ = new ComfyPoolInstance()
     }
-    return ComfyPoolInstance.instance
+    return (global as any).__ComfyPool__ as ComfyPoolInstance
   }
 
   private constructor() {
     this.logger = new Logger('ComfyPoolInstance')
     this.pool = new ComfyPool([])
     this.bindEvents()
+    this.initialize()
+  }
+
+  private async initialize() {
+    const orm = await MikroORMInstance.getInstance().getORM()
+    const em = orm.em.fork()
+    const nodes = await em.find(Node, {})
+
+    nodes.forEach((node) => {
+      this.pool.addClient(
+        new ComfyApi(node.host, node.uuid, {
+          credentials: node.auth
+            ? {
+                type: node.auth,
+                username: node.username ?? '',
+                password: node.password ?? ''
+              }
+            : undefined
+        })
+      )
+    })
   }
 
   private bindEvents() {

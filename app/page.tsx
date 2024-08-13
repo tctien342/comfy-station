@@ -11,7 +11,9 @@ export default function Home() {
 
   const addServer = trpc.hello.addServer.useMutation()
 
-  const handleAddServer = async () => {}
+  const handleAddServer = async () => {
+    addServer.mutate({ host: '' })
+  }
 
   return (
     <main className='flex h-screen w-full flex-col items-center justify-center p-6 gap-2'>

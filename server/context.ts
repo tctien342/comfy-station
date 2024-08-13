@@ -1,5 +1,6 @@
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import type { CreateWSSContextFnOptions } from '@trpc/server/adapters/ws'
+import { MikroORMInstance } from '@/services/mikro-orm'
 
 /**
  * Creates context for an incoming request
@@ -11,8 +12,11 @@ export const createContext = async (opts: CreateNextContextOptions | CreateWSSCo
     admin: false
   }
 
+  const orm = await MikroORMInstance.getInstance().getORM()
+
   return {
-    session
+    session,
+    em: orm.em.fork()
   }
 }
 

@@ -8,12 +8,17 @@
     "start": "next start",
     "patch": "next-ws-cli patch --yes",
     "lint": "next lint",
+    "mikro": "bun run mikro-orm",
     "format": "prettier --write .",
     "postprepare": "bun run patch"
   },
   "packageManager": "^bun@1.0.0",
   "dependencies": {
-    "@saintno/comfyui-sdk": "0.1.11",
+    "@mikro-orm/better-sqlite": "^6.3.5",
+    "@mikro-orm/cli": "^6.3.5",
+    "@mikro-orm/core": "^6.3.5",
+    "@mikro-orm/reflection": "^6.3.5",
+    "@saintno/comfyui-sdk": "^0.1.15",
     "@saintno/needed-tools": "^0.3.5",
     "@tanstack/react-query": "^5.51.23",
     "@trpc/client": "^11.0.0-rc.477",
@@ -22,16 +27,20 @@
     "@trpc/server": "^11.0.0-rc.477",
     "next": "14.2.4",
     "next-ws": "^1.1.1",
+    "perf_hooks": "^0.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sass": "^1.77.3",
+    "source-map-support": "^0.5.21",
     "superjson": "^2.2.1",
+    "uuid": "^10.0.0",
     "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.10",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.8.0",
@@ -42,6 +51,14 @@
     "postcss": "^8.4.41",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "tsConfigPath": "./tsconfig.mikro-orm.json",
+    "configPaths": [
+      "./mikro-orm.config.ts"
+    ]
   }
 }
