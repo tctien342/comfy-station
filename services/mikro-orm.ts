@@ -25,4 +25,9 @@ export class MikroORMInstance {
   async getORM() {
     return this.orm
   }
+
+  async getEM() {
+    const orm = await this.getORM()
+    return orm.em.fork()
+  }
 }

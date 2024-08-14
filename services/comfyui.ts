@@ -22,22 +22,20 @@ export class ComfyPoolInstance {
   }
 
   private async initialize() {
-    const orm = await MikroORMInstance.getInstance().getORM()
-    const em = orm.em.fork()
-    const nodes = await em.find(Node, {})
+    const em = await MikroORMInstance.getInstance().getEM()
+    const nodes = await em.find(Node, {}, { populate: ['password'] })
 
     nodes.forEach((node) => {
-      this.pool.addClient(
-        new ComfyApi(node.host, node.uuid, {
-          credentials: node.auth
-            ? {
-                type: node.auth,
-                username: node.username ?? '',
-                password: node.password ?? ''
-              }
-            : undefined
-        })
-      )
+      const client = new ComfyApi(node.host, node.uuid, {
+        credentials: node.auth
+          ? {
+              type: node.auth,
+              username: node.username ?? '',
+              password: node.password ?? ''
+            }
+          : undefined
+      })
+      this.pool.addClient(client)
     })
   }
 
@@ -49,10 +47,68 @@ export class ComfyPoolInstance {
           id: ev.detail.client.id
         })
       })
-      .on('connected', (ev) => {
+      .on('have_job', async (ev) => {
+        const em = await MikroORMInstance.getInstance().getEM()
+        const node = await em.findOne(Node, { uuid: ev.detail.client.id })
+        if (node) {
+          node.status = 'executing'
+          node.statusMsg = ''
+          await em.flush()
+        }
+      })
+      .on('idle', async (ev) => {
+        const em = await MikroORMInstance.getInstance().getEM()
+        const node = await em.findOne(Node, { uuid: ev.detail.client.id })
+        if (node) {
+          node.status = 'online'
+          node.statusMsg = ''
+          await em.flush()
+        }
+      })
+      .on('connected', async (ev) => {
         this.logger.i('connected', `Client ${ev.detail.clientIdx} connected`, {
           id: ev.detail.client.id
         })
+        const em = await MikroORMInstance.getInstance().getEM()
+        const node = await em.findOne(Node, { uuid: ev.detail.client.id })
+        if (node) {
+          node.status = 'online'
+          node.statusMsg = ''
+          await em.flush()
+        }
+      })
+      .on('executing', async (ev) => {
+        this.logger.i('executing', `Client ${ev.detail.clientIdx} executing`, {
+          id: ev.detail.client.id
+        })
+        const em = await MikroORMInstance.getInstance().getEM()
+        const node = await em.findOne(Node, { uuid: ev.detail.client.id })
+        if (node) {
+          node.status = 'executing'
+          node.statusMsg = ''
+          await em.flush()
+        }
+      })
+      .on('executed', async (ev) => {
+        this.logger.i('executed', `Client ${ev.detail.clientIdx} executed`, {
+          id: ev.detail.client.id
+        })
+        const em = await MikroORMInstance.getInstance().getEM()
+        const node = await em.findOne(Node, { uuid: ev.detail.client.id })
+        if (node) {
+          node.lastJob = new Date()
+          await em.flush()
+        }
+      })
+      .on('auth_error', async (ev) => {
+        const em = await MikroORMInstance.getInstance().getEM()
+        const node = await em.findOne(Node, { uuid: ev.detail.client.id })
+
+        if (node) {
+          node.status = 'error'
+          node.statusMsg = 'Authentication error'
+          await em.flush()
+        }
       })
       .on('execution_error', (error) => {})
   }

@@ -9,14 +9,29 @@ export class Node {
   @Property({ unique: true })
   host: string
 
-  @Property()
+  @Property({ nullable: true })
   auth?: 'basic' | ''
 
-  @Property()
+  @Property({ nullable: true })
   username?: string
 
-  @Property()
+  @Property({ nullable: true, lazy: true })
   password?: string
+
+  @Property({ nullable: true })
+  status?: 'online' | 'executing' | 'offline' | 'error' | 'unknown' = 'offline'
+
+  @Property({ nullable: true })
+  statusMsg?: string
+
+  @Property({ nullable: true })
+  lastJob?: Date
+
+  @Property()
+  createdAt? = new Date()
+
+  @Property({ onUpdate: () => new Date() })
+  updateAt? = new Date()
 
   constructor(host: string) {
     this.host = host
