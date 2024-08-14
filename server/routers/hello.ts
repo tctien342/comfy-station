@@ -4,7 +4,6 @@ import { observable } from '@trpc/server/observable'
 import { publicProcedure } from '../procedure'
 import { ComfyPoolInstance } from '@/services/comfyui'
 import { ComfyApi, SystemStatsResponse, TMonitorEvent } from '@saintno/comfyui-sdk'
-import { Node } from '@/entities/node'
 
 export const helloRouter = router({
   addServer: publicProcedure
@@ -16,32 +15,32 @@ export const helloRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const found = await ctx.em.findOne(Node, { host: input.host })
-      if (found) {
-        return false
-      }
-      try {
-        const node = ctx.em.create(Node, { host: input.host })
-        if (input.username && input.password) {
-          node.password = input.password
-          node.username = input.username
-          node.auth = 'basic'
-        }
-        ctx.em.persist(node).flush()
-        ComfyPoolInstance.getInstance().pool.addClient(
-          new ComfyApi(input.host, node.uuid, {
-            credentials: {
-              type: 'basic',
-              username: input.username ?? '',
-              password: input.password ?? ''
-            }
-          })
-        )
-        return true
-      } catch (e) {
-        console.log(e)
-        return false
-      }
+      // const found = await ctx.em.findOne(Node, { host: input.host })
+      // if (found) {
+      //   return false
+      // }
+      // try {
+      //   const node = ctx.em.create(Node, { host: input.host })
+      //   if (input.username && input.password) {
+      //     node.password = input.password
+      //     node.username = input.username
+      //     node.auth = 'basic'
+      //   }
+      //   ctx.em.persist(node).flush()
+      //   ComfyPoolInstance.getInstance().pool.addClient(
+      //     new ComfyApi(input.host, node.uuid, {
+      //       credentials: {
+      //         type: 'basic',
+      //         username: input.username ?? '',
+      //         password: input.password ?? ''
+      //       }
+      //     })
+      //   )
+      //   return true
+      // } catch (e) {
+      //   console.log(e)
+      //   return false
+      // }
     }),
   nodeUltilization: publicProcedure.subscription(({ ctx }) => {
     const em = ctx.em
@@ -72,9 +71,9 @@ export const helloRouter = router({
             }
         >
       ) => {
-        const info = await em.findOne(Node, { uuid: pool.clients[ev.detail.clientIdx].id }, { cache: 0 })
-        const client = pool.clients[ev.detail.clientIdx]
-        subscriber.next({ ...ev.detail, info, uuid: client.id })
+        // const info = await em.findOne(Node, { uuid: pool.clients[ev.detail.clientIdx].id }, { cache: 0 })
+        // const client = pool.clients[ev.detail.clientIdx]
+        // subscriber.next({ ...ev.detail, info, uuid: client.id })
       }
       pool.on('system_monitor', fn)
       return () => {
@@ -84,34 +83,34 @@ export const helloRouter = router({
   }),
   nodeStatus: publicProcedure.subscription(({ ctx }) => {
     const { pool } = ComfyPoolInstance.getInstance()
-    return observable<{ uuid: string; status: Node['status'] }>((subscriber) => {
-      const idleFn = async (
-        ev: CustomEvent<{
-          client: ComfyApi
-        }>
-      ) => {
-        subscriber.next({
-          uuid: ev.detail.client.id,
-          status: 'online'
-        })
-      }
-      const execFn = async (
-        ev: CustomEvent<{
-          client: ComfyApi
-        }>
-      ) => {
-        subscriber.next({
-          uuid: ev.detail.client.id,
-          status: 'executing'
-        })
-      }
-      pool.on('idle', idleFn)
-      pool.on('have_job', execFn)
-      return () => {
-        pool.off('idle', idleFn)
-        pool.off('have_job', execFn)
-      }
-    })
+    // return observable<{ uuid: string; status: Node['status'] }>((subscriber) => {
+    //   const idleFn = async (
+    //     ev: CustomEvent<{
+    //       client: ComfyApi
+    //     }>
+    //   ) => {
+    //     subscriber.next({
+    //       uuid: ev.detail.client.id,
+    //       status: 'online'
+    //     })
+    //   }
+    //   const execFn = async (
+    //     ev: CustomEvent<{
+    //       client: ComfyApi
+    //     }>
+    //   ) => {
+    //     subscriber.next({
+    //       uuid: ev.detail.client.id,
+    //       status: 'executing'
+    //     })
+    //   }
+    //   pool.on('idle', idleFn)
+    //   pool.on('have_job', execFn)
+    //   return () => {
+    //     pool.off('idle', idleFn)
+    //     pool.off('have_job', execFn)
+    //   }
+    // })
   }),
   hello: publicProcedure
     .input(

@@ -38,4 +38,5 @@ next-env.d.ts
 # Million Lint
 .million
 .cache
-db.*
+*.db
+temp
