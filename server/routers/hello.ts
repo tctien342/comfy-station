@@ -4,6 +4,8 @@ import { observable } from '@trpc/server/observable'
 import { publicProcedure } from '../procedure'
 import { ComfyPoolInstance } from '@/services/comfyui'
 import { ComfyApi, SystemStatsResponse, TMonitorEvent } from '@saintno/comfyui-sdk'
+import { Client } from '@/entities/client'
+import { EAuthMode } from '@/entities/enum'
 
 export const helloRouter = router({
   addServer: publicProcedure
@@ -15,32 +17,32 @@ export const helloRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // const found = await ctx.em.findOne(Node, { host: input.host })
-      // if (found) {
-      //   return false
-      // }
-      // try {
-      //   const node = ctx.em.create(Node, { host: input.host })
-      //   if (input.username && input.password) {
-      //     node.password = input.password
-      //     node.username = input.username
-      //     node.auth = 'basic'
-      //   }
-      //   ctx.em.persist(node).flush()
-      //   ComfyPoolInstance.getInstance().pool.addClient(
-      //     new ComfyApi(input.host, node.uuid, {
-      //       credentials: {
-      //         type: 'basic',
-      //         username: input.username ?? '',
-      //         password: input.password ?? ''
-      //       }
-      //     })
-      //   )
-      //   return true
-      // } catch (e) {
-      //   console.log(e)
-      //   return false
-      // }
+      const found = await ctx.em.findOne(Client, { host: input.host })
+      if (found) {
+        return false
+      }
+      try {
+        const node = ctx.em.create(Client, { host: input.host, auth: EAuthMode.None })
+        if (input.username && input.password) {
+          node.password = input.password
+          node.username = input.username
+          node.auth = EAuthMode.Basic
+        }
+        await ctx.em.persist(node).flush()
+        ComfyPoolInstance.getInstance().pool.addClient(
+          new ComfyApi(input.host, node.id, {
+            credentials: {
+              type: 'basic',
+              username: input.username ?? '',
+              password: input.password ?? ''
+            }
+          })
+        )
+        return true
+      } catch (e) {
+        console.log(e)
+        return false
+      }
     }),
   nodeUltilization: publicProcedure.subscription(({ ctx }) => {
     const em = ctx.em

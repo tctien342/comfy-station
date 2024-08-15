@@ -2,7 +2,7 @@ import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { ETaskStatus } from './enum'
 import { WorkflowTask } from './workflow_task'
 
-@Entity()
+@Entity({ tableName: 'workflow_task_event' })
 export class WorkflowTaskEvent {
   @PrimaryKey()
   id!: number

@@ -5,10 +5,10 @@ import { TokenPermission } from './token_permission'
 import { WorkflowTask } from './workflow_task'
 import { ETokenType } from './enum'
 
-@Entity()
+@Entity({ tableName: 'token' })
 export class Token {
   @PrimaryKey({ type: 'uuid' })
-  uuid = v4()
+  id = v4()
 
   @Property({ nullable: true })
   description?: string
@@ -25,7 +25,7 @@ export class Token {
   @Property({ default: 0 })
   weightOffset!: number
 
-  @ManyToOne({ entity: () => User, inversedBy: (o) => o.tokens })
+  @ManyToOne({ entity: 'User', inversedBy: 'tokens' })
   createdBy: User
 
   @Property({ nullable: true })
@@ -38,14 +38,14 @@ export class Token {
   updateAt = new Date()
 
   @OneToMany({
-    entity: () => TokenPermission,
-    mappedBy: (o) => o.token
+    entity: 'TokenPermission',
+    mappedBy: 'token'
   })
   grantedWorkflows = new Collection<TokenPermission>(this)
 
   @OneToMany({
-    entity: () => WorkflowTask,
-    mappedBy: (o) => o.byToken
+    entity: 'WorkflowTask',
+    mappedBy: 'byToken'
   })
   executedWorkflows = new Collection<WorkflowTask>(this)
 

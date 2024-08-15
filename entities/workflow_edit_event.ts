@@ -9,7 +9,7 @@ export interface IEditAction {
   to: string | number | null
 }
 
-@Entity()
+@Entity({ tableName: 'workflow_edit_event' })
 export class WorkflowEditEvent {
   @PrimaryKey()
   id!: number

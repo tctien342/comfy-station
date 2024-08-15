@@ -13,7 +13,9 @@ export interface IMaper {
   description: string
 }
 
-@Entity()
+@Entity({
+  tableName: 'user'
+})
 export class User {
   @PrimaryKey({ type: 'uuid' })
   id = v4()
@@ -40,26 +42,26 @@ export class User {
   updateAt = new Date()
 
   @OneToMany({
-    entity: () => Workflow,
-    mappedBy: (o) => o.author
+    entity: 'Workflow',
+    mappedBy: 'author'
   })
   workflows = new Collection<Workflow>(this)
 
   @OneToMany({
-    entity: () => Token,
-    mappedBy: (o) => o.createdBy
+    entity: 'Token',
+    mappedBy: 'createdBy'
   })
   tokens = new Collection<Token>(this)
 
   @OneToMany({
-    entity: () => WorkflowEditEvent,
-    mappedBy: (o) => o.user
+    entity: 'WorkflowEditEvent',
+    mappedBy: 'user'
   })
   editWorkflowActions = new Collection<WorkflowEditEvent>(this)
 
   @OneToMany({
-    entity: () => WorkflowTask,
-    mappedBy: (o) => o.byUser
+    entity: 'WorkflowTask',
+    mappedBy: 'byUser'
   })
   executedWorkflows = new Collection<WorkflowTask>(this)
 

@@ -11,10 +11,12 @@ export interface IMaper {
   description: string
 }
 
-@Entity()
+@Entity({
+  tableName: 'workflow'
+})
 export class Workflow {
   @PrimaryKey({ type: 'uuid' })
-  uuid = v4()
+  id = v4()
 
   @Property({ nullable: true })
   name?: string
@@ -40,18 +42,18 @@ export class Workflow {
   @Property({ default: 0 })
   baseWeight!: number // Weight of this workflow, more weight means lower priority
 
-  @ManyToOne({ entity: () => User, inversedBy: (o) => o.workflows })
+  @ManyToOne({ entity: 'User', inversedBy: 'workflows' })
   author: User
 
   @OneToMany({
-    entity: () => WorkflowEditEvent,
-    mappedBy: (o) => o.workflow
+    entity: 'WorkflowEditEvent',
+    mappedBy: 'workflow'
   })
   editedActions = new Collection<WorkflowEditEvent>(this)
 
   @OneToMany({
-    entity: () => TokenPermission,
-    mappedBy: (o) => o.workflow
+    entity: 'TokenPermission',
+    mappedBy: 'workflow'
   })
   grantedTokens = new Collection<TokenPermission>(this)
 

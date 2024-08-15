@@ -6,7 +6,7 @@ import { Token } from './token'
 import { ETaskStatus } from './enum'
 import { WorkflowTaskEvent } from './workflow_task_event'
 
-@Entity()
+@Entity({ tableName: 'workflow_task' })
 export class WorkflowTask {
   @PrimaryKey()
   id: string
@@ -42,8 +42,8 @@ export class WorkflowTask {
   updateAt = new Date()
 
   @OneToMany({
-    entity: () => WorkflowTaskEvent,
-    mappedBy: (o) => o.task
+    entity: 'WorkflowTaskEvent',
+    mappedBy: 'task'
   })
   events = new Collection<WorkflowTaskEvent>(this)
 

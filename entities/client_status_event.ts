@@ -2,16 +2,21 @@ import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { Client } from './client'
 import { EClientStatus } from './enum'
 
-@Entity()
+@Entity({
+  tableName: 'client_status_event'
+})
 export class ClientStatusEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne({ entity: () => Client, inversedBy: (o) => o.statusEvents })
+  @ManyToOne('Client', 'statusEvents')
   client!: Client
 
   @Property({ default: EClientStatus.Offline })
   status!: EClientStatus
+
+  @Property({ nullable: true })
+  message?: string
 
   @Property()
   createdAt = new Date()

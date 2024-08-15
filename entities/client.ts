@@ -1,13 +1,14 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { ClientMonitorEvent } from './client_monitor_event'
 import { ClientStatusEvent } from './client_status_event'
 import { EAuthMode } from './enum'
+import { ClientExtension } from './client_extension'
 
-@Entity()
+@Entity({ tableName: 'client' })
 export class Client {
   @PrimaryKey({ type: 'uuid' })
-  uuid = v4()
+  id = v4()
 
   @Property({ nullable: true })
   name?: string
@@ -24,23 +25,26 @@ export class Client {
   @Property({ nullable: true, lazy: true })
   password?: string
 
-  @Property()
-  createdAt = new Date()
+  @Property({ nullable: true })
+  createdAt? = new Date()
 
   @Property({ onUpdate: () => new Date() })
-  updateAt = new Date()
+  updateAt? = new Date()
 
   @OneToMany({
-    entity: () => ClientMonitorEvent,
-    mappedBy: (o) => o.client
+    entity: 'ClientMonitorEvent',
+    mappedBy: 'client'
   })
   monitorEvents = new Collection<ClientMonitorEvent>(this)
 
   @OneToMany({
-    entity: () => ClientStatusEvent,
-    mappedBy: (o) => o.client
+    entity: 'ClientStatusEvent',
+    mappedBy: 'client'
   })
   statusEvents = new Collection<ClientStatusEvent>(this)
+
+  @ManyToMany('ClientExtension', 'clients', { owner: true })
+  extensions = new Collection<ClientExtension>(this)
 
   constructor(host: string) {
     this.host = host

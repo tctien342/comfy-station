@@ -1,8 +1,8 @@
 import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core'
 import { ClientMonitorEvent } from './client_monitor_event'
 
-@Entity()
-export class GpuMonitorEvent {
+@Entity({ tableName: 'client_monitor_gpu' })
+export class ClientMonitorGpu {
   @ManyToOne({ primary: true })
   monitorEvent: ClientMonitorEvent
 

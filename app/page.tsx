@@ -21,7 +21,7 @@ export default function Home() {
   const addServer = trpc.hello.addServer.useMutation()
 
   const handleAddServer = async () => {
-    addServer.mutate({ host: 'https://sv2.taoanh.550studios.com', username: 'the550', password: 'anhem550' })
+    addServer.mutate({ host: 'https://localhost:8188' })
   }
 
   const getNodeName = (host: string) => {
@@ -39,6 +39,9 @@ export default function Home() {
         </div>
         <div className='w-1/4 h-full p-4 flex flex-col gap-2'>
           <span className='font-bold text-zinc-700'>NODE MANAGEMENT</span>
+          <button onClick={handleAddServer} className='bg-zinc-500 text-white p-2 rounded-lg'>
+            Add Server
+          </button>
           <div className='flex-auto overflow-auto flex flex-col gap-1'>
             {/* {data?.map((node) => {
               return (

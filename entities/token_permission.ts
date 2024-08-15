@@ -2,7 +2,7 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import { Workflow } from './workflow'
 import { Token } from './token'
 
-@Entity()
+@Entity({ tableName: 'token_permission' })
 export class TokenPermission {
   @ManyToOne({ primary: true })
   token: Token
