@@ -1,9 +1,9 @@
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { ArrayType, Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { ClientMonitorEvent } from './client_monitor_event'
 import { ClientStatusEvent } from './client_status_event'
-import { EAuthMode } from './enum'
-import { ClientExtension } from './client_extension'
+import { EAuthMode, EClientFlags } from './enum'
+import { Extension } from './extension'
 
 @Entity({ tableName: 'client' })
 export class Client {
@@ -18,6 +18,9 @@ export class Client {
 
   @Property({ default: EAuthMode.None })
   auth!: EAuthMode
+
+  @Property({ type: ArrayType, default: [] })
+  flags?: EClientFlags[] = []
 
   @Property({ nullable: true })
   username?: string
@@ -43,8 +46,8 @@ export class Client {
   })
   statusEvents = new Collection<ClientStatusEvent>(this)
 
-  @ManyToMany('ClientExtension', 'clients', { owner: true })
-  extensions = new Collection<ClientExtension>(this)
+  @ManyToMany('Extension', 'clients', { owner: true })
+  extensions = new Collection<Extension>(this)
 
   constructor(host: string) {
     this.host = host

@@ -11,14 +11,14 @@ import { WorkflowEditEvent } from './entities/workflow_edit_event'
 import { Workflow } from './entities/workflow'
 import { WorkflowTask } from './entities/workflow_task'
 import { WorkflowTaskEvent } from './entities/workflow_task_event'
-import { ClientExtension } from './entities/client_extension'
+import { Extension } from './entities/extension'
 
 export default defineConfig({
   entities: [
     ClientMonitorGpu,
     ClientMonitorEvent,
     ClientStatusEvent,
-    ClientExtension,
+    Extension,
     User,
     Token,
     Client,

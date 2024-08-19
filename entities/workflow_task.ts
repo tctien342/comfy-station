@@ -3,7 +3,7 @@ import { Client } from './client'
 import { Workflow } from './workflow'
 import { User } from './user'
 import { Token } from './token'
-import { ETaskStatus } from './enum'
+import { ETaskStatus, ETriggerBy } from './enum'
 import { WorkflowTaskEvent } from './workflow_task_event'
 
 @Entity({ tableName: 'workflow_task' })
@@ -29,6 +29,9 @@ export class WorkflowTask {
   @Property({ nullable: true })
   executionTime?: number
 
+  @Property()
+  triggerBy: ETriggerBy
+
   @ManyToOne({ nullable: true })
   byUser?: User
 
@@ -47,9 +50,10 @@ export class WorkflowTask {
   })
   events = new Collection<WorkflowTaskEvent>(this)
 
-  constructor(id: string, workflow: Workflow, weight = 0) {
+  constructor(id: string, workflow: Workflow, weight = 0, triggerBy: ETriggerBy) {
     this.id = id
     this.workflow = workflow
+    this.triggerBy = triggerBy
     this.computedWeight = weight
   }
 }

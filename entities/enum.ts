@@ -37,6 +37,13 @@ export enum EUserRole {
   User = 3
 }
 
+export enum ETriggerBy {
+  User = 'User',
+  Token = 'Token',
+  System = 'System',
+  Job = 'Job'
+}
+
 export enum EClientStatus {
   /**
    * Node is online and ready to execute tasks.
@@ -56,4 +63,23 @@ export enum EClientStatus {
    * and cannot execute tasks.
    */
   Error = 'Error'
+}
+
+export enum EClientFlags {
+  /**
+   * Client need to be restarted to function properly.
+   */
+  NEED_RESTART = 'NEED_RESTART',
+  /**
+   * Client's comfyui is outdated.
+   */
+  NEED_CORE_UPDATE = 'NEED_UPDATE',
+  /**
+   * Client's extension is outdated.
+   */
+  NEED_EXTENSION_UPDATE = 'NEED_EXTENSION_UPDATE',
+  /**
+   * Client is experiencing critical error.
+   */
+  CRITICAL_ERROR = 'CRITICAL_ERROR'
 }

@@ -21,7 +21,7 @@ export type TNumberInput = ['INT' | 'FLOAT', IInputNumberConfig]
 
 @Entity({ tableName: 'client_extension' })
 @Unique({ properties: ['pythonModule', 'name'] })
-export class ClientExtension {
+export class Extension {
   @PrimaryKey({ type: 'uuid' })
   id = v4()
 

@@ -16,6 +16,9 @@ export class Token {
   @Property({ default: false })
   isMaster!: boolean // Allow execute all workflows
 
+  @Property({ default: false })
+  isWorkflowDefault!: boolean
+
   @Property({ default: ETokenType.Both })
   type!: ETokenType
 
