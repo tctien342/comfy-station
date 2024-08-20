@@ -49,8 +49,10 @@ erDiagram
     CLIENT_EXTENSIONS }|--|| CLIENT_EXTENSION : "defines"
     USER ||--o{ TOKEN : "owns"
     TOKEN ||--o{ TOKEN_SHARED : "shared_with"
+    TOKEN_SHARED ||--|| USER : "shared_to"
     USER ||--o{ JOB : "creates"
-    JOB ||--o{ JOB_ITEM : "contains"
+    JOB ||--o{ JOB_ITEM : "initiates"
+    JOB_ITEM ||--|| WORKFLOW : "triggers"
     CLIENT_ACTION_EVENT ||--|| CLIENT : "targets"
     CLIENT_ACTION_EVENT ||--o{ USER : "initiated_by"
     CLIENT_ACTION_EVENT ||--o{ TOKEN : "authorized_by"
@@ -63,6 +65,10 @@ erDiagram
     TOKEN_PERMISSION ||--|| TOKEN : "permits"
     WORKFLOW_EDIT_EVENT ||--|| WORKFLOW : "modifies"
     WORKFLOW_EDIT_EVENT ||--|| USER : "edited_by"
+    USER ||--o{ WORKFLOW_TASK : "triggers"
+    TOKEN ||--o{ WORKFLOW_TASK : "triggers"
+    JOB ||--o{ WORKFLOW_TASK : "triggers"
+    
 ```
 
 ## Contributing
