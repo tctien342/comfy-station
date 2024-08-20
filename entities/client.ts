@@ -4,6 +4,7 @@ import { ClientMonitorEvent } from './client_monitor_event'
 import { ClientStatusEvent } from './client_status_event'
 import { EAuthMode, EClientFlags } from './enum'
 import { Extension } from './extension'
+import { ClientActionEvent } from './client_action_event'
 
 @Entity({ tableName: 'client' })
 export class Client {
@@ -45,6 +46,12 @@ export class Client {
     mappedBy: 'client'
   })
   statusEvents = new Collection<ClientStatusEvent>(this)
+
+  @OneToMany({
+    entity: 'ClientActionEvent',
+    mappedBy: 'client'
+  })
+  actionEvents = new Collection<ClientActionEvent>(this)
 
   @ManyToMany('Extension', 'clients', { owner: true })
   extensions = new Collection<Extension>(this)

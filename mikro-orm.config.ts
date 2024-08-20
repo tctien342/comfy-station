@@ -12,21 +12,29 @@ import { Workflow } from './entities/workflow'
 import { WorkflowTask } from './entities/workflow_task'
 import { WorkflowTaskEvent } from './entities/workflow_task_event'
 import { Extension } from './entities/extension'
+import { ClientActionEvent } from './entities/client_action_event'
+import { Job } from './entities/job'
+import { JobItem } from './entities/job_item'
+import { TokenShared } from './entities/token_shared'
 
 export default defineConfig({
   entities: [
+    ClientActionEvent,
     ClientMonitorGpu,
     ClientMonitorEvent,
     ClientStatusEvent,
+    Client,
     Extension,
+    Job,
+    JobItem,
     User,
     Token,
-    Client,
-    Workflow,
+    TokenShared,
     TokenPermission,
-    WorkflowEditEvent,
+    Workflow,
     WorkflowTask,
-    WorkflowTaskEvent
+    WorkflowTaskEvent,
+    WorkflowEditEvent
   ],
   dbName: 'comfyui.manager.db',
   metadataProvider: TsMorphMetadataProvider

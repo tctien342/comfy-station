@@ -5,6 +5,7 @@ import { User } from './user'
 import { Token } from './token'
 import { ETaskStatus, ETriggerBy } from './enum'
 import { WorkflowTaskEvent } from './workflow_task_event'
+import { JobItem } from './job_item'
 
 @Entity({ tableName: 'workflow_task' })
 export class WorkflowTask {
@@ -37,6 +38,9 @@ export class WorkflowTask {
 
   @ManyToOne({ nullable: true })
   byToken?: Token
+
+  @ManyToOne({ nullable: true })
+  byJobTask?: JobItem
 
   @Property()
   createdAt = new Date()

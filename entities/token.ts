@@ -4,6 +4,7 @@ import { User } from './user'
 import { TokenPermission } from './token_permission'
 import { WorkflowTask } from './workflow_task'
 import { ETokenType } from './enum'
+import { TokenShared } from './token_shared'
 
 @Entity({ tableName: 'token' })
 export class Token {
@@ -13,9 +14,17 @@ export class Token {
   @Property({ nullable: true })
   description?: string
 
+  /**
+   * Allow execute all workflows and client actions.
+   *
+   * Only admin role can create master token.
+   */
   @Property({ default: false })
-  isMaster!: boolean // Allow execute all workflows
+  isMaster!: boolean
 
+  /**
+   * Every workflow has a default token, which is used to execute the workflow.
+   */
   @Property({ default: false })
   isWorkflowDefault!: boolean
 
@@ -45,6 +54,12 @@ export class Token {
     mappedBy: 'token'
   })
   grantedWorkflows = new Collection<TokenPermission>(this)
+
+  @OneToMany({
+    entity: 'TokenShared',
+    mappedBy: 'token'
+  })
+  sharedUsers = new Collection<TokenShared>(this)
 
   @OneToMany({
     entity: 'WorkflowTask',

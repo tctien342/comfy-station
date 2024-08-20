@@ -1,45 +1,69 @@
-# NTR Tempalte
+# ComfyUI Station
 
-This is a web application template built with Next.js, tRPC, TailwindCSS, Eslint, MilionJS and Bun.js.
+A web application for manager multiple instances of ComfyUI.
 
-## Technologies Used
+## Core Features
 
-This web application template is built with the following technologies:
+### 1. Client Management
+- **Registration and Setup**: Managing the creation, configuration, and setup of new ComfyUI clients.
+- **Client Authentication**: Handling different authentication modes for client security, including username and password management.
 
-- **React**: A JavaScript library for building user interfaces.
-- **MilionJS**: A minimal, fast react compiler.
-- **Next.js**: A React framework for building JavaScript applications.
-- **tRPC**: A framework for building typesafe APIs.
-- **Bun.js**: A minimal, fast JavaScript runtime.
-- **Tailwind CSS**: A utility-first CSS framework for building custom designs.
+### 2. Client Monitoring and Reporting
+- **Real-time Monitoring**: Monitoring CPU usage, memory usage, and GPU utilization and temperature in real time.
+- **Event Logging**: Logging significant events related to client status changes, such as going offline or online.
 
-## Getting Started
+### 3. Client Extensions
+- **Extension Management**: Managing and configuring extensions specific to each client, allowing customization of the client's capabilities.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+### 4. User and Access Management
+- **User Accounts**: Managing user accounts, including roles, authentication (email, password), and financial accounts (balance management).
+- **Authentication Tokens**: Managing authentication tokens for secure access, including master tokens and workflow-specific tokens.
+- **Token Sharing and Permissions**: Facilitating the sharing of access tokens between users and managing permissions for workflows.
 
-### Prerequisites
+### 5. Job and Task Automation
+- **Job Scheduling and Management**: Creating and managing jobs with scheduled tasks, allowing automation of routine tasks.
+- **Task Execution and Monitoring**: Executing and monitoring individual tasks within jobs, linked to specific clients or workflows.
 
-- NodeJS, at least 18.x.x
-- BunJS
+### 6. Workflow System
+- **Workflow Creation and Management**: Defining and managing sequences of tasks (workflows) that automate complex operations across multiple clients.
+- **Workflow Execution**: Assigning and executing tasks within a workflow on specified clients.
+- **Workflow Task Tracking**: Tracking the progress and status of tasks within workflows.
 
-### Installation
+### 7. Client Actions and Events
+- **Action Logging**: Logging actions performed on clients, whether manually triggered or automated through jobs or workflows.
+- **Event Response Management**: Responding to and managing events based on client status, user interactions, or automated triggers.
 
-1. Clone the repo
-   ```
-   git clone https://github.com/tctien342/ntr-template.git
-   ```
-2. Install NPM packages
-   ```
-   bun install
-   ```
-3. Start the development server
-   ```
-   bun run dev
-   ```
+### 8. Data and Configuration Security
+- **Secure Configuration**: Managing sensitive information such as user passwords and token details securely.
+- **Data Integrity and Backups**: Ensuring the integrity of data through constraints and relational integrity across tables.
 
-## Usage
+## Database flow (DRAFT)
 
-After starting the development server, you can view the application in your web browser at `http://localhost:3000`.
+```mermaid
+erDiagram
+
+    CLIENT ||--o{ CLIENT_MONITOR_EVENT : "monitors"
+    CLIENT_MONITOR_EVENT ||--o{ CLIENT_MONITOR_GPU : "utilizes"
+    CLIENT ||--o{ CLIENT_STATUS_EVENT : "logs_status"
+    CLIENT ||--o{ CLIENT_EXTENSIONS : "installs"
+    CLIENT_EXTENSIONS }|--|| CLIENT_EXTENSION : "defines"
+    USER ||--o{ TOKEN : "owns"
+    TOKEN ||--o{ TOKEN_SHARED : "shared_with"
+    USER ||--o{ JOB : "creates"
+    JOB ||--o{ JOB_ITEM : "contains"
+    CLIENT_ACTION_EVENT ||--|| CLIENT : "targets"
+    CLIENT_ACTION_EVENT ||--o{ USER : "initiated_by"
+    CLIENT_ACTION_EVENT ||--o{ TOKEN : "authorized_by"
+    CLIENT_ACTION_EVENT ||--o{ JOB_ITEM : "triggered_by"
+    USER ||--o{ WORKFLOW : "authors"
+    WORKFLOW ||--o{ WORKFLOW_TASK : "comprises"
+    WORKFLOW_TASK ||--|| CLIENT : "executes_on"
+    WORKFLOW_TASK ||--o{ WORKFLOW_TASK_EVENT : "tracks"
+    WORKFLOW ||--o{ TOKEN_PERMISSION : "permissions"
+    TOKEN_PERMISSION ||--|| TOKEN : "permits"
+    WORKFLOW_EDIT_EVENT ||--|| WORKFLOW : "modifies"
+    WORKFLOW_EDIT_EVENT ||--|| USER : "edited_by"
+```
 
 ## Contributing
 

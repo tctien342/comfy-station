@@ -6,6 +6,8 @@ import { Token } from './token'
 import { WorkflowEditEvent } from './workflow_edit_event'
 import { WorkflowTask } from './workflow_task'
 import { EUserRole } from './enum'
+import { TokenShared } from './token_shared'
+import { Job } from './job'
 
 export interface IMaper {
   key: string
@@ -54,6 +56,12 @@ export class User {
   tokens = new Collection<Token>(this)
 
   @OneToMany({
+    entity: 'TokenShared',
+    mappedBy: 'user'
+  })
+  sharedTokens = new Collection<TokenShared>(this)
+
+  @OneToMany({
     entity: 'WorkflowEditEvent',
     mappedBy: 'user'
   })
@@ -64,6 +72,12 @@ export class User {
     mappedBy: 'byUser'
   })
   executedWorkflows = new Collection<WorkflowTask>(this)
+
+  @OneToMany({
+    entity: 'Job',
+    mappedBy: 'owner'
+  })
+  jobs = new Collection<Job>(this)
 
   constructor(email: string, password: string) {
     this.email = email
