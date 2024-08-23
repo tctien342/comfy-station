@@ -2,6 +2,11 @@
 
 A web application for manager multiple instances of ComfyUI.
 
+## Preview draft design
+
+![Main - Admin](https://github.com/user-attachments/assets/c4b0a446-dabe-47f2-8e5e-4cd6a8d0718e)
+![Gallery - Admin](https://github.com/user-attachments/assets/8669fabc-21ff-4544-912c-f4d96713532e)
+
 ## Core Features
 
 ### 1. Client Management
