@@ -11,11 +11,12 @@ import { WorkflowEditEvent } from './entities/workflow_edit_event'
 import { Workflow } from './entities/workflow'
 import { WorkflowTask } from './entities/workflow_task'
 import { WorkflowTaskEvent } from './entities/workflow_task_event'
-import { Extension } from './entities/extension'
+import { Extension } from './entities/client_extension'
 import { ClientActionEvent } from './entities/client_action_event'
 import { Job } from './entities/job'
 import { JobItem } from './entities/job_item'
 import { TokenShared } from './entities/token_shared'
+import { Resource } from './entities/client_resource'
 
 export default defineConfig({
   entities: [
@@ -25,6 +26,7 @@ export default defineConfig({
     ClientStatusEvent,
     Client,
     Extension,
+    Resource,
     Job,
     JobItem,
     User,

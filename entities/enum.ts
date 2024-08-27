@@ -44,6 +44,29 @@ export enum ETriggerBy {
   Job = 'Job'
 }
 
+export enum EValueType {
+  File = 'File',
+  /**
+   * Seed is a value that is used to generate, change when re-run a task.
+   */
+  Seed = 'Seed',
+  String = 'String',
+  Number = 'Number',
+  Image = 'Image',
+  Boolean = 'Boolean',
+  Checkpoint = 'Checkpoint',
+  Lora = 'Lora',
+  Sampler = 'Sampler',
+  Scheduler = 'Scheduler'
+}
+
+export enum EResourceType {
+  Lora = 'Lora',
+  Sampler = 'Sampler',
+  Scheduler = 'Scheduler',
+  Checkpoint = 'Checkpoint'
+}
+
 export enum EClientStatus {
   /**
    * Node is online and ready to execute tasks.

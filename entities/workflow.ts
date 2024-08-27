@@ -3,12 +3,57 @@ import { v4 } from 'uuid'
 import { User } from './user'
 import { WorkflowEditEvent } from './workflow_edit_event'
 import { TokenPermission } from './token_permission'
-import { EWorkflowActiveStatus } from './enum'
+import { EValueType, EWorkflowActiveStatus } from './enum'
 
-export interface IMaper {
+export interface IMapTarget {
+  /**
+   * KSampler
+   */
+  nodeName: string
+  /**
+   * Seed
+   */
+  keyName: string
+  /**
+   * 14.inputs.seed
+   */
+  mapVal: string
+}
+
+export interface IMaperBase {
   key: string
-  target: string
-  description: string
+  type: EValueType
+  iconName?: string
+  description?: string
+}
+
+export interface IMapperInput extends IMaperBase {
+  target: Array<IMapTarget>
+  min?: number
+  max?: number
+  /**
+   * Only for type = 'Number'
+   */
+  cost?: {
+    related: boolean
+    /**
+     * Workflow cost = old workflow cost + value * costPerUnit
+     */
+    costPerUnit: number
+  }
+  /**
+   * Only for types = Checkpoint | Lora | Sampler | Scheduler
+   */
+  selections?: Array<string>
+  default?: string | number | boolean
+}
+
+export interface IMapperOutput extends IMaperBase {
+  target: IMapTarget
+  /**
+   * If true, the output will join all array elements to a string (Only used with type = 'String')
+   */
+  joinArray?: boolean
 }
 
 @Entity({
@@ -28,10 +73,10 @@ export class Workflow {
   rawWorkflow: string
 
   @Property({ type: 'json', nullable: true })
-  mapInput?: { [key: string]: IMaper }
+  mapInput?: { [key: string]: IMapperInput }
 
   @Property({ type: 'json', nullable: true })
-  mapOutput?: { [key: string]: IMaper }
+  mapOutput?: { [key: string]: IMapperOutput }
 
   @Property({ default: 0 })
   cost!: number // For estimating the cost of running the workflow and calculate new balance of user

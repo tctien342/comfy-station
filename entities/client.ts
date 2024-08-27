@@ -3,8 +3,9 @@ import { v4 } from 'uuid'
 import { ClientMonitorEvent } from './client_monitor_event'
 import { ClientStatusEvent } from './client_status_event'
 import { EAuthMode, EClientFlags } from './enum'
-import { Extension } from './extension'
+import { Extension } from './client_extension'
 import { ClientActionEvent } from './client_action_event'
+import { Resource } from './client_resource'
 
 @Entity({ tableName: 'client' })
 export class Client {
@@ -55,6 +56,9 @@ export class Client {
 
   @ManyToMany('Extension', 'clients', { owner: true })
   extensions = new Collection<Extension>(this)
+
+  @ManyToMany('Resource', 'clients', { owner: true })
+  resources = new Collection<Resource>(this)
 
   constructor(host: string) {
     this.host = host
