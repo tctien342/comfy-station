@@ -3,34 +3,24 @@ import { WorkflowTask } from './workflow_task'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from './workflow_task_event'
 import { Workflow } from './workflow'
+import { EAttachmentStatus, EStorageType } from './enum'
 
-export enum EAttachmentStatus {
-  PENDING = 'PENDING',
-  UPLOADED = 'UPLOADED',
-  FAILED = 'FAILED'
-}
-
-export enum EStorageType {
-  LOCAL = 'LOCAL',
-  S3 = 'S3'
-}
-
-@Entity({ tableName: 'workflow_attachment' })
-export class WorkflowAttachment {
+@Entity({ tableName: 'attachment' })
+export class Attachment {
   @PrimaryKey({ type: 'uuid' })
   id = v4()
 
   @Property()
   fileName: string
 
-  @ManyToOne()
-  taskEvent: WorkflowTaskEvent
+  @ManyToOne({ nullable: true })
+  taskEvent?: WorkflowTaskEvent
 
-  @ManyToOne()
-  task: WorkflowTask
+  @ManyToOne({ nullable: true })
+  task?: WorkflowTask
 
-  @ManyToOne({ index: true })
-  workflow: Workflow
+  @ManyToOne({ index: true, nullable: true })
+  workflow?: Workflow
 
   @Property({ default: EAttachmentStatus.PENDING })
   status!: EAttachmentStatus
@@ -44,10 +34,7 @@ export class WorkflowAttachment {
   @Property({ onUpdate: () => new Date() })
   updateAt = new Date()
 
-  constructor(event: WorkflowTaskEvent, fileName: string) {
-    this.taskEvent = event
+  constructor(fileName: string) {
     this.fileName = fileName
-    this.task = event.task
-    this.workflow = event.task.workflow
   }
 }

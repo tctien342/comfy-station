@@ -8,8 +8,8 @@ export class ClientMonitorEvent {
   id!: number
 
   @ManyToOne({
-    entity: () => Client,
-    inversedBy: (o) => o.monitorEvents
+    entity: 'Client',
+    inversedBy: 'monitorEvents'
   })
   client!: Client
 

@@ -40,3 +40,5 @@ next-env.d.ts
 .cache
 *.db
 temp
+
+playground

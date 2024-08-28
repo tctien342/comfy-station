@@ -6,7 +6,7 @@ import { Token } from './token'
 import { ETaskStatus, ETriggerBy } from './enum'
 import { WorkflowTaskEvent } from './workflow_task_event'
 import { JobItem } from './job_item'
-import { WorkflowAttachment } from './workflow_attachment'
+import { Attachment } from './attachment'
 
 @Entity({ tableName: 'workflow_task' })
 export class WorkflowTask {
@@ -68,10 +68,10 @@ export class WorkflowTask {
   parent?: WorkflowTask
 
   @OneToMany({
-    entity: () => WorkflowAttachment,
+    entity: 'Attachment',
     mappedBy: 'task'
   })
-  attachments = new Set<WorkflowAttachment>()
+  attachments = new Set<Attachment>()
 
   constructor(id: string, workflow: Workflow, weight = 0, triggerBy: ETriggerBy) {
     this.id = id

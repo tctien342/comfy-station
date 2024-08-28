@@ -139,3 +139,14 @@ export enum ENotificationTarget {
   WorkflowTask = 'workflow_task',
   Client = 'client'
 }
+
+export enum EAttachmentStatus {
+  PENDING = 'PENDING',
+  UPLOADED = 'UPLOADED',
+  FAILED = 'FAILED'
+}
+
+export enum EStorageType {
+  LOCAL = 'LOCAL',
+  S3 = 'S3'
+}

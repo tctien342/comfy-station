@@ -18,7 +18,7 @@ import { JobItem } from './entities/job_item'
 import { TokenShared } from './entities/token_shared'
 import { Resource } from './entities/client_resource'
 import { UserNotification } from './entities/user_notifications'
-import { WorkflowAttachment } from './entities/workflow_attachment'
+import { Attachment } from './entities/attachment'
 
 export default defineConfig({
   entities: [
@@ -40,7 +40,7 @@ export default defineConfig({
     WorkflowTask,
     WorkflowTaskEvent,
     WorkflowEditEvent,
-    WorkflowAttachment
+    Attachment
   ],
   dbName: 'comfyui.manager.db',
   metadataProvider: TsMorphMetadataProvider

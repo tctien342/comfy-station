@@ -6,6 +6,7 @@ import { EAuthMode, EClientFlags } from './enum'
 import { Extension } from './client_extension'
 import { ClientActionEvent } from './client_action_event'
 import { Resource } from './client_resource'
+import { WorkflowTask } from './workflow_task'
 
 @Entity({ tableName: 'client' })
 export class Client {
@@ -41,6 +42,12 @@ export class Client {
     mappedBy: 'client'
   })
   monitorEvents = new Collection<ClientMonitorEvent>(this)
+
+  @OneToMany({
+    entity: 'WorkflowTask',
+    mappedBy: 'client'
+  })
+  tasks = new Collection<WorkflowTask>(this)
 
   @OneToMany({
     entity: 'ClientStatusEvent',

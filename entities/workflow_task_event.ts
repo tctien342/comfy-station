@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { ETaskStatus, EValueType } from './enum'
 import { WorkflowTask } from './workflow_task'
-import { WorkflowAttachment } from './workflow_attachment'
+import { Attachment } from './attachment'
 
 export interface ITaskEventData {
   type: EValueType
@@ -32,10 +32,10 @@ export class WorkflowTaskEvent {
   createdAt = new Date()
 
   @OneToMany({
-    entity: () => WorkflowAttachment,
+    entity: 'Attachment',
     mappedBy: 'taskEvent'
   })
-  attachments = new Set<WorkflowAttachment>()
+  attachments = new Set<Attachment>()
 
   constructor(WorkflowTask: WorkflowTask) {
     this.task = WorkflowTask

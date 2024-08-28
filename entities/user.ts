@@ -1,4 +1,4 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property, type Ref } from '@mikro-orm/core'
+import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { createHmac } from 'crypto'
 import { Workflow } from './workflow'
@@ -9,6 +9,7 @@ import { EUserRole } from './enum'
 import { TokenShared } from './token_shared'
 import { Job } from './job'
 import { UserNotification } from './user_notifications'
+import { Attachment } from './attachment'
 
 export interface IMaper {
   key: string
@@ -28,6 +29,9 @@ export class User {
 
   @Property({ lazy: true })
   password: string
+
+  @OneToOne({ nullable: true })
+  avatar?: Attachment
 
   @Property({ default: EUserRole.User })
   role!: EUserRole
