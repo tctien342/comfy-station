@@ -53,7 +53,10 @@ export enum EValueType {
   String = 'String',
   Number = 'Number',
   Image = 'Image',
-  Boolean = 'Boolean',
+  Boolean = 'Boolean'
+}
+
+export enum EValueSelectionType {
   Checkpoint = 'Checkpoint',
   Lora = 'Lora',
   Sampler = 'Sampler',
@@ -123,4 +126,16 @@ export enum EClientAction {
 export enum EJobType {
   CLIENT_ACTION = 'CLIENT_ACTION',
   WORKFLOW_EXECUTE = 'WORKFLOW_EXECUTE'
+}
+
+export enum ENotificationType {
+  Info = 'info',
+  Warning = 'warning',
+  Error = 'error'
+}
+
+export enum ENotificationTarget {
+  Workflow = 'workflow',
+  WorkflowTask = 'workflow_task',
+  Client = 'client'
 }

@@ -8,6 +8,7 @@ import { WorkflowTask } from './workflow_task'
 import { EUserRole } from './enum'
 import { TokenShared } from './token_shared'
 import { Job } from './job'
+import { UserNotification } from './user_notifications'
 
 export interface IMaper {
   key: string
@@ -78,6 +79,12 @@ export class User {
     mappedBy: 'owner'
   })
   jobs = new Collection<Job>(this)
+
+  @OneToMany({
+    entity: 'UserNotification',
+    mappedBy: 'user'
+  })
+  notifications = new Collection<UserNotification>(this)
 
   constructor(email: string, password: string) {
     this.email = email

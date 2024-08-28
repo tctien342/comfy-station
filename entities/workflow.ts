@@ -4,6 +4,7 @@ import { User } from './user'
 import { WorkflowEditEvent } from './workflow_edit_event'
 import { TokenPermission } from './token_permission'
 import { EValueType, EWorkflowActiveStatus } from './enum'
+import { WorkflowAttachment } from './workflow_attachment'
 
 export interface IMapTarget {
   /**
@@ -22,7 +23,7 @@ export interface IMapTarget {
 
 export interface IMaperBase {
   key: string
-  type: EValueType
+  type: EValueType | EValueType
   iconName?: string
   description?: string
 }
@@ -101,6 +102,12 @@ export class Workflow {
     mappedBy: 'workflow'
   })
   grantedTokens = new Collection<TokenPermission>(this)
+
+  @OneToMany({
+    entity: () => WorkflowAttachment,
+    mappedBy: 'workflow'
+  })
+  attachments = new Set<WorkflowAttachment>()
 
   @Property()
   createdAt = new Date()

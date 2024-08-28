@@ -6,6 +6,7 @@ import { Token } from './token'
 import { ETaskStatus, ETriggerBy } from './enum'
 import { WorkflowTaskEvent } from './workflow_task_event'
 import { JobItem } from './job_item'
+import { WorkflowAttachment } from './workflow_attachment'
 
 @Entity({ tableName: 'workflow_task' })
 export class WorkflowTask {
@@ -20,6 +21,9 @@ export class WorkflowTask {
 
   @Property({ default: ETaskStatus.Queuing })
   status!: ETaskStatus
+
+  @Property({ default: 1 })
+  repeatCount!: number
 
   @Property({ default: 1 })
   computedWeight!: number // More weight, lower priority
@@ -53,6 +57,21 @@ export class WorkflowTask {
     mappedBy: 'task'
   })
   events = new Collection<WorkflowTaskEvent>(this)
+
+  @OneToMany({
+    entity: 'WorkflowTask',
+    mappedBy: 'parent'
+  })
+  subTasks = new Collection<WorkflowTask>(this)
+
+  @ManyToOne({ nullable: true })
+  parent?: WorkflowTask
+
+  @OneToMany({
+    entity: () => WorkflowAttachment,
+    mappedBy: 'task'
+  })
+  attachments = new Set<WorkflowAttachment>()
 
   constructor(id: string, workflow: Workflow, weight = 0, triggerBy: ETriggerBy) {
     this.id = id
