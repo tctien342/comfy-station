@@ -1,14 +1,14 @@
 import { Collection, Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/core'
-import { Job } from './job'
-import { EJobType } from './enum'
-import { Trigger } from './trigger'
+import type { Job } from './job'
+import type { EJobType } from './enum'
+import type { Trigger } from './trigger'
 
 @Entity({ tableName: 'job_item' })
 export class JobItem {
   @Property({ primary: true })
   id!: number
 
-  @ManyToOne({ primary: true })
+  @ManyToOne({ entity: 'Job', inversedBy: 'tasks', primary: true })
   job: Job
 
   @Property({ index: true })

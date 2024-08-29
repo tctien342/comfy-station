@@ -1,6 +1,6 @@
 import { Collection, Entity, Index, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { Client } from './client'
+import type { Client } from './client'
 import { EResourceType } from './enum'
 
 @Entity({ tableName: 'client_resource' })

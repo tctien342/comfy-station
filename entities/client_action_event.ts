@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { EClientAction } from './enum'
-import { Client } from './client'
-import { Trigger } from './trigger'
+import type { Client } from './client'
+import type { Trigger } from './trigger'
 
 @Entity({ tableName: 'client_action_event' })
 export class ClientActionEvent {
@@ -20,7 +20,7 @@ export class ClientActionEvent {
   @Property({ nullable: true, type: 'json' })
   data?: object
 
-  @OneToOne()
+  @OneToOne('Trigger', { inversedBy: 'clientActionEvent' })
   trigger: Trigger
 
   @Property()

@@ -1,23 +1,21 @@
 import { Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import { Client } from './client'
-import { Workflow } from './workflow'
-import { User } from './user'
-import { Token } from './token'
-import { ETaskStatus, ETriggerBy } from './enum'
-import { WorkflowTaskEvent } from './workflow_task_event'
-import { JobItem } from './job_item'
-import { Attachment } from './attachment'
-import { Trigger } from './trigger'
+import { ETaskStatus } from './enum'
+
+import type { Client } from './client'
+import type { Workflow } from './workflow'
+import type { WorkflowTaskEvent } from './workflow_task_event'
+import type { Attachment } from './attachment'
+import type { Trigger } from './trigger'
 
 @Entity({ tableName: 'workflow_task' })
 export class WorkflowTask {
   @PrimaryKey()
   id: string
 
-  @ManyToOne({ index: true })
+  @ManyToOne('Workflow', { index: true })
   workflow: Workflow
 
-  @ManyToOne({ nullable: true, index: true })
+  @ManyToOne('Client', { nullable: true, index: true })
   client?: Client
 
   @Property({ default: ETaskStatus.Queuing, index: true })
@@ -35,7 +33,7 @@ export class WorkflowTask {
   @Property({ nullable: true })
   executionTime?: number
 
-  @OneToOne()
+  @OneToOne('Trigger')
   trigger: Trigger
 
   @Property()

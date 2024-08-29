@@ -1,7 +1,8 @@
 import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core'
-import { Workflow } from './workflow'
-import { User } from './user'
 import { EWorkflowEditType } from './enum'
+
+import type { Workflow } from './workflow'
+import type { User } from './user'
 
 export interface IEditAction {
   key: string
@@ -14,10 +15,10 @@ export class WorkflowEditEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne({ index: true })
+  @ManyToOne({ entity: 'Workflow', inversedBy: 'editedActions', index: true })
   workflow: Workflow
 
-  @ManyToOne({ index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'editWorkflowActions', index: true })
   user: User
 
   @Property({ default: EWorkflowEditType.Create, index: true })

@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
-import { User } from './user'
+import type { User } from './user'
 import { v4 } from 'uuid'
-import { JobItem } from './job_item'
+import type { JobItem } from './job_item'
 
 @Entity({ tableName: 'job' })
 export class Job {

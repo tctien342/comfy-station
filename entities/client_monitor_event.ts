@@ -1,6 +1,6 @@
 import { Cascade, Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
-import { Client } from './client'
-import { ClientMonitorGpu } from './client_monitor_gpu'
+import type { Client } from './client'
+import type { ClientMonitorGpu } from './client_monitor_gpu'
 
 @Entity({ tableName: 'client_monitor_event' })
 @Index({ properties: ['client', 'createdAt'] })
@@ -24,7 +24,7 @@ export class ClientMonitorEvent {
   memoryTotal?: number
 
   @OneToMany('ClientMonitorGpu', 'monitorEvent', { cascade: [Cascade.ALL] })
-  gpu = new Collection<ClientMonitorGpu>(this)
+  gpus = new Collection<ClientMonitorGpu>(this)
 
   @Property()
   createdAt = new Date()

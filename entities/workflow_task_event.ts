@@ -1,7 +1,8 @@
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { ETaskStatus, EValueType } from './enum'
-import { WorkflowTask } from './workflow_task'
-import { Attachment } from './attachment'
+
+import type { WorkflowTask } from './workflow_task'
+import type { Attachment } from './attachment'
 
 export interface ITaskEventData {
   type: EValueType
@@ -16,7 +17,7 @@ export class WorkflowTaskEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne({ index: true })
+  @ManyToOne({ entity: 'WorkflowTask', inversedBy: 'events', index: true })
   task: WorkflowTask
 
   @Property({ default: ETaskStatus.Queuing, index: true })

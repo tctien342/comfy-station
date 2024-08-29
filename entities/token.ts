@@ -1,11 +1,11 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { User } from './user'
-import { TokenPermission } from './token_permission'
-import { WorkflowTask } from './workflow_task'
 import { ETokenType } from './enum'
-import { TokenShared } from './token_shared'
-import { Trigger } from './trigger'
+
+import type { User } from './user'
+import type { TokenPermission } from './token_permission'
+import type { TokenShared } from './token_shared'
+import type { Trigger } from './trigger'
 
 @Entity({ tableName: 'token' })
 export class Token {
@@ -38,7 +38,7 @@ export class Token {
   @Property({ default: 0 })
   weightOffset!: number
 
-  @ManyToOne({ entity: 'User', inversedBy: 'tokens' })
+  @ManyToOne('User', 'tokens')
   createdBy: User
 
   @Property({ nullable: true })
@@ -68,7 +68,7 @@ export class Token {
   })
   triggers = new Collection<Trigger>(this)
 
-  constructor(created_by: User) {
-    this.createdBy = created_by
+  constructor(createdBy: User) {
+    this.createdBy = createdBy
   }
 }

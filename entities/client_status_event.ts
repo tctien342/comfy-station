@@ -1,5 +1,5 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import { Client } from './client'
+import type { Client } from './client'
 import { EClientStatus } from './enum'
 
 @Entity({

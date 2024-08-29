@@ -1,16 +1,16 @@
-import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property, type Ref } from '@mikro-orm/core'
+import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { createHmac } from 'crypto'
-import { Workflow } from './workflow'
-import { Token } from './token'
-import { WorkflowEditEvent } from './workflow_edit_event'
-import { WorkflowTask } from './workflow_task'
 import { EUserRole } from './enum'
-import { TokenShared } from './token_shared'
-import { Job } from './job'
-import { UserNotification } from './user_notifications'
-import { Attachment } from './attachment'
-import { Trigger } from './trigger'
+
+import type { Workflow } from './workflow'
+import type { Token } from './token'
+import type { WorkflowEditEvent } from './workflow_edit_event'
+import type { TokenShared } from './token_shared'
+import type { Job } from './job'
+import type { UserNotification } from './user_notifications'
+import type { Attachment } from './attachment'
+import type { Trigger } from './trigger'
 
 export interface IMaper {
   key: string
@@ -31,7 +31,7 @@ export class User {
   @Property({ lazy: true })
   password: string
 
-  @OneToOne({ nullable: true })
+  @OneToOne({ entity: 'Attachment', inversedBy: 'user', nullable: true })
   avatar?: Attachment
 
   @Property({ default: EUserRole.User, index: true })

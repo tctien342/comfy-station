@@ -1,11 +1,12 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { User } from './user'
-import { WorkflowEditEvent } from './workflow_edit_event'
-import { TokenPermission } from './token_permission'
 import { EValueType, EWorkflowActiveStatus } from './enum'
-import { Attachment } from './attachment'
-import { WorkflowTask } from './workflow_task'
+
+import type { User } from './user'
+import type { WorkflowEditEvent } from './workflow_edit_event'
+import type { TokenPermission } from './token_permission'
+import type { Attachment } from './attachment'
+import type { WorkflowTask } from './workflow_task'
 
 export interface IMapTarget {
   /**

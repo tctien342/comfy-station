@@ -1,13 +1,13 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core'
-import { Workflow } from './workflow'
-import { Token } from './token'
+import type { Workflow } from './workflow'
+import type { Token } from './token'
 
 @Entity({ tableName: 'token_permission' })
 export class TokenPermission {
-  @ManyToOne({ primary: true, index: true })
+  @ManyToOne({ entity: 'Token', inversedBy: 'grantedWorkflows', primary: true, index: true })
   token: Token
 
-  @ManyToOne({ primary: true, index: true })
+  @ManyToOne({ entity: 'Workflow', inversedBy: 'grantedTokens', primary: true, index: true })
   workflow: Workflow
 
   @Property({ default: 0 })

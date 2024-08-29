@@ -1,6 +1,7 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import { User } from './user'
 import { ENotificationTarget, ENotificationType } from './enum'
+
+import type { User } from './user'
 
 export interface INotificationData {
   targetType: ENotificationTarget
@@ -18,7 +19,7 @@ export class UserNotification {
   @Property({ default: false, index: true })
   read!: boolean
 
-  @ManyToOne({ index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'notifications', index: true })
   user: User
 
   @Property()

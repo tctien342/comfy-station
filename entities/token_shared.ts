@@ -1,14 +1,13 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core'
-import { Workflow } from './workflow'
-import { Token } from './token'
-import { User } from './user'
+import type { Token } from './token'
+import type { User } from './user'
 
 @Entity({ tableName: 'token_shared' })
 export class TokenShared {
-  @ManyToOne({ primary: true, index: true })
+  @ManyToOne({ entity: 'Token', inversedBy: 'sharedUsers', primary: true, index: true })
   token: Token
 
-  @ManyToOne({ primary: true, index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'sharedTokens', primary: true, index: true })
   user: User
 
   @Property()

@@ -1,12 +1,12 @@
 import { ArrayType, Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { ClientMonitorEvent } from './client_monitor_event'
-import { ClientStatusEvent } from './client_status_event'
+import type { ClientMonitorEvent } from './client_monitor_event'
+import type { ClientStatusEvent } from './client_status_event'
 import { EAuthMode, EClientFlags } from './enum'
-import { Extension } from './client_extension'
-import { ClientActionEvent } from './client_action_event'
-import { Resource } from './client_resource'
-import { WorkflowTask } from './workflow_task'
+import type { Extension } from './client_extension'
+import type { ClientActionEvent } from './client_action_event'
+import type { Resource } from './client_resource'
+import type { WorkflowTask } from './workflow_task'
 
 @Entity({ tableName: 'client' })
 export class Client {
