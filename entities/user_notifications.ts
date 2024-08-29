@@ -15,19 +15,22 @@ export class UserNotification {
   @PrimaryKey()
   id!: number
 
-  @Property({ default: false })
+  @Property({ default: false, index: true })
   read!: boolean
 
-  @ManyToOne()
+  @ManyToOne({ index: true })
   user: User
 
   @Property()
   title: string
 
+  @Property({ default: 1 })
+  priority!: number
+
   @Property({ nullable: true })
   description?: string // Supports markdown
 
-  @Property({ default: ENotificationType.Info })
+  @Property({ default: ENotificationType.Info, index: true })
   type!: ENotificationType
 
   @Property({ type: 'json', nullable: true })

@@ -4,10 +4,10 @@ import { Token } from './token'
 
 @Entity({ tableName: 'token_permission' })
 export class TokenPermission {
-  @ManyToOne({ primary: true })
+  @ManyToOne({ primary: true, index: true })
   token: Token
 
-  @ManyToOne({ primary: true })
+  @ManyToOne({ primary: true, index: true })
   workflow: Workflow
 
   @Property({ default: 0 })

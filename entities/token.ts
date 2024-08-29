@@ -5,6 +5,7 @@ import { TokenPermission } from './token_permission'
 import { WorkflowTask } from './workflow_task'
 import { ETokenType } from './enum'
 import { TokenShared } from './token_shared'
+import { Trigger } from './trigger'
 
 @Entity({ tableName: 'token' })
 export class Token {
@@ -28,7 +29,7 @@ export class Token {
   @Property({ default: false })
   isWorkflowDefault!: boolean
 
-  @Property({ default: ETokenType.Both })
+  @Property({ default: ETokenType.Both, index: true })
   type!: ETokenType
 
   @Property({ default: -1 })
@@ -62,10 +63,10 @@ export class Token {
   sharedUsers = new Collection<TokenShared>(this)
 
   @OneToMany({
-    entity: 'WorkflowTask',
-    mappedBy: 'byToken'
+    entity: 'Trigger',
+    mappedBy: 'token'
   })
-  executedWorkflows = new Collection<WorkflowTask>(this)
+  triggers = new Collection<Trigger>(this)
 
   constructor(created_by: User) {
     this.createdBy = created_by

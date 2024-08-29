@@ -12,8 +12,7 @@ export class Resource {
   @Property()
   name: string
 
-  @Property()
-  @Index()
+  @Property({ index: true })
   type: EResourceType
 
   @Property({ nullable: true })
@@ -25,7 +24,7 @@ export class Resource {
   @Property({ onUpdate: () => new Date() })
   updateAt = new Date()
 
-  @ManyToMany('Client', 'resources')
+  @ManyToMany('Client', 'resources', { index: true })
   clients = new Collection<Client>(this)
 
   constructor(name: string, type: EResourceType, displayName?: string) {

@@ -55,7 +55,7 @@ export class Extension {
   @Property({ onUpdate: () => new Date() })
   updateAt = new Date()
 
-  @ManyToMany('Client', 'extensions')
+  @ManyToMany('Client', 'extensions', { index: true })
   clients = new Collection<Client>(this)
 
   constructor(name: string, displayName: string, pythonModule: string, category: string) {

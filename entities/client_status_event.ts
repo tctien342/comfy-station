@@ -1,10 +1,11 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { Client } from './client'
 import { EClientStatus } from './enum'
 
 @Entity({
   tableName: 'client_status_event'
 })
+@Index({ properties: ['client', 'createdAt'] })
 export class ClientStatusEvent {
   @PrimaryKey()
   id!: number

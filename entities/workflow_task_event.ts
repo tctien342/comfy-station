@@ -16,10 +16,10 @@ export class WorkflowTaskEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne()
+  @ManyToOne({ index: true })
   task: WorkflowTask
 
-  @Property({ default: ETaskStatus.Queuing })
+  @Property({ default: ETaskStatus.Queuing, index: true })
   status!: ETaskStatus
 
   @Property({ type: 'string', nullable: true })

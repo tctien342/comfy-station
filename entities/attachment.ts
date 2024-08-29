@@ -22,7 +22,7 @@ export class Attachment {
   @ManyToOne({ index: true, nullable: true })
   workflow?: Workflow
 
-  @Property({ default: EAttachmentStatus.PENDING })
+  @Property({ default: EAttachmentStatus.PENDING, index: true })
   status!: EAttachmentStatus
 
   @Property({ default: EStorageType.LOCAL })

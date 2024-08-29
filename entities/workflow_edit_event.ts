@@ -14,13 +14,13 @@ export class WorkflowEditEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne()
+  @ManyToOne({ index: true })
   workflow: Workflow
 
-  @ManyToOne()
+  @ManyToOne({ index: true })
   user: User
 
-  @Property({ default: EWorkflowEditType.Create })
+  @Property({ default: EWorkflowEditType.Create, index: true })
   type!: EWorkflowEditType
 
   @Property({ type: 'json', nullable: true })

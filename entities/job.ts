@@ -8,7 +8,7 @@ export class Job {
   @PrimaryKey({ type: 'uuid' })
   id = v4()
 
-  @ManyToOne({ entity: 'User', inversedBy: 'jobs' })
+  @ManyToOne({ entity: 'User', inversedBy: 'jobs', index: true })
   owner: User
 
   @Property()
@@ -22,6 +22,9 @@ export class Job {
 
   @Property({ onUpdate: () => new Date() })
   updateAt = new Date()
+
+  @Property({ nullable: true })
+  lastRunAt?: Date
 
   @OneToMany({
     entity: 'JobItem',

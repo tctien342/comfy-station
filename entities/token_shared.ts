@@ -5,10 +5,10 @@ import { User } from './user'
 
 @Entity({ tableName: 'token_shared' })
 export class TokenShared {
-  @ManyToOne({ primary: true })
+  @ManyToOne({ primary: true, index: true })
   token: Token
 
-  @ManyToOne({ primary: true })
+  @ManyToOne({ primary: true, index: true })
   user: User
 
   @Property()

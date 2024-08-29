@@ -10,6 +10,7 @@ import { TokenShared } from './token_shared'
 import { Job } from './job'
 import { UserNotification } from './user_notifications'
 import { Attachment } from './attachment'
+import { Trigger } from './trigger'
 
 export interface IMaper {
   key: string
@@ -33,7 +34,7 @@ export class User {
   @OneToOne({ nullable: true })
   avatar?: Attachment
 
-  @Property({ default: EUserRole.User })
+  @Property({ default: EUserRole.User, index: true })
   role!: EUserRole
 
   @Property({ default: -1 })
@@ -73,12 +74,6 @@ export class User {
   editWorkflowActions = new Collection<WorkflowEditEvent>(this)
 
   @OneToMany({
-    entity: 'WorkflowTask',
-    mappedBy: 'byUser'
-  })
-  executedWorkflows = new Collection<WorkflowTask>(this)
-
-  @OneToMany({
     entity: 'Job',
     mappedBy: 'owner'
   })
@@ -89,6 +84,12 @@ export class User {
     mappedBy: 'user'
   })
   notifications = new Collection<UserNotification>(this)
+
+  @OneToMany({
+    entity: 'Trigger',
+    mappedBy: 'user'
+  })
+  triggers = new Collection<Trigger>(this)
 
   constructor(email: string, password: string) {
     this.email = email

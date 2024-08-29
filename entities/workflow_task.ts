@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { Client } from './client'
 import { Workflow } from './workflow'
 import { User } from './user'
@@ -7,19 +7,20 @@ import { ETaskStatus, ETriggerBy } from './enum'
 import { WorkflowTaskEvent } from './workflow_task_event'
 import { JobItem } from './job_item'
 import { Attachment } from './attachment'
+import { Trigger } from './trigger'
 
 @Entity({ tableName: 'workflow_task' })
 export class WorkflowTask {
   @PrimaryKey()
   id: string
 
-  @ManyToOne()
+  @ManyToOne({ index: true })
   workflow: Workflow
 
-  @ManyToOne({ nullable: true })
+  @ManyToOne({ nullable: true, index: true })
   client?: Client
 
-  @Property({ default: ETaskStatus.Queuing })
+  @Property({ default: ETaskStatus.Queuing, index: true })
   status!: ETaskStatus
 
   @Property({ default: 1 })
@@ -34,17 +35,8 @@ export class WorkflowTask {
   @Property({ nullable: true })
   executionTime?: number
 
-  @Property()
-  triggerBy: ETriggerBy
-
-  @ManyToOne({ nullable: true })
-  byUser?: User
-
-  @ManyToOne({ nullable: true })
-  byToken?: Token
-
-  @ManyToOne({ nullable: true })
-  byJobTask?: JobItem
+  @OneToOne()
+  trigger: Trigger
 
   @Property()
   createdAt = new Date()
@@ -73,10 +65,10 @@ export class WorkflowTask {
   })
   attachments = new Set<Attachment>()
 
-  constructor(id: string, workflow: Workflow, weight = 0, triggerBy: ETriggerBy) {
+  constructor(id: string, workflow: Workflow, weight = 0, trigger: Trigger) {
     this.id = id
     this.workflow = workflow
-    this.triggerBy = triggerBy
+    this.trigger = trigger
     this.computedWeight = weight
   }
 }

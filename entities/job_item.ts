@@ -1,8 +1,7 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core'
-import { Workflow } from './workflow'
-import { Token } from './token'
+import { Collection, Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/core'
 import { Job } from './job'
 import { EJobType } from './enum'
+import { Trigger } from './trigger'
 
 @Entity({ tableName: 'job_item' })
 export class JobItem {
@@ -12,11 +11,17 @@ export class JobItem {
   @ManyToOne({ primary: true })
   job: Job
 
-  @Property()
+  @Property({ index: true })
   type: EJobType
 
   @Property({ type: 'json' })
   config: object
+
+  @OneToMany({
+    entity: 'Trigger',
+    mappedBy: 'jobTask'
+  })
+  triggers = new Collection<Trigger>(this)
 
   constructor(job: Job, type: EJobType, config: object) {
     this.job = job

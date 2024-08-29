@@ -1,8 +1,9 @@
-import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { Client } from './client'
 import { ClientMonitorGpu } from './client_monitor_gpu'
 
 @Entity({ tableName: 'client_monitor_event' })
+@Index({ properties: ['client', 'createdAt'] })
 export class ClientMonitorEvent {
   @PrimaryKey()
   id!: number

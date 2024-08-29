@@ -83,13 +83,13 @@ export class Workflow {
   @Property({ default: 0 })
   cost!: number // For estimating the cost of running the workflow and calculate new balance of user
 
-  @Property({ default: EWorkflowActiveStatus.Activated })
+  @Property({ default: EWorkflowActiveStatus.Activated, index: true })
   status!: EWorkflowActiveStatus
 
   @Property({ default: 0 })
   baseWeight!: number // Weight of this workflow, more weight means lower priority
 
-  @ManyToOne({ entity: 'User', inversedBy: 'workflows' })
+  @ManyToOne({ entity: 'User', inversedBy: 'workflows', index: true })
   author: User
 
   @OneToMany({

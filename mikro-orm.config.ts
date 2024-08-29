@@ -19,6 +19,7 @@ import { TokenShared } from './entities/token_shared'
 import { Resource } from './entities/client_resource'
 import { UserNotification } from './entities/user_notifications'
 import { Attachment } from './entities/attachment'
+import { Trigger } from './entities/trigger'
 
 export default defineConfig({
   entities: [
@@ -33,6 +34,7 @@ export default defineConfig({
     JobItem,
     User,
     UserNotification,
+    Trigger,
     Token,
     TokenShared,
     TokenPermission,
