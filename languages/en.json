@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "COMFY STATION",
+    "description": "A opensource for image generative using multiple of ComfyUI instances"
+  },
+  "auth": {
+    "tabs": {
+      "Account": "Account",
+      "Token": "Token"
+    },
+    "basic": {
+      "username": "Username",
+      "password": "Password",
+      "usernamePlaceholder": "Enter your username",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Login",
+      "forgotPassword": "Forgot your password? Click here"
+    },
+    "token": {
+      "token": "Token",
+      "tokenPlaceholder": "Enter your access token",
+      "submit": "Login"
+    }
+  }
+}

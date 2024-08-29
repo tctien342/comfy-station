@@ -1,4 +1,10 @@
 const million = require('million/compiler')
+const createNextIntlPlugin = require('next-intl/plugin')
+
+/**
+ * Initialize i18n plugin
+ */
+const withNextIntl = createNextIntlPlugin()
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -14,4 +20,4 @@ const nextConfig = {
   },
   experimental: { instrumentationHook: true }
 }
-module.exports = million.next(nextConfig)
+module.exports = million.next(withNextIntl(nextConfig))

@@ -15,6 +15,7 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "jsx": "preserve",
+    "baseUrl": ".",
     "incremental": true,
     "plugins": [
       {
@@ -26,6 +27,14 @@
     },
     "target": "ES2017"
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "types-react", "types-react-dom", "mikro-orm.config.js"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "types-react",
+    "types-react-dom",
+    "mikro-orm.config.js"
+  ],
   "exclude": ["node_modules"]
 }

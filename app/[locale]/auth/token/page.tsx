@@ -3,15 +3,18 @@
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { t } from '@mikro-orm/core'
 import { EnterIcon, ExternalLinkIcon } from '@radix-ui/react-icons'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 
 const Page: IComponent = () => {
+  const t = useTranslations('auth.token')
   const form = useForm<{
-    username: string
+    token: string
   }>({
     defaultValues: {
-      username: ''
+      token: ''
     }
   })
   return (
@@ -22,21 +25,9 @@ const Page: IComponent = () => {
             name='username'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>{t('token')}</FormLabel>
                 <FormControl>
-                  <Input placeholder='Enter your username here...' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            name='password'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type='password' placeholder='Enter your password here...' {...field} />
+                  <Input placeholder={t('tokenPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -47,14 +38,11 @@ const Page: IComponent = () => {
               Github <ExternalLinkIcon className='ml-2 w-4 h-4' />
             </Button>
             <Button type='submit'>
-              Submit <EnterIcon className='ml-2 w-4 h-4' />
+              {t('submit')} <EnterIcon className='ml-2 w-4 h-4' />
             </Button>
           </div>
         </form>
       </Form>
-      <Button variant='ghost' type='button' className='mx-auto text-sm font-medium'>
-        Forgot your password ? Click here
-      </Button>
     </>
   )
 }

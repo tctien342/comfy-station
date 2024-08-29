@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { EnterIcon, ExternalLinkIcon } from '@radix-ui/react-icons'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 
 const Page: IComponent = () => {
+  const t = useTranslations('auth.basic')
   const form = useForm<{
-    token: string
+    username: string
   }>({
     defaultValues: {
-      token: ''
+      username: ''
     }
   })
   return (
@@ -22,9 +24,21 @@ const Page: IComponent = () => {
             name='username'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Token</FormLabel>
+                <FormLabel>{t('username')}</FormLabel>
                 <FormControl>
-                  <Input placeholder='Enter your access token here...' {...field} />
+                  <Input placeholder={t('usernamePlaceholder')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name='password'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('password')}</FormLabel>
+                <FormControl>
+                  <Input type='password' placeholder={t('passwordPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -35,11 +49,14 @@ const Page: IComponent = () => {
               Github <ExternalLinkIcon className='ml-2 w-4 h-4' />
             </Button>
             <Button type='submit'>
-              Submit <EnterIcon className='ml-2 w-4 h-4' />
+              {t('submit')} <EnterIcon className='ml-2 w-4 h-4' />
             </Button>
           </div>
         </form>
       </Form>
+      <Button variant='ghost' type='button' className='mx-auto text-sm font-medium'>
+        {t('forgotPassword')}
+      </Button>
     </>
   )
 }

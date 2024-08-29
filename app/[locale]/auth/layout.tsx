@@ -4,13 +4,16 @@ import { Card } from '@/components/ui/card'
 import AuthBackground from '@/assets/auth-background.jpg'
 import Image from 'next/image'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { usePathname, useRouter } from 'next/navigation'
 import { SimpleTranslation } from '@/components/SimpleTranslation'
+import { useTranslations } from 'next-intl'
+import { usePathname, useRouter } from '@/routing'
 
 const Layout: IComponent = ({ children }) => {
   const route = useRouter()
+  const t = useTranslations()
   const pathName = usePathname()
   const currentTab = pathName.includes('token') ? 'token' : 'account'
+
   return (
     <Card className='bg-background flex overflow-hidden relative'>
       <Image alt='Login background' className='object-cover' height={400} width={400} src={AuthBackground} />
@@ -18,18 +21,16 @@ const Layout: IComponent = ({ children }) => {
         <Tabs value={currentTab}>
           <TabsList className='grid w-full grid-cols-2'>
             <TabsTrigger onClick={() => route.push('/auth/basic')} value='account'>
-              Account
+              {t('auth.tabs.Account')}
             </TabsTrigger>
             <TabsTrigger onClick={() => route.push('/auth/token')} value='token'>
-              Token
+              {t('auth.tabs.Token')}
             </TabsTrigger>
           </TabsList>
         </Tabs>
         <div className='flex flex-col'>
-          <h1 className='text-xl font-semibold text-foreground'>COMFY STATION</h1>
-          <p className='text-sm font-normal text-muted-foreground'>
-            A opensource for image generative using multiple of ComfyUI instances
-          </p>
+          <h1 className='text-xl font-semibold text-foreground'>{t('app.name')}</h1>
+          <p className='text-sm font-normal text-muted-foreground'>{t('app.description')}</p>
         </div>
         <SimpleTranslation deps={[currentTab]} className='w-full flex flex-col gap-4 min-h-[264px]'>
           {children}

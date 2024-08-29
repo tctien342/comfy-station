@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "COMFY STATION",
+    "description": "Ứng dụng mã nguồn mở giúp quản lý các máy chạy ComfyUI của bạn"
+  },
+  "auth": {
+    "tabs": {
+      "Account": "Tài khoản",
+      "Token": "Token"
+    },
+    "basic": {
+      "username": "Tài khoản",
+      "password": "Mật khẩu",
+      "usernamePlaceholder": "Nhập tên tài khoản",
+      "passwordPlaceholder": "Nhập mật khẩu",
+      "submit": "Đăng nhập",
+      "forgotPassword": "Quên mật khẩu? Nhấn vào đây"
+    },
+    "token": {
+      "token": "Token",
+      "tokenPlaceholder": "Nhập token truy cập",
+      "submit": "Đăng nhập"
+    }
+  }
+}
