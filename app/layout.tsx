@@ -3,6 +3,7 @@ import './globals.scss'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import TRPCLayout from './TRPCLayout'
+import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -19,7 +20,13 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body className={inter.className}>
-        <TRPCLayout>{children}</TRPCLayout>
+        <BackgroundSVG
+          preserveAspectRatio='none'
+          className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
+        />
+        <TRPCLayout>
+          <div className='w-screen h-screen p-4 flex justify-center items-center'>{children}</div>
+        </TRPCLayout>
       </body>
     </html>
   )

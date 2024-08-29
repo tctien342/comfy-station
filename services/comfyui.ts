@@ -152,7 +152,7 @@ export class ComfyPoolInstance {
               gpuEv.utlization = gpu.gpu_utilization
               gpus.push(gpuEv)
             })
-            monitorEv.gpu.add(gpus)
+            monitorEv.gpus.add(gpus)
             client.monitorEvents.add(monitorEv)
             await em.persist(monitorEv).flush()
           }
