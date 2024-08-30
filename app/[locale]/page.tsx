@@ -1,28 +1,10 @@
 'use client'
 
-import { trpc } from '@/utils/trpc'
-import { useEffect, useState } from 'react'
+import { redirect } from '@/routing'
 
+/**
+ * Current redirect to /auth/basic
+ */
 export default function Home() {
-  return (
-    <main className='flex h-screen w-full flex-col items-center justify-center p-6 gap-2'>
-      <div className='w-full flex flex-row h-full shadow rounded-2xl border divide-x'>
-        <div className='w-full h-full p-4'>
-          <span className='font-bold text-zinc-700'>WORKFLOW MANAGEMENT</span>
-        </div>
-        <div className='w-1/4 h-full p-4 flex flex-col gap-2'>
-          <span className='font-bold text-zinc-700'>NODE MANAGEMENT</span>
-          <div className='flex-auto overflow-auto flex flex-col gap-1'>
-            {/* {data?.map((node) => {
-              return (
-                <div key={node} className='w-full border p-1 rounded-lg'>
-                  <span className='font-bold text-sm text-zinc-600'>{getNodeName(node.host)}</span>
-                </div>
-              )
-            })} */}
-          </div>
-        </div>
-      </div>
-    </main>
-  )
+  redirect('/auth/basic')
 }

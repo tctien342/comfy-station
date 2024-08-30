@@ -1,7 +1,12 @@
 {
   "app": {
     "name": "COMFY STATION",
-    "description": "Ứng dụng mã nguồn mở giúp quản lý các máy chạy ComfyUI của bạn"
+    "description": "Ứng dụng mã nguồn mở giúp quản lý các máy chạy ComfyUI của bạn",
+    "version": "Phiên bản"
+  },
+  "lang": {
+    "en": "English",
+    "vi": "Tiếng Việt"
   },
   "auth": {
     "tabs": {

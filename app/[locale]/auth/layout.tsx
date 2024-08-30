@@ -5,13 +5,15 @@ import AuthBackground from '@/assets/auth-background.jpg'
 import Image from 'next/image'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SimpleTranslation } from '@/components/SimpleTranslation'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useRouter } from '@/routing'
+import PackageInfo from '@/package.json'
 
 const Layout: IComponent = ({ children }) => {
   const route = useRouter()
   const t = useTranslations()
   const pathName = usePathname()
+  const locale = useLocale()
   const currentTab = pathName.includes('token') ? 'token' : 'account'
 
   return (
@@ -37,8 +39,20 @@ const Layout: IComponent = ({ children }) => {
         </SimpleTranslation>
       </div>
       <div className='absolute bottom-1 right-2 text-sm font-normal text-secondary-foreground opacity-50'>
-        Ver 1.0.0
+        {t('app.version')} {PackageInfo.version}
       </div>
+      <Card className='fixed top-4 right-4'>
+        <Tabs value={locale}>
+          <TabsList className='grid w-full grid-cols-2'>
+            <TabsTrigger onClick={() => route.push(pathName, { locale: 'en' })} value='en'>
+              {t('lang.en')}
+            </TabsTrigger>
+            <TabsTrigger onClick={() => route.push(pathName, { locale: 'vi' })} value='vi'>
+              {t('lang.vi')}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </Card>
     </Card>
   )
 }

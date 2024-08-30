@@ -1,7 +1,12 @@
 {
   "app": {
     "name": "COMFY STATION",
-    "description": "A opensource for image generative using multiple of ComfyUI instances"
+    "description": "A opensource for image generative using multiple of ComfyUI instances",
+    "version": "Version"
+  },
+  "lang": {
+    "en": "English",
+    "vi": "Tiếng Việt"
   },
   "auth": {
     "tabs": {
