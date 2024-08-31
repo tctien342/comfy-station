@@ -6,6 +6,8 @@ import TRPCLayout from './TRPCLayout'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
+import { SessionLayout } from './SessionLayout'
+import { AuthLayout } from './AuthLayout'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -16,25 +18,30 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-  params: { locale }
+  params: { session, locale }
 }: Readonly<{
   children: React.ReactNode
-  params: { locale: string }
+  params: { locale: string; session: any }
 }>) {
   const messages = await getMessages()
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className='dark'>
       <body className={inter.className}>
-        <NextIntlClientProvider messages={messages}>
-          <BackgroundSVG
-            preserveAspectRatio='none'
-            className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
-          />
-          <TRPCLayout>
-            <div className='w-screen h-screen p-4 flex justify-center items-center'>{children}</div>
-          </TRPCLayout>
-        </NextIntlClientProvider>
+        <SessionLayout session={session}>
+          <NextIntlClientProvider messages={messages}>
+            <BackgroundSVG
+              preserveAspectRatio='none'
+              className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
+            />
+
+            <TRPCLayout>
+              <div className='w-screen h-screen p-4 flex justify-center items-center'>
+                <AuthLayout>{children}</AuthLayout>
+              </div>
+            </TRPCLayout>
+          </NextIntlClientProvider>
+        </SessionLayout>
       </body>
     </html>
   )

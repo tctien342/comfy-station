@@ -19,7 +19,16 @@
       "usernamePlaceholder": "Nhập tên tài khoản",
       "passwordPlaceholder": "Nhập mật khẩu",
       "submit": "Đăng nhập",
-      "forgotPassword": "Quên mật khẩu? Nhấn vào đây"
+      "forgotPassword": "Quên mật khẩu? Nhấn vào đây",
+      "zod": {
+        "username": {
+          "min": "Tài khoản phải có ít nhất 2 ký tự."
+        },
+        "password": {
+          "min": "Mật khẩu phải có ít nhất 6 ký tự."
+        }
+      },
+      "invalidCredentials": "Tài khoản hoặc mật khẩu không đúng."
     },
     "token": {
       "token": "Token",

@@ -19,7 +19,16 @@
       "usernamePlaceholder": "Enter your username",
       "passwordPlaceholder": "Enter your password",
       "submit": "Login",
-      "forgotPassword": "Forgot your password? Click here"
+      "forgotPassword": "Forgot your password? Click here",
+      "zod": {
+        "username": {
+          "min": "Username must be at least 2 characters."
+        },
+        "password": {
+          "min": "Password must be at least 6 characters."
+        }
+      },
+      "invalidCredentials": "Username or password is incorrect."
     },
     "token": {
       "token": "Token",
