@@ -43,3 +43,5 @@ temp
 
 playground
 .env
+
+public/attachments/*

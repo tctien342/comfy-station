@@ -15,7 +15,7 @@ const handler = NextAuth({
         if (credentials) {
           const orm = await MikroORMInstance.getInstance().getORM()
           const em = orm.em.fork()
-          const user = await em.findOne(User, { email: credentials.email }, { populate: ['password'] })
+          const user = await em.findOne(User, { email: credentials.email }, { populate: ['password', 'avatar'] })
 
           if (user && user.password === User.hashPassword(credentials.password)) {
             return { id: user.id, email: user.email }

@@ -36,7 +36,7 @@ export default async function RootLayout({
             />
 
             <TRPCLayout>
-              <div className='w-screen h-screen p-4 flex justify-center items-center'>
+              <div className='w-screen h-screen p-2 lg:p-4 flex justify-center items-center'>
                 <AuthLayout>{children}</AuthLayout>
               </div>
             </TRPCLayout>

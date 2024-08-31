@@ -1,3 +1,5 @@
+import AttachmentService from './services/attachment'
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     /**
@@ -9,5 +11,6 @@ export async function register() {
 
     await MikroORMInstance.getInstance().getORM()
     ComfyPoolInstance.getInstance()
+    AttachmentService.getInstance()
   }
 }

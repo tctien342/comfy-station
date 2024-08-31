@@ -1,19 +1,17 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { redirect } from '@/routing'
-import { signOut } from 'next-auth/react'
+import { AdminSideInfo } from './AdminSideInfo'
 
 /**
  * Current redirect to /auth/basic
  */
 export default function Home() {
-  const handlePressLogout = () => {
-    signOut()
-  }
   return (
-    <div>
-      <Button onClick={handlePressLogout}>Logout</Button>
-    </div>
+    <>
+      <div className='flex-auto h-full bg-background border rounded-lg'></div>
+      <div className='w-1/4 min-w-[260px] h-full bg-background border rounded-lg'>
+        <AdminSideInfo />
+      </div>
+    </>
   )
 }
