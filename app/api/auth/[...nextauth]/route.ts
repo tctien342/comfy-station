@@ -1,9 +1,9 @@
-import NextAuth from 'next-auth'
+import NextAuth, { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { User } from '@/entities/user'
 import { MikroORMInstance } from '@/services/mikro-orm'
 
-const handler = NextAuth({
+export const NextAuthOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -15,7 +15,7 @@ const handler = NextAuth({
         if (credentials) {
           const orm = await MikroORMInstance.getInstance().getORM()
           const em = orm.em.fork()
-          const user = await em.findOne(User, { email: credentials.email }, { populate: ['password', 'avatar'] })
+          const user = await em.findOne(User, { email: credentials.email }, { populate: ['password'] })
 
           if (user && user.password === User.hashPassword(credentials.password)) {
             return { id: user.id, email: user.email }
@@ -34,8 +34,19 @@ const handler = NextAuth({
         token.id = user.id
       }
       return token
+    },
+    async session({ session, token }) {
+      const orm = await MikroORMInstance.getInstance().getORM()
+      const em = orm.em.fork()
+      const user = await em.findOne(User, { email: session.user.email }, { populate: ['avatar'] })
+      if (user) {
+        session.user = user
+      }
+      return session
     }
   }
-})
+}
+
+const handler = NextAuth(NextAuthOptions)
 
 export { handler as GET, handler as POST }

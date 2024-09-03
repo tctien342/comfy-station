@@ -1,4 +1,4 @@
-import { createContext } from '@/server/context'
+import { createContextWs } from '@/server/context'
 import { appRouter } from '@/server/routers/_app'
 import { getWSConnectionHandler } from '@trpc/server/adapters/ws'
 
@@ -13,7 +13,7 @@ export function SOCKET(
   console.log('socket', 'A client connected!', { request: request.url })
   getWSConnectionHandler({
     router: appRouter,
-    createContext
+    createContext: createContextWs
   })(client, request)
 }
 

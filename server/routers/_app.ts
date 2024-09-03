@@ -1,8 +1,12 @@
 import { router } from '../trpc'
+import { attachmentRouter } from './attachment'
 import { helloRouter } from './hello'
+import { taskRouter } from './task'
 
 export const appRouter = router({
-  hello: helloRouter
+  hello: helloRouter,
+  task: taskRouter,
+  attachment: attachmentRouter
 })
 
 // Export only the type of a router!

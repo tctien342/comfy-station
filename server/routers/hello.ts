@@ -1,14 +1,14 @@
 import { z } from 'zod'
 import { router } from '../trpc'
 import { observable } from '@trpc/server/observable'
-import { publicProcedure } from '../procedure'
+import { privateProcedure } from '../procedure'
 import { ComfyPoolInstance } from '@/services/comfyui'
 import { ComfyApi, SystemStatsResponse, TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Client } from '@/entities/client'
 import { EAuthMode } from '@/entities/enum'
 
 export const helloRouter = router({
-  addServer: publicProcedure
+  addServer: privateProcedure
     .input(
       z.object({
         host: z.string(),
@@ -44,7 +44,7 @@ export const helloRouter = router({
         return false
       }
     }),
-  nodeUltilization: publicProcedure.subscription(({ ctx }) => {
+  nodeUltilization: privateProcedure.subscription(({ ctx }) => {
     const em = ctx.em
     const { pool } = ComfyPoolInstance.getInstance()
     return observable<
@@ -83,7 +83,7 @@ export const helloRouter = router({
       }
     })
   }),
-  nodeStatus: publicProcedure.subscription(({ ctx }) => {
+  nodeStatus: privateProcedure.subscription(({ ctx }) => {
     const { pool } = ComfyPoolInstance.getInstance()
     // return observable<{ uuid: string; status: Node['status'] }>((subscriber) => {
     //   const idleFn = async (
@@ -114,20 +114,20 @@ export const helloRouter = router({
     //   }
     // })
   }),
-  hello: publicProcedure
+  hello: privateProcedure
     .input(
       z.object({
         text: z.string()
       })
     )
     .query(async (opts) => {
-      const data = await opts.ctx.em.find(Node, {})
+      const data = await opts.ctx.em.find(Client, {})
       return {
         data,
         greeting: `hello ${opts.input.text}`
       }
     }),
-  helloWs: publicProcedure.subscription(() => {
+  helloWs: privateProcedure.subscription(() => {
     return observable<string>((subscriber) => {
       let i = 0
       const interval = setInterval(() => {
@@ -139,7 +139,7 @@ export const helloRouter = router({
       }
     })
   }),
-  list: publicProcedure.query(async ({ ctx }) => {
+  list: privateProcedure.query(async ({ ctx }) => {
     return ctx.em.find(Node, {})
   })
 })
