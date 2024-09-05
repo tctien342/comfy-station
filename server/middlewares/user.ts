@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { middleware } from '../trpc'
+import { EUserRole } from '@/entities/enum'
 
 export const authChecker = middleware(({ next, ctx }) => {
   const user = ctx.session
@@ -8,14 +9,17 @@ export const authChecker = middleware(({ next, ctx }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
 
-  console.log('USER LOGGER', user)
   return next()
 })
 
 export const adminChecker = middleware(({ next, ctx }) => {
   const user = ctx.session
 
-  if (!user?.user?.email?.includes('admin')) {
+  if (!user?.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
+  }
+
+  if (!user?.user?.role || user.user.role !== EUserRole.Admin) {
     throw new TRPCError({ code: 'FORBIDDEN' })
   }
 

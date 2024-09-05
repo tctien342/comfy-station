@@ -119,6 +119,7 @@ export enum EClientAction {
   UPDATE_COMFYUI,
   FIX_EXTENSION,
   FREE_MEMORY,
+  INTERRUPT, // Cancel current job
   UNKNOWN,
   RESTART
 }

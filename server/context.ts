@@ -1,4 +1,3 @@
-import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import type { CreateWSSContextFnOptions } from '@trpc/server/adapters/ws'
 import { MikroORMInstance } from '@/services/mikro-orm'
 import { getServerSession, Session } from 'next-auth'

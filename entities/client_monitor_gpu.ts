@@ -7,7 +7,10 @@ export class ClientMonitorGpu {
   monitorEvent: ClientMonitorEvent
 
   @PrimaryKey()
-  id: number
+  id!: number
+
+  @Property()
+  gpuIdx: number
 
   @Property({ nullable: true })
   utlization?: number
@@ -24,10 +27,10 @@ export class ClientMonitorGpu {
   @Property()
   createdAt = new Date();
 
-  [PrimaryKeyProp]?: ['monitorEvent', 'id'] // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyProp]?: ['monitorEvent', 'gpuIdx'] // this is needed for proper type checks in `FilterQuery`
 
   constructor(event: ClientMonitorEvent, gpuId: number, memoryUsage: number, memoryTotal: number) {
-    this.id = gpuId
+    this.gpuIdx = gpuId
     this.memoryUsage = memoryUsage
     this.memoryTotal = memoryTotal
     this.monitorEvent = event

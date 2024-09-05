@@ -1,16 +1,35 @@
+import { ClientInfoMonitoring } from '@/components/ClientInfoMonitoring'
+import { MiniBadge } from '@/components/MiniBadge'
 import { TaskBar } from '@/components/TaskBar'
+import { TaskBigStat } from '@/components/TaskBigStat'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { ETaskStatus } from '@/entities/enum'
 import { trpc } from '@/utils/trpc'
 import { BellIcon, ExitIcon } from '@radix-ui/react-icons'
 import { signOut, useSession } from 'next-auth/react'
+import { useState } from 'react'
 
 export const AdminSideInfo: IComponent = () => {
   const session = useSession()
+  const [taskStats, setTaskStats] = useState<{ pending: number; executed: number }>()
+  const [clientStats, setClientStats] = useState<{ online: number; offline: number; error: number }>()
+
   const { data: tasks, isLoading: isTaskLoading } = trpc.task.lastTasks.useQuery({ limit: 30 })
+  const { data: clients } = trpc.client.list.useQuery()
   const { data: avatarInfo } = trpc.attachment.get.useQuery({ id: session.data?.user?.avatar?.id || '' })
+
+  trpc.client.clientOverviewStat.useSubscription(undefined, {
+    onData: (data) => {
+      setClientStats(data)
+    }
+  })
+
+  trpc.task.countStats.useSubscription(undefined, {
+    onData: (data) => {
+      setTaskStats(data)
+    }
+  })
 
   const handlePressLogout = () => {
     signOut()
@@ -27,7 +46,7 @@ export const AdminSideInfo: IComponent = () => {
             </Avatar>
             <span className='px-2'>{session.data?.user?.email}</span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent align='start' sideOffset={10}>
             <DropdownMenuItem onClick={handlePressLogout}>
               <span className='min-w-[100px]'>Logout</span>
               <ExitIcon className='ml-2' width={16} height={16} />
@@ -39,9 +58,31 @@ export const AdminSideInfo: IComponent = () => {
         </Button>
       </div>
       <div className='flex w-full flex-col gap-2 p-4'>
+        <div className='flex justify-around gap-2'>
+          <TaskBigStat
+            loading={!taskStats}
+            title='TASK PENDING'
+            count={taskStats?.pending || 0}
+            activeNumber={{
+              className: 'text-orange-500'
+            }}
+          />
+          <TaskBigStat loading={!taskStats} title='TASK EXECUTED' count={taskStats?.executed || 0} />
+        </div>
         <TaskBar loading={isTaskLoading} tasks={tasks || []} />
       </div>
-      <div className='flex-auto w-full shadow-inner border bg-secondary'></div>
+      <div className='flex-auto w-full shadow-inner border-t border-b flex flex-col divide-y-[1px]'>
+        {clients?.map((client) => <ClientInfoMonitoring key={client.id} client={client} />)}
+      </div>
+      <div className='flex gap-2 p-2'>
+        {!!clientStats && (
+          <>
+            <MiniBadge title='Online' dotClassName='bg-green-500' count={clientStats.online} />
+            <MiniBadge title='Offline' dotClassName='bg-zinc-600' count={clientStats.offline} />
+            <MiniBadge title='Error' dotClassName='bg-red-500' count={clientStats.error} />
+          </>
+        )}
+      </div>
     </div>
   )
 }

@@ -130,32 +130,30 @@ export class ComfyPoolInstance {
             this.lock.monitoring = false
           }, 5000)
         }
-        if (ev.detail.type === 'websocket') {
-          const data = ev.detail.data
-          const clientId = ev.detail.client.id
-          const em = await MikroORMInstance.getInstance().getEM()
-          const client = await em.findOne(Client, { id: clientId })
-          if (client) {
-            const gpus: ClientMonitorGpu[] = []
-            const monitorEv = new ClientMonitorEvent(client)
-            monitorEv.cpuUsage = data.cpu_utilization
-            monitorEv.memoryUsage = data.ram_used / 1024
-            monitorEv.memoryTotal = Math.round((data.ram_used / 1024 / data.ram_used_percent) * 100)
-            data.gpus.forEach((gpu, idx) => {
-              const gpuEv = new ClientMonitorGpu(
-                monitorEv,
-                idx,
-                Math.round(gpu.vram_used / 1024),
-                Math.round(gpu.vram_total)
-              )
-              gpuEv.temperature = gpu.gpu_temperature
-              gpuEv.utlization = gpu.gpu_utilization
-              gpus.push(gpuEv)
-            })
-            monitorEv.gpus.add(gpus)
-            client.monitorEvents.add(monitorEv)
-            await em.persist(monitorEv).flush()
-          }
+        const data = ev.detail.data
+        const clientId = ev.detail.client.id
+        const em = await MikroORMInstance.getInstance().getEM()
+        const client = await em.findOne(Client, { id: clientId })
+        if (client) {
+          const gpus: ClientMonitorGpu[] = []
+          const monitorEv = new ClientMonitorEvent(client)
+          monitorEv.cpuUsage = data.cpu_utilization
+          monitorEv.memoryUsage = data.ram_used / 1024
+          monitorEv.memoryTotal = Math.round((data.ram_used / 1024 / data.ram_used_percent) * 100)
+          data.gpus.forEach((gpu, idx) => {
+            const gpuEv = new ClientMonitorGpu(
+              monitorEv,
+              idx,
+              Math.round(gpu.vram_used / 1024),
+              Math.round(gpu.vram_total)
+            )
+            gpuEv.temperature = gpu.gpu_temperature
+            gpuEv.utlization = gpu.gpu_utilization
+            gpus.push(gpuEv)
+          })
+          monitorEv.gpus.add(gpus)
+          client.monitorEvents.add(monitorEv)
+          await em.persist(monitorEv).flush()
         }
       })
       .on('execution_error', (error) => {})

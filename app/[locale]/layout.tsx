@@ -26,7 +26,7 @@ export default async function RootLayout({
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className='dark'>
+    <html lang={locale} className=''>
       <body className={inter.className}>
         <SessionLayout session={session}>
           <NextIntlClientProvider messages={messages}>

@@ -8,12 +8,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
 interface ITaskBarProps {
+  className?: string
   tasks: WorkflowTask[]
   total?: number
   loading?: boolean
 }
 
-export const TaskBar: IComponent<ITaskBarProps> = ({ tasks, total = 30, loading = false }) => {
+export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 30, loading = false }) => {
   const animtionRef = useRef(0)
   const lastItem = tasks[tasks.length - 1]
 
@@ -28,6 +29,7 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ tasks, total = 30, loading 
         if (loading) {
           return (
             <Skeleton
+              key={i}
               style={{
                 animationDelay: `${animtionRef.current * 10}ms`
               }}
@@ -44,7 +46,7 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ tasks, total = 30, loading 
                   animationDelay: `${animtionRef.current * 10}ms`
                 }}
                 className={cn(
-                  'aspect-[1/5] w-full rounded animate-fade animate-once animate-ease-in-out duration-500',
+                  'aspect-[1/5] flex-1 rounded group-hover:scale-90 hover:!scale-100 animate-fade animate-once animate-ease-in-out duration-500',
                   {
                     'bg-zinc-300/50': !task,
                     'bg-zinc-300/80': task?.status === ETaskStatus.Pending,
@@ -71,15 +73,13 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ tasks, total = 30, loading 
   }, [total, tasks])
 
   return (
-    <div className='flex flex-col w-full gap-2'>
-      <span className='text-xs font-bold text-secondary-foreground'>LAST 30 TASK</span>
-      <div className='flex gap-1 flex-row-reverse'>{renderTick}</div>
+    <div className={cn('flex flex-col w-full gap-2', className)}>
+      <span className='text-xs font-bold text-secondary-foreground'>LAST {total} TASK</span>
+      <div className='flex gap-1 flex-row-reverse group'>{renderTick}</div>
       {!!lastItem && (
         <span className='ml-auto text-xs font-light'>Last executed at {lastItem.updateAt.toLocaleString()}</span>
       )}
-      {!lastItem && (
-        <span className='ml-auto text-xs font-light opacity-50'>Nothing executed yet</span>
-      )}
+      {!lastItem && <span className='ml-auto text-xs font-light opacity-50'>Nothing executed yet</span>}
     </div>
   )
 }
