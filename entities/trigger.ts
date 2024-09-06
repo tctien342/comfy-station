@@ -6,12 +6,12 @@ import type { Token } from './token'
 import type { JobItem } from './job_item'
 import type { ClientActionEvent } from './client_action_event'
 
-@Entity({ tableName: 'trigger' })
+@Entity()
 export class Trigger {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
-  @Property({ index: true })
+  @Property({ type: 'varchar', index: true })
   type: ETriggerBy
 
   @ManyToOne({ entity: 'User', inversedBy: 'triggers', nullable: true, index: true })
@@ -23,10 +23,10 @@ export class Trigger {
   @ManyToOne({ entity: 'JobItem', inversedBy: 'triggers', nullable: true, index: true })
   jobTask?: JobItem
 
-  @OneToOne('ClientActionEvent', { nullable: true, mappedBy: 'trigger' })
+  @OneToOne({ entity: 'ClientActionEvent', nullable: true, mappedBy: 'trigger' })
   clientActionEvent?: ClientActionEvent
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(type: ETriggerBy) {

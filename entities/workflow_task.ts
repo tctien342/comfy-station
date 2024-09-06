@@ -7,9 +7,9 @@ import type { WorkflowTaskEvent } from './workflow_task_event'
 import type { Attachment } from './attachment'
 import type { Trigger } from './trigger'
 
-@Entity({ tableName: 'workflow_task' })
+@Entity()
 export class WorkflowTask {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'string' })
   id: string
 
   @ManyToOne('Workflow', { index: true })
@@ -18,28 +18,28 @@ export class WorkflowTask {
   @ManyToOne('Client', { nullable: true, index: true })
   client?: Client
 
-  @Property({ default: ETaskStatus.Queuing, index: true })
+  @Property({ type: 'varchar', default: ETaskStatus.Queuing, index: true })
   status!: ETaskStatus
 
-  @Property({ default: 1 })
+  @Property({ type: 'int', default: 1 })
   repeatCount!: number
 
-  @Property({ default: 1 })
+  @Property({ type: 'float', default: 1 })
   computedWeight!: number // More weight, lower priority
 
   @Property({ type: 'json', nullable: true })
   inputValues?: { [key: string]: string | number }
 
-  @Property({ nullable: true })
+  @Property({ type: 'int', nullable: true })
   executionTime?: number
 
   @OneToOne('Trigger')
   trigger: Trigger
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   @OneToMany({
@@ -54,7 +54,7 @@ export class WorkflowTask {
   })
   subTasks = new Collection<WorkflowTask>(this)
 
-  @ManyToOne({ nullable: true })
+  @ManyToOne({ type: 'WorkflowTask', nullable: true })
   parent?: WorkflowTask
 
   @OneToMany({

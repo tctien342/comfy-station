@@ -8,33 +8,33 @@ import type { ClientActionEvent } from './client_action_event'
 import type { Resource } from './client_resource'
 import type { WorkflowTask } from './workflow_task'
 
-@Entity({ tableName: 'client' })
+@Entity()
 export class Client {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   name?: string
 
-  @Property({ unique: true })
+  @Property({ type: 'string', unique: true })
   host: string
 
-  @Property({ default: EAuthMode.None })
+  @Property({ type: 'varchar', default: EAuthMode.None })
   auth!: EAuthMode
 
   @Property({ type: ArrayType, default: [] })
   flags?: EClientFlags[] = []
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   username?: string
 
-  @Property({ nullable: true, lazy: true })
+  @Property({ type: 'string', nullable: true, lazy: true })
   password?: string
 
-  @Property({ nullable: true })
+  @Property({ type: 'timestamp', nullable: true })
   createdAt? = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt? = new Date()
 
   @OneToMany({

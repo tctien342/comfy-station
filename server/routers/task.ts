@@ -38,10 +38,7 @@ export const taskRouter = router({
     }),
   countStats: privateProcedure.subscription(async ({ ctx }) => {
     if (!ctx.session?.user) {
-      return {
-        pending: 0,
-        executed: 0
-      }
+      throw new Error('Unauthorized')
     }
     let trigger: any = {}
     if (ctx.session.user.role !== EUserRole.Admin) {

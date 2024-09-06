@@ -5,7 +5,7 @@ import { LoadingSVG } from './svg/LoadingSVG'
 
 type LoadableButton = ComponentProps<typeof Button> & { loading?: boolean }
 
-export const LoadableButton: IComponent<LoadableButton> = forwardRef((props, ref) => {
+export const LoadableButton: React.FC<LoadableButton> = forwardRef(function LoadableButton(props, ref) {
   const btn_props = {
     ...props,
     loading: undefined,

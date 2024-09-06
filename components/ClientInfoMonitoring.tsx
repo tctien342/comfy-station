@@ -60,7 +60,7 @@ export const ClientInfoMonitoring: IComponent<{
 
   useEffect(() => {
     reloadTask()
-  }, [status])
+  }, [reloadTask, status])
 
   const renderStats = useMemo(() => {
     if (status === EClientStatus.Offline)

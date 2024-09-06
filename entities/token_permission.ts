@@ -2,7 +2,7 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import type { Workflow } from './workflow'
 import type { Token } from './token'
 
-@Entity({ tableName: 'token_permission' })
+@Entity()
 export class TokenPermission {
   @ManyToOne({ entity: 'Token', inversedBy: 'grantedWorkflows', primary: true, index: true })
   token: Token
@@ -10,10 +10,10 @@ export class TokenPermission {
   @ManyToOne({ entity: 'Workflow', inversedBy: 'grantedTokens', primary: true, index: true })
   workflow: Workflow
 
-  @Property({ default: 0 })
+  @Property({ type: 'float', default: 0 })
   weightOffset!: number
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(workflow: Workflow, token: Token) {

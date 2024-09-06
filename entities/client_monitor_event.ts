@@ -2,10 +2,10 @@ import { Cascade, Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, P
 import type { Client } from './client'
 import type { ClientMonitorGpu } from './client_monitor_gpu'
 
-@Entity({ tableName: 'client_monitor_event' })
+@Entity()
 @Index({ properties: ['client', 'createdAt'] })
 export class ClientMonitorEvent {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
   @ManyToOne({
@@ -14,19 +14,19 @@ export class ClientMonitorEvent {
   })
   client!: Client
 
-  @Property({ nullable: true })
+  @Property({ type: 'float', nullable: true })
   cpuUsage?: number
 
-  @Property({ nullable: true })
+  @Property({ type: 'double', nullable: true })
   memoryUsage?: number
 
-  @Property({ nullable: true })
+  @Property({ type: 'double', nullable: true })
   memoryTotal?: number
 
   @OneToMany('ClientMonitorGpu', 'monitorEvent', { cascade: [Cascade.ALL] })
   gpus = new Collection<ClientMonitorGpu>(this)
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(node: Client) {

@@ -18,35 +18,33 @@ export interface IMaper {
   description: string
 }
 
-@Entity({
-  tableName: 'user'
-})
+@Entity()
 export class User {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property({ unique: true })
+  @Property({ type: 'string', unique: true })
   email: string
 
-  @Property({ lazy: true })
+  @Property({ type: 'string', lazy: true })
   password: string
 
   @OneToOne({ entity: 'Attachment', inversedBy: 'user', nullable: true })
   avatar?: Attachment
 
-  @Property({ default: EUserRole.User, index: true })
+  @Property({ type: 'int', default: EUserRole.User, index: true })
   role!: EUserRole
 
-  @Property({ default: -1 })
+  @Property({ type: 'float', default: -1 })
   balance!: number
 
-  @Property({ default: 0 })
+  @Property({ type: 'float', default: 0 })
   weightOffset!: number
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   @OneToMany({

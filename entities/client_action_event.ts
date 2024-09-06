@@ -3,9 +3,9 @@ import { EClientAction } from './enum'
 import type { Client } from './client'
 import type { Trigger } from './trigger'
 
-@Entity({ tableName: 'client_action_event' })
+@Entity()
 export class ClientActionEvent {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
   @ManyToOne({
@@ -14,16 +14,16 @@ export class ClientActionEvent {
   })
   client: Client
 
-  @Property({ default: EClientAction.UNKNOWN })
+  @Property({ type: 'int', default: EClientAction.UNKNOWN })
   action?: EClientAction = EClientAction.UNKNOWN
 
   @Property({ nullable: true, type: 'json' })
   data?: object
 
-  @OneToOne('Trigger', { inversedBy: 'clientActionEvent' })
+  @OneToOne({ entity: 'Trigger', type: 'Trigger', inversedBy: 'clientActionEvent' })
   trigger: Trigger
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(client: Client, trigger: Trigger, action?: EClientAction) {

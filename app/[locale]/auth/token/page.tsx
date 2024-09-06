@@ -5,10 +5,11 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { t } from '@mikro-orm/core'
 import { EnterIcon, ExternalLinkIcon } from '@radix-ui/react-icons'
+import { NextPage } from 'next'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 
-const Page: IComponent = () => {
+const Page: NextPage = () => {
   const t = useTranslations('auth.token')
   const form = useForm<{
     token: string

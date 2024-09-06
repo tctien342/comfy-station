@@ -19,6 +19,10 @@ const nextConfig = {
     config.resolve.fallback = { fs: false, net: false, tls: false, crypto: false }
     return config
   },
-  experimental: { instrumentationHook: true }
+  experimental: {
+    instrumentationHook: true,
+    serverMinification: false,
+    forceSwcTransforms: process.env.NODE_ENV !== 'production'
+  }
 }
 module.exports = million.next(withNextIntl(nextConfig))

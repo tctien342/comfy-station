@@ -1,7 +1,6 @@
 import './globals.scss'
 
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import TRPCLayout from './TRPCLayout'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
@@ -9,8 +8,6 @@ import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
 import { SessionLayout } from './SessionLayout'
 import { AuthLayout } from './AuthLayout'
 import { ThemeLayout } from './ThemeLayout'
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -29,7 +26,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} className=''>
       <ThemeLayout>
-        <body className={inter.className}>
+        <body>
           <SessionLayout session={session}>
             <NextIntlClientProvider messages={messages}>
               <BackgroundSVG

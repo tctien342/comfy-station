@@ -1,6 +1,9 @@
+import 'server-only'
+
 import { createContextWs } from '@/server/context'
 import { appRouter } from '@/server/routers/_app'
 import { getWSConnectionHandler } from '@trpc/server/adapters/ws'
+import { NextRequest, NextResponse } from 'next/server'
 
 export function SOCKET(client: import('ws').WebSocket, request: import('http').IncomingMessage) {
   if (request.url && !request.url?.startsWith('/api/ws')) {
@@ -16,8 +19,6 @@ export function SOCKET(client: import('ws').WebSocket, request: import('http').I
 /**
  * Fake GET handler for avoid NextJS error msg
  */
-export const GET = async (req: import('http').IncomingMessage, res: import('http').ServerResponse) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' })
-  res.write('Hello, World!')
-  res.end()
+export const GET = async (req: NextRequest, res: import('http').ServerResponse) => {
+  return NextResponse.json('Hello World')
 }

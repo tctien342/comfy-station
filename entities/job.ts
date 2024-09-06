@@ -3,27 +3,27 @@ import type { User } from './user'
 import { v4 } from 'uuid'
 import type { JobItem } from './job_item'
 
-@Entity({ tableName: 'job' })
+@Entity()
 export class Job {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
   @ManyToOne({ entity: 'User', inversedBy: 'jobs', index: true })
   owner: User
 
-  @Property()
+  @Property({ type: 'string' })
   cron: string
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   note?: string
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
-  @Property({ nullable: true })
+  @Property({ type: 'timestamp', nullable: true })
   lastRunAt?: Date
 
   @OneToMany({

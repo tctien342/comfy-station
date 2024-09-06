@@ -5,7 +5,7 @@ import { createTRPCNext } from '@trpc/next'
 import { ssrPrepass } from '@trpc/next/ssrPrepass'
 import type { AppRouter } from '@/server/routers/_app'
 
-const wsClient = createWSClient({
+export const wsClient = createWSClient({
   url: 'ws://localhost:3000/api/ws'
 })
 

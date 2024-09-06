@@ -10,9 +10,9 @@ export interface IEditAction {
   to: string | number | null
 }
 
-@Entity({ tableName: 'workflow_edit_event' })
+@Entity()
 export class WorkflowEditEvent {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
   @ManyToOne({ entity: 'Workflow', inversedBy: 'editedActions', index: true })
@@ -21,13 +21,13 @@ export class WorkflowEditEvent {
   @ManyToOne({ entity: 'User', inversedBy: 'editWorkflowActions', index: true })
   user: User
 
-  @Property({ default: EWorkflowEditType.Create, index: true })
+  @Property({ type: 'varchar', default: EWorkflowEditType.Create, index: true })
   type!: EWorkflowEditType
 
   @Property({ type: 'json', nullable: true })
   info?: { [key: string]: IEditAction }
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(workflow: Workflow, user: User) {

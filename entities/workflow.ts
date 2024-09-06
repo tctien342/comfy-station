@@ -59,20 +59,18 @@ export interface IMapperOutput extends IMaperBase {
   joinArray?: boolean
 }
 
-@Entity({
-  tableName: 'workflow'
-})
+@Entity()
 export class Workflow {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   name?: string
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description?: string
 
-  @Property()
+  @Property({ type: 'string' })
   rawWorkflow: string
 
   @Property({ type: 'json', nullable: true })
@@ -81,13 +79,13 @@ export class Workflow {
   @Property({ type: 'json', nullable: true })
   mapOutput?: { [key: string]: IMapperOutput }
 
-  @Property({ default: 0 })
+  @Property({ type: 'float', default: 0 })
   cost!: number // For estimating the cost of running the workflow and calculate new balance of user
 
-  @Property({ default: EWorkflowActiveStatus.Activated, index: true })
+  @Property({ type: 'varchar', default: EWorkflowActiveStatus.Activated, index: true })
   status!: EWorkflowActiveStatus
 
-  @Property({ default: 0 })
+  @Property({ type: 'float', default: 0 })
   baseWeight!: number // Weight of this workflow, more weight means lower priority
 
   @ManyToOne({ entity: 'User', inversedBy: 'workflows', index: true })
@@ -117,10 +115,10 @@ export class Workflow {
   })
   tasks = new Collection<WorkflowTask>(this)
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   constructor(author: User, rawWorkflow: string) {

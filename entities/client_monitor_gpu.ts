@@ -1,30 +1,30 @@
 import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core'
 import type { ClientMonitorEvent } from './client_monitor_event'
 
-@Entity({ tableName: 'client_monitor_gpu' })
+@Entity()
 export class ClientMonitorGpu {
   @ManyToOne('ClientMonitorEvent', 'gpus')
   monitorEvent: ClientMonitorEvent
 
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
-  @Property()
+  @Property({ type: 'int' })
   gpuIdx: number
 
-  @Property({ nullable: true })
+  @Property({ type: 'float', nullable: true })
   utlization?: number
 
-  @Property({ nullable: true })
+  @Property({ type: 'float', nullable: true })
   temperature?: number
 
-  @Property()
+  @Property({ type: 'double' })
   memoryUsage: number
 
-  @Property()
+  @Property({ type: 'double' })
   memoryTotal: number
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date();
 
   [PrimaryKeyProp]?: ['monitorEvent', 'gpuIdx'] // this is needed for proper type checks in `FilterQuery`

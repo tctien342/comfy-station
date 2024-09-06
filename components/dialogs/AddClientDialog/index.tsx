@@ -43,7 +43,7 @@ export const AddClientDialog: IComponent = () => {
           <DialogTitle className='text-base font-bold'>ADD NEW WORKER NODE</DialogTitle>
         </DialogHeader>
         <AddClientDialogContext.Provider value={{ currentStep, clientInfo, setClientInfo }}>
-          <div className='w-full h-full border rounded-lg bg-background shadow-inner flex items-center justify-center'>
+          <div className='w-full h-full border rounded-lg bg-secondary/20 shadow-inner flex items-center justify-center'>
             <SimpleTransitionLayout deps={[currentStep]}>
               {currentStep === EImportStep.INPUT_CLIENT_INFO && <InputClientInfoStep />}
             </SimpleTransitionLayout>

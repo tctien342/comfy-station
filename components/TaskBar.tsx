@@ -70,7 +70,7 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 3
           </Tooltip>
         )
       })
-  }, [total, tasks])
+  }, [total, tasks, loading])
 
   return (
     <div className={cn('flex flex-col w-full gap-2', className)}>

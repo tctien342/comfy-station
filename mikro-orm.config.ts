@@ -1,9 +1,8 @@
-import { defineConfig } from '@mikro-orm/better-sqlite'
+import { defineConfig, GeneratedCacheAdapter, Options } from '@mikro-orm/better-sqlite'
 import { Client } from './entities/client'
 import { ClientStatusEvent } from './entities/client_status_event'
 import { ClientMonitorEvent } from './entities/client_monitor_event'
 import { ClientMonitorGpu } from './entities/client_monitor_gpu'
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { TokenPermission } from './entities/token_permission'
 import { Token } from './entities/token'
 import { User } from './entities/user'
@@ -23,6 +22,7 @@ import { Trigger } from './entities/trigger'
 
 export default defineConfig({
   entities: [
+    Trigger,
     ClientActionEvent,
     ClientMonitorGpu,
     ClientMonitorEvent,
@@ -34,7 +34,6 @@ export default defineConfig({
     JobItem,
     User,
     UserNotification,
-    Trigger,
     Token,
     TokenShared,
     TokenPermission,
@@ -45,5 +44,6 @@ export default defineConfig({
     Attachment
   ],
   dbName: 'comfyui.manager.db',
-  metadataProvider: TsMorphMetadataProvider
+  debug: process.env.NODE_ENV === 'development',
+  discovery: { disableDynamicFileAccess: false }
 })

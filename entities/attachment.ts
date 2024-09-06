@@ -6,18 +6,18 @@ import type { Workflow } from './workflow'
 import { EAttachmentStatus, EStorageType } from './enum'
 import type { User } from './user'
 
-@Entity({ tableName: 'attachment' })
+@Entity()
 export class Attachment {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property()
+  @Property({ type: 'string' })
   fileName: string
 
-  @Property({ default: EAttachmentStatus.PENDING, index: true })
+  @Property({ type: 'varchar', default: EAttachmentStatus.PENDING, index: true })
   status!: EAttachmentStatus
 
-  @Property({ default: EStorageType.LOCAL })
+  @Property({ type: 'varchar', default: EStorageType.LOCAL })
   storageType!: EStorageType
 
   @ManyToOne('WorkflowTaskEvent', { nullable: true })
@@ -32,10 +32,10 @@ export class Attachment {
   @OneToOne({ entity: 'User', mappedBy: 'avatar', nullable: true })
   user?: User
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   constructor(fileName: string) {

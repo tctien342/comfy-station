@@ -9,38 +9,36 @@ export interface INotificationData {
   value?: number | string // Maybe support for task progress...?
 }
 
-@Entity({
-  tableName: 'user_notification'
-})
+@Entity()
 export class UserNotification {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
-  @Property({ default: false, index: true })
+  @Property({ type: 'boolean', default: false, index: true })
   read!: boolean
 
   @ManyToOne({ entity: 'User', inversedBy: 'notifications', index: true })
   user: User
 
-  @Property()
+  @Property({ type: 'string' })
   title: string
 
-  @Property({ default: 1 })
+  @Property({ type: 'int', default: 1 })
   priority!: number
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description?: string // Supports markdown
 
-  @Property({ default: ENotificationType.Info, index: true })
+  @Property({ type: 'varchar', default: ENotificationType.Info, index: true })
   type!: ENotificationType
 
   @Property({ type: 'json', nullable: true })
   target?: INotificationData // More info about the target
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(title: string, user: User) {

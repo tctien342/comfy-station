@@ -19,28 +19,28 @@ export type TStringInput = ['STRING', IInputStringConfig]
 export type TBoolInput = ['BOOLEAN', { default: boolean }]
 export type TNumberInput = ['INT' | 'FLOAT', IInputNumberConfig]
 
-@Entity({ tableName: 'client_extension' })
+@Entity()
 @Unique({ properties: ['pythonModule', 'name'] })
 export class Extension {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property()
+  @Property({ type: 'string' })
   name: string
 
-  @Property()
+  @Property({ type: 'string' })
   displayName: string
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description?: string
 
-  @Property({ index: true })
+  @Property({ type: 'string', index: true })
   pythonModule: string
 
-  @Property({ index: true })
+  @Property({ type: 'string', index: true })
   category: string
 
-  @Property({ default: false })
+  @Property({ type: 'boolean', default: false })
   outputNode!: boolean
 
   @Property({ type: 'json', nullable: true })
@@ -49,10 +49,10 @@ export class Extension {
   @Property({ type: 'json', nullable: true })
   outputConf?: { output: string; isList: boolean; name: string }[]
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   @ManyToMany('Client', 'extensions', { index: true })

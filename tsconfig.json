@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -25,7 +26,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "target": "ES2017"
+    "target": "es2017"
   },
   "include": [
     "next-env.d.ts",

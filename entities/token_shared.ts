@@ -2,7 +2,7 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import type { Token } from './token'
 import type { User } from './user'
 
-@Entity({ tableName: 'token_shared' })
+@Entity()
 export class TokenShared {
   @ManyToOne({ entity: 'Token', inversedBy: 'sharedUsers', primary: true, index: true })
   token: Token
@@ -10,7 +10,7 @@ export class TokenShared {
   @ManyToOne({ entity: 'User', inversedBy: 'sharedTokens', primary: true, index: true })
   user: User
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(token: Token, user: User) {

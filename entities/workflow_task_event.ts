@@ -12,15 +12,15 @@ export interface ITaskEventData {
   value: string | number | boolean
 }
 
-@Entity({ tableName: 'workflow_task_event' })
+@Entity()
 export class WorkflowTaskEvent {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
   @ManyToOne({ entity: 'WorkflowTask', inversedBy: 'events', index: true })
   task: WorkflowTask
 
-  @Property({ default: ETaskStatus.Queuing, index: true })
+  @Property({ type: 'varchar', default: ETaskStatus.Queuing, index: true })
   status!: ETaskStatus
 
   @Property({ type: 'string', nullable: true })
@@ -29,7 +29,7 @@ export class WorkflowTaskEvent {
   @Property({ type: 'json', nullable: true })
   data?: { [key: string]: ITaskEventData }
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   @OneToMany({

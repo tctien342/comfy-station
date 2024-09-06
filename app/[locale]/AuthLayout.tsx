@@ -20,6 +20,7 @@ export const AuthLayout: React.FC<PropsWithChildren> = ({ children }) => {
     if (session.status === 'unauthenticated' && !pathname.includes('/auth')) {
       router.replace('/auth/basic')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
 
   return (

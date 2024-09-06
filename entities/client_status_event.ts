@@ -2,24 +2,22 @@ import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import type { Client } from './client'
 import { EClientStatus } from './enum'
 
-@Entity({
-  tableName: 'client_status_event'
-})
+@Entity()
 @Index({ properties: ['client', 'createdAt'] })
 export class ClientStatusEvent {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'bigint' })
   id!: number
 
   @ManyToOne('Client', 'statusEvents')
   client!: Client
 
-  @Property({ default: EClientStatus.Offline })
+  @Property({ type: 'varchar', default: EClientStatus.Offline })
   status!: EClientStatus
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   message?: string
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
   constructor(client: Client, status: EClientStatus = EClientStatus.Offline) {

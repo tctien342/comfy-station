@@ -1,11 +1,9 @@
 import { router } from '../trpc'
 import { attachmentRouter } from './attachment'
 import { clientRouter } from './client'
-import { helloRouter } from './hello'
 import { taskRouter } from './task'
 
 export const appRouter = router({
-  hello: helloRouter,
   task: taskRouter,
   client: clientRouter,
   attachment: attachmentRouter

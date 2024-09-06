@@ -21,7 +21,7 @@ export const TaskBigStat: IComponent<{
       tmpMinCount = Math.floor(tmpMinCount / 10)
     }
     return output
-  }, [count])
+  }, [count, minDisplay])
 
   return (
     <div className='flex flex-col items-end'>

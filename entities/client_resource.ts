@@ -3,25 +3,25 @@ import { v4 } from 'uuid'
 import type { Client } from './client'
 import { EResourceType } from './enum'
 
-@Entity({ tableName: 'client_resource' })
+@Entity()
 @Unique({ properties: ['name', 'type'] })
 export class Resource {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property()
+  @Property({ type: 'string' })
   name: string
 
-  @Property({ index: true })
+  @Property({ type: 'varchar', index: true })
   type: EResourceType
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   displayName?: string
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   @ManyToMany('Client', 'resources', { index: true })

@@ -7,12 +7,12 @@ import type { TokenPermission } from './token_permission'
 import type { TokenShared } from './token_shared'
 import type { Trigger } from './trigger'
 
-@Entity({ tableName: 'token' })
+@Entity()
 export class Token {
-  @PrimaryKey({ type: 'uuid' })
+  @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   description?: string
 
   /**
@@ -20,34 +20,34 @@ export class Token {
    *
    * Only admin role can create master token.
    */
-  @Property({ default: false })
+  @Property({ type: 'boolean', default: false })
   isMaster!: boolean
 
   /**
    * Every workflow has a default token, which is used to execute the workflow.
    */
-  @Property({ default: false })
+  @Property({ type: 'boolean', default: false })
   isWorkflowDefault!: boolean
 
-  @Property({ default: ETokenType.Both, index: true })
+  @Property({ type: 'varchar', default: ETokenType.Both, index: true })
   type!: ETokenType
 
-  @Property({ default: -1 })
+  @Property({ type: 'float', default: -1 })
   balance!: number
 
-  @Property({ default: 0 })
+  @Property({ type: 'float', default: 0 })
   weightOffset!: number
 
   @ManyToOne('User', 'tokens')
   createdBy: User
 
-  @Property({ nullable: true })
+  @Property({ type: 'timestamp', nullable: true })
   expireAt?: Date
 
-  @Property()
+  @Property({ type: 'timestamp' })
   createdAt = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
   @OneToMany({

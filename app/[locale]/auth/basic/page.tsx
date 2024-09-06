@@ -12,8 +12,10 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from '@/routing'
 import { useState } from 'react'
 import { LoadableButton } from '@/components/LoadableButton'
+import { NextPage } from 'next'
+import { wsClient } from '@/utils/trpc'
 
-const Page: IComponent = () => {
+const Page: NextPage = () => {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const t = useTranslations('auth.basic')
@@ -45,6 +47,8 @@ const Page: IComponent = () => {
           form.setError('password', { type: 'manual', message: t('invalidCredentials') })
         }
         if (response.ok) {
+          // Reconnect to the websocket server to have the correct user session
+          wsClient.reconnect()
           router.replace('/main')
         }
       })

@@ -50,7 +50,7 @@ export const AdminSideInfo: IComponent = () => {
 
   useEffect(() => {
     reloadTasks()
-  }, [taskStats])
+  }, [reloadTasks, taskStats])
 
   return (
     <div className='w-full h-full flex flex-col items-start'>
