@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import AuthBackground from '@/assets/auth-background.jpg'
 import Image from 'next/image'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { SimpleTranslation } from '@/components/SimpleTranslation'
+import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useRouter } from '@/routing'
 import PackageInfo from '@/package.json'
@@ -34,9 +34,9 @@ const Layout: IComponent = ({ children }) => {
           <h1 className='text-xl font-semibold text-foreground'>{t('app.name')}</h1>
           <p className='text-sm font-normal text-muted-foreground'>{t('app.description')}</p>
         </div>
-        <SimpleTranslation deps={[currentTab]} className='w-full flex flex-col gap-4 min-h-[264px]'>
+        <SimpleTransitionLayout deps={[currentTab]} className='w-full flex flex-col gap-4 min-h-[264px]'>
           {children}
-        </SimpleTranslation>
+        </SimpleTransitionLayout>
       </div>
       <div className='absolute bottom-1 right-2 text-sm font-normal text-secondary-foreground opacity-50'>
         {t('app.version')} {PackageInfo.version}

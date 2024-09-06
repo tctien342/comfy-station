@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger
 } from './ui/dropdown-menu'
 import { LoadableButton } from './LoadableButton'
+import { OverflowText } from './OverflowText'
 
 export const ClientInfoMonitoring: IComponent<{
   client: Client
@@ -82,22 +83,20 @@ export const ClientInfoMonitoring: IComponent<{
           value={`${monitoring.ram_used_percent}%`}
         />
         {monitoring.gpus.map((gpu, idx) => {
-          return (
-            <>
-              <MonitoringStat
-                key={'GPU_UL' + idx}
-                icon={<CpuChipIcon width={12} height={12} />}
-                title={`GPU ${idx + 1}`}
-                value={`${gpu.gpu_utilization}%`}
-              />
-              <MonitoringStat
-                key={'GPU_RAM' + idx}
-                icon={<CircleStackIcon width={12} height={12} />}
-                title={`VRAM ${idx + 1}`}
-                value={`${Number(gpu.vram_used_percent).toFixed(2)}%`}
-              />
-            </>
-          )
+          return [
+            <MonitoringStat
+              key={'GPU_UL' + idx}
+              icon={<CpuChipIcon width={12} height={12} />}
+              title={`GPU ${idx + 1}`}
+              value={`${gpu.gpu_utilization}%`}
+            />,
+            <MonitoringStat
+              key={'GPU_RAM' + idx}
+              icon={<CircleStackIcon width={12} height={12} />}
+              title={`VRAM ${idx + 1}`}
+              value={`${Number(gpu.vram_used_percent).toFixed(2)}%`}
+            />
+          ]
         })}
       </>
     )
@@ -137,7 +136,7 @@ export const ClientInfoMonitoring: IComponent<{
             <div className='flex flex-col flex-auto'>
               <h1 className='uppercase text-sm font-bold'>{client.name || `NODE #${client.id.slice(0, 4)}`}</h1>
               <div className='text-xs relative h-4 w-full justify-center items-center'>
-                <span className='absolute truncate max-w-full'>{client.host}</span>
+                <OverflowText className='w-full absolute'>{client.host}</OverflowText>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@
 import { domAnimation, LazyMotion, m } from 'framer-motion'
 import { twMerge } from 'tailwind-merge'
 
-export const SimpleTranslation: IComponent<{ deps: string[]; className?: string }> = ({
+export const SimpleTransitionLayout: IComponent<{ deps: (string | number)[]; className?: string }> = ({
   deps,
   children,
   className

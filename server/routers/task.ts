@@ -2,9 +2,11 @@ import { z } from 'zod'
 import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
-import { ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
+import { EClientStatus, ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
 import { observable } from '@trpc/server/observable'
-import { ComfyPoolInstance } from '@/services/comfyui'
+import CachingService from '@/services/caching'
+
+const cacher = CachingService.getInstance()
 
 export const taskRouter = router({
   lastTasks: privateProcedure
@@ -42,7 +44,6 @@ export const taskRouter = router({
       }
     }
     let trigger: any = {}
-    const pool = ComfyPoolInstance.getInstance().pool
     if (ctx.session.user.role !== EUserRole.Admin) {
       trigger = {
         type: ETriggerBy.User,
@@ -77,19 +78,13 @@ export const taskRouter = router({
     }
 
     return observable<Awaited<ReturnType<typeof getStats>>>((subscriber) => {
-      const fn = async () => {
-        const data = await getStats()
-        subscriber.next(data)
-      }
-      fn()
-      pool.on('executing', fn)
-      pool.on('executed', fn)
-      pool.on('execution_error', fn)
-      return () => {
-        pool.off('executing', fn)
-        pool.off('executed', fn)
-        pool.off('execution_error', fn)
-      }
+      getStats().then((data) => subscriber.next(data))
+      const off = cacher.onCategory('CLIENT_STATUS', (ev) => {
+        if ([EClientStatus.Executing, EClientStatus.Online].includes(ev.detail.value)) {
+          getStats().then((data) => subscriber.next(data))
+        }
+      })
+      return off
     })
   })
 })

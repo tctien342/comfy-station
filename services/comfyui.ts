@@ -6,6 +6,9 @@ import { EAuthMode, EClientStatus } from '@/entities/enum'
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientMonitorEvent } from '@/entities/client_monitor_event'
 import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
+import CachingService from './caching'
+
+const cacher = CachingService.getInstance()
 
 export class ComfyPoolInstance {
   public pool: ComfyPool
@@ -62,6 +65,7 @@ export class ComfyPoolInstance {
         if (client) {
           const statusEvent = new ClientStatusEvent(client, EClientStatus.Executing)
           client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Executing)
           await em.persist(statusEvent).flush()
         }
       })
@@ -71,6 +75,7 @@ export class ComfyPoolInstance {
         if (client) {
           const statusEvent = new ClientStatusEvent(client, EClientStatus.Online)
           client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Online)
           await em.persist(statusEvent).flush()
         }
       })
@@ -83,6 +88,33 @@ export class ComfyPoolInstance {
         if (client) {
           const statusEvent = new ClientStatusEvent(client, EClientStatus.Online)
           client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Online)
+          await em.persist(statusEvent).flush()
+        }
+      })
+      .on('reconnected', async (ev) => {
+        this.logger.i('reconnected', `Client ${ev.detail.clientIdx} reconnected`, {
+          id: ev.detail.client.id
+        })
+        const em = await MikroORMInstance.getInstance().getEM()
+        const client = await em.findOne(Client, { id: ev.detail.client.id })
+        if (client) {
+          const statusEvent = new ClientStatusEvent(client, EClientStatus.Online)
+          client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Online)
+          await em.persist(statusEvent).flush()
+        }
+      })
+      .on('disconnected', async (ev) => {
+        this.logger.i('disconnected', `Client ${ev.detail.clientIdx} disconnected`, {
+          id: ev.detail.client.id
+        })
+        const em = await MikroORMInstance.getInstance().getEM()
+        const client = await em.findOne(Client, { id: ev.detail.client.id })
+        if (client) {
+          const statusEvent = new ClientStatusEvent(client, EClientStatus.Offline)
+          client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Offline)
           await em.persist(statusEvent).flush()
         }
       })
@@ -95,6 +127,7 @@ export class ComfyPoolInstance {
         if (client) {
           const statusEvent = new ClientStatusEvent(client, EClientStatus.Executing)
           client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Executing)
           await em.persist(statusEvent).flush()
         }
       })
@@ -107,6 +140,7 @@ export class ComfyPoolInstance {
         if (client) {
           const statusEvent = new ClientStatusEvent(client, EClientStatus.Online)
           client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Online)
           await em.persist(statusEvent).flush()
         }
       })
@@ -118,10 +152,15 @@ export class ComfyPoolInstance {
           const statusEvent = new ClientStatusEvent(client, EClientStatus.Error)
           statusEvent.message = 'Authentication error'
           client.statusEvents.add(statusEvent)
+          await cacher.set('CLIENT_STATUS', client.id, EClientStatus.Error)
           await em.persist(statusEvent).flush()
         }
       })
       .on('system_monitor', async (ev) => {
+        const data = ev.detail.data
+        const clientId = ev.detail.client.id
+        await cacher.set('SYSTEM_MONITOR', clientId, data)
+
         if (this.lock.monitoring) {
           return
         } else {
@@ -130,10 +169,9 @@ export class ComfyPoolInstance {
             this.lock.monitoring = false
           }, 5000)
         }
-        const data = ev.detail.data
-        const clientId = ev.detail.client.id
         const em = await MikroORMInstance.getInstance().getEM()
         const client = await em.findOne(Client, { id: clientId })
+
         if (client) {
           const gpus: ClientMonitorGpu[] = []
           const monitorEv = new ClientMonitorEvent(client)

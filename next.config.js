@@ -16,7 +16,7 @@ const nextConfig = {
     if (isServer && nextRuntime === 'nodejs') {
       config.plugins.push(new webpack.ContextReplacementPlugin(/ts-morph/))
     }
-    config.resolve.fallback = { fs: false }
+    config.resolve.fallback = { fs: false, net: false, tls: false, crypto: false }
     return config
   },
   experimental: { instrumentationHook: true }

@@ -8,6 +8,7 @@ import { getMessages } from 'next-intl/server'
 import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
 import { SessionLayout } from './SessionLayout'
 import { AuthLayout } from './AuthLayout'
+import { ThemeLayout } from './ThemeLayout'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -27,22 +28,23 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className=''>
-      <body className={inter.className}>
-        <SessionLayout session={session}>
-          <NextIntlClientProvider messages={messages}>
-            <BackgroundSVG
-              preserveAspectRatio='none'
-              className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
-            />
-
-            <TRPCLayout>
-              <div className='w-screen h-screen p-2 lg:p-4 flex justify-center items-center'>
-                <AuthLayout>{children}</AuthLayout>
-              </div>
-            </TRPCLayout>
-          </NextIntlClientProvider>
-        </SessionLayout>
-      </body>
+      <ThemeLayout>
+        <body className={inter.className}>
+          <SessionLayout session={session}>
+            <NextIntlClientProvider messages={messages}>
+              <BackgroundSVG
+                preserveAspectRatio='none'
+                className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
+              />
+              <TRPCLayout>
+                <div className='w-screen h-screen p-2 lg:p-4 flex justify-center items-center'>
+                  <AuthLayout>{children}</AuthLayout>
+                </div>
+              </TRPCLayout>
+            </NextIntlClientProvider>
+          </SessionLayout>
+        </body>
+      </ThemeLayout>
     </html>
   )
 }
