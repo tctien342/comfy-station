@@ -122,5 +122,35 @@ export const clientRouter = router({
       })
       return off
     })
-  })
+  }),
+  testClient: adminProcedure
+    .input(
+      z.object({
+        host: z.string(),
+        auth: z.boolean().default(false).optional(),
+        username: z.string().optional(),
+        password: z.string().optional()
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.auth && (!input.username || !input.password)) {
+        throw new Error('Username or password is required')
+      }
+      const api = new ComfyApi(input.host, 'test', {
+        credentials: input.auth ? { type: 'basic', username: input.username!, password: input.password! } : undefined
+      })
+      const test = await api.ping()
+      if ('time' in test) {
+        await api.init().waitForReady()
+        return {
+          ping: test.time,
+          feature: {
+            manager: api.ext.manager.isSupported,
+            monitor: api.ext.monitor.isSupported
+          }
+        }
+      } else {
+        throw new Error('Client not reachable')
+      }
+    })
 })

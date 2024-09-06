@@ -8,10 +8,11 @@ import { EnterIcon } from '@radix-ui/react-icons'
 import { useContext, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { AddClientDialogContext } from '.'
+import { AddClientDialogContext, EImportStep } from '.'
+import { trpc } from '@/utils/trpc'
 
 export const InputClientInfoStep: IComponent = () => {
-  const { setClientInfo } = useContext(AddClientDialogContext)
+  const { clientInfo, setClientInfo, setStep } = useContext(AddClientDialogContext)
   const [loading, setLoading] = useState(false)
   const formSchema = z.object({
     // Regex is url host name
@@ -28,14 +29,41 @@ export const InputClientInfoStep: IComponent = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      auth: false
+      host: clientInfo?.host ?? '',
+      username: clientInfo?.username ?? '',
+      password: clientInfo?.password ?? '',
+      auth: clientInfo?.auth ?? false
     }
   })
+  const { mutateAsync } = trpc.client.testClient.useMutation()
+
   const haveAuth = form.watch('auth')
   const handlePressSubmit = form.handleSubmit((data) => {
     setLoading(true)
-    console.log(data)
-    setLoading(false)
+    mutateAsync({
+      host: data.host,
+      auth: data.auth,
+      username: data.username,
+      password: data.password
+    })
+      .then((result) => {
+        setClientInfo?.({
+          host: data.host,
+          auth: data.auth,
+          username: data.username,
+          password: data.password,
+          result
+        })
+        setStep?.(EImportStep.FEATURE_CHECKING)
+      })
+      .catch((error: Error) => {
+        if (error.message === 'Client not reachable') {
+          form.setError('host', { message: 'Client not reachable' })
+        }
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   })
   return (
     <Form {...form}>

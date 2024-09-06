@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { InputClientInfoStep } from './InputClientInfoStep'
 import { createContext, useState } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
+import { CheckingFeatureStep } from './CheckingFeatureStep'
 
 export enum EImportStep {
   'INPUT_CLIENT_INFO',
@@ -20,7 +21,15 @@ interface IAddClientContext {
     auth: boolean
     username?: string
     password?: string
+    result: {
+      ping: number
+      feature: {
+        manager: boolean
+        monitor: boolean
+      }
+    }
   }
+  setStep?: (step: EImportStep) => void
   setClientInfo?: (info: IAddClientContext['clientInfo']) => void
 }
 
@@ -42,10 +51,11 @@ export const AddClientDialog: IComponent = () => {
         <DialogHeader>
           <DialogTitle className='text-base font-bold'>ADD NEW WORKER NODE</DialogTitle>
         </DialogHeader>
-        <AddClientDialogContext.Provider value={{ currentStep, clientInfo, setClientInfo }}>
+        <AddClientDialogContext.Provider value={{ currentStep, clientInfo, setClientInfo, setStep: setCurrentStep }}>
           <div className='w-full h-full border rounded-lg bg-secondary/20 shadow-inner flex items-center justify-center'>
-            <SimpleTransitionLayout deps={[currentStep]}>
+            <SimpleTransitionLayout deps={[currentStep]} className='flex flex-col items-center'>
               {currentStep === EImportStep.INPUT_CLIENT_INFO && <InputClientInfoStep />}
+              {currentStep === EImportStep.FEATURE_CHECKING && <CheckingFeatureStep />}
             </SimpleTransitionLayout>
           </div>
         </AddClientDialogContext.Provider>
