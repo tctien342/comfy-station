@@ -1,6 +1,7 @@
 import { Collection, Entity, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import type { Client } from './client'
+import type { Tag } from './tag'
 
 export interface IInputNumberConfig {
   default: number
@@ -57,6 +58,9 @@ export class Extension {
 
   @ManyToMany('Client', 'extensions', { index: true })
   clients = new Collection<Client>(this)
+
+  @ManyToMany('Tag', 'extensions', { owner: true })
+  tags = new Collection<Tag>(this)
 
   constructor(name: string, displayName: string, pythonModule: string, category: string) {
     this.name = name

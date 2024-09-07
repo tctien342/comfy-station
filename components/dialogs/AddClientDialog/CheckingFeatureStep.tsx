@@ -9,9 +9,14 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
+import { LoadableButton } from '@/components/LoadableButton'
 
 export const CheckingFeatureStep: IComponent = () => {
   const { clientInfo, setStep } = useContext(AddClientDialogContext)
+
+  const handleContinue = async () => {
+    setStep?.(EImportStep.INFORMATION_CHECKING)
+  }
   return (
     <>
       <div className='flex flex-col gap-2 max-w-sm w-full'>
@@ -66,10 +71,10 @@ export const CheckingFeatureStep: IComponent = () => {
           Back
           <ChevronLeftIcon width={16} height={16} className='ml-2' />
         </Button>
-        <Button className=''>
+        <LoadableButton onClick={handleContinue}>
           Continue
           <ArrowRightIcon width={16} height={16} className='ml-2' />
-        </Button>
+        </LoadableButton>
       </div>
       <div className='flex flex-col gap-2 w-full justify-center mt-4'>
         <p className='text-sm font-normal text-zinc-400 max-w-lg text-center'>

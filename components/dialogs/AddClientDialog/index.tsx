@@ -5,6 +5,8 @@ import { InputClientInfoStep } from './InputClientInfoStep'
 import { createContext, useState } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { CheckingFeatureStep } from './CheckingFeatureStep'
+import { InformationCheckingStep } from './InformationCheckingStep'
+import { cn } from '@/lib/utils'
 
 export enum EImportStep {
   'INPUT_CLIENT_INFO',
@@ -52,10 +54,15 @@ export const AddClientDialog: IComponent = () => {
           <DialogTitle className='text-base font-bold'>ADD NEW WORKER NODE</DialogTitle>
         </DialogHeader>
         <AddClientDialogContext.Provider value={{ currentStep, clientInfo, setClientInfo, setStep: setCurrentStep }}>
-          <div className='w-full h-full border rounded-lg bg-secondary/20 shadow-inner flex items-center justify-center'>
+          <div
+            className={cn('w-full h-full flex items-center justify-center relative', {
+              'border rounded-lg bg-secondary/20 shadow-inner': currentStep !== EImportStep.INFORMATION_CHECKING
+            })}
+          >
             <SimpleTransitionLayout deps={[currentStep]} className='flex flex-col items-center'>
               {currentStep === EImportStep.INPUT_CLIENT_INFO && <InputClientInfoStep />}
               {currentStep === EImportStep.FEATURE_CHECKING && <CheckingFeatureStep />}
+              {currentStep === EImportStep.INFORMATION_CHECKING && <InformationCheckingStep />}
             </SimpleTransitionLayout>
           </div>
         </AddClientDialogContext.Provider>

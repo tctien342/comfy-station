@@ -152,5 +152,46 @@ export const clientRouter = router({
       } else {
         throw new Error('Client not reachable')
       }
+    }),
+  resources: adminProcedure
+    .input(
+      z.object({
+        host: z.string(),
+        auth: z.boolean().default(false).optional(),
+        username: z.string().optional(),
+        password: z.string().optional()
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      if (input.auth && (!input.username || !input.password)) {
+        throw new Error('Username or password is required')
+      }
+      const api = new ComfyApi(input.host, 'test', {
+        credentials: input.auth ? { type: 'basic', username: input.username!, password: input.password! } : undefined
+      })
+      const [checkpoints, lora, samplerInfo] = await Promise.all([
+        api.getCheckpoints(),
+        api.getLoras(),
+        api.getSamplerInfo()
+      ])
+      const extensions = await api.getNodeDefs()
+      const nodes = Object.values(extensions ?? {})
+      // Group by python_module
+      const grouped = nodes.reduce(
+        (acc, node) => {
+          if (!acc[node.python_module]) {
+            acc[node.python_module] = []
+          }
+          acc[node.python_module].push(node)
+          return acc
+        },
+        {} as Record<string, typeof nodes>
+      )
+      return {
+        checkpoints,
+        lora,
+        samplerInfo,
+        extensions: grouped
+      }
     })
 })

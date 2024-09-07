@@ -1,4 +1,4 @@
-import { defineConfig, GeneratedCacheAdapter, Options } from '@mikro-orm/better-sqlite'
+import { defineConfig } from '@mikro-orm/better-sqlite'
 import { Client } from './entities/client'
 import { ClientStatusEvent } from './entities/client_status_event'
 import { ClientMonitorEvent } from './entities/client_monitor_event'
@@ -19,6 +19,7 @@ import { Resource } from './entities/client_resource'
 import { UserNotification } from './entities/user_notifications'
 import { Attachment } from './entities/attachment'
 import { Trigger } from './entities/trigger'
+import { Tag } from './entities/tag'
 
 export default defineConfig({
   entities: [
@@ -30,6 +31,7 @@ export default defineConfig({
     Client,
     Extension,
     Resource,
+    Tag,
     Job,
     JobItem,
     User,

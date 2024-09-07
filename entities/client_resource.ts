@@ -1,7 +1,9 @@
-import { Collection, Entity, Index, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import type { Client } from './client'
 import { EResourceType } from './enum'
+import type { Client } from './client'
+import type { Tag } from './tag'
+import type { Attachment } from './attachment'
 
 @Entity()
 @Unique({ properties: ['name', 'type'] })
@@ -18,6 +20,9 @@ export class Resource {
   @Property({ type: 'string', nullable: true })
   displayName?: string
 
+  @OneToOne({ entity: 'Attachment', inversedBy: 'resource', nullable: true })
+  image?: Attachment
+
   @Property({ type: 'timestamp' })
   createdAt = new Date()
 
@@ -26,6 +31,9 @@ export class Resource {
 
   @ManyToMany('Client', 'resources', { index: true })
   clients = new Collection<Client>(this)
+
+  @ManyToMany('Tag', 'resources', { owner: true })
+  tags = new Collection<Tag>(this)
 
   constructor(name: string, type: EResourceType, displayName?: string) {
     this.name = name
