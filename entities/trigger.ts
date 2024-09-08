@@ -14,16 +14,16 @@ export class Trigger {
   @Property({ type: 'varchar', index: true })
   type: ETriggerBy
 
-  @ManyToOne({ entity: 'User', inversedBy: 'triggers', nullable: true, index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'triggers', nullable: true, index: true, deleteRule: 'set null' })
   user?: User
 
-  @ManyToOne({ entity: 'Token', inversedBy: 'triggers', nullable: true, index: true })
+  @ManyToOne({ entity: 'Token', inversedBy: 'triggers', nullable: true, index: true, deleteRule: 'set null' })
   token?: Token
 
-  @ManyToOne({ entity: 'JobItem', inversedBy: 'triggers', nullable: true, index: true })
+  @ManyToOne({ entity: 'JobItem', inversedBy: 'triggers', nullable: true, index: true, deleteRule: 'set null' })
   jobTask?: JobItem
 
-  @OneToOne({ entity: 'ClientActionEvent', nullable: true, mappedBy: 'trigger' })
+  @OneToOne({ entity: 'ClientActionEvent', nullable: true, mappedBy: 'trigger', deleteRule: 'set null' })
   clientActionEvent?: ClientActionEvent
 
   @Property({ type: 'timestamp' })

@@ -4,10 +4,10 @@ import type { Token } from './token'
 
 @Entity()
 export class TokenPermission {
-  @ManyToOne({ entity: 'Token', inversedBy: 'grantedWorkflows', primary: true, index: true })
+  @ManyToOne({ entity: 'Token', inversedBy: 'grantedWorkflows', primary: true, index: true, deleteRule: 'cascade' })
   token: Token
 
-  @ManyToOne({ entity: 'Workflow', inversedBy: 'grantedTokens', primary: true, index: true })
+  @ManyToOne({ entity: 'Workflow', inversedBy: 'grantedTokens', primary: true, index: true, deleteRule: 'cascade' })
   workflow: Workflow
 
   @Property({ type: 'float', default: 0 })

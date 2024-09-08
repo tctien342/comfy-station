@@ -4,10 +4,10 @@ import type { User } from './user'
 
 @Entity()
 export class TokenShared {
-  @ManyToOne({ entity: 'Token', inversedBy: 'sharedUsers', primary: true, index: true })
+  @ManyToOne({ entity: 'Token', inversedBy: 'sharedUsers', primary: true, index: true, deleteRule: 'cascade' })
   token: Token
 
-  @ManyToOne({ entity: 'User', inversedBy: 'sharedTokens', primary: true, index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'sharedTokens', primary: true, index: true, deleteRule: 'cascade' })
   user: User
 
   @Property({ type: 'timestamp' })

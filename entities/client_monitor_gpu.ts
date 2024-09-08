@@ -3,7 +3,7 @@ import type { ClientMonitorEvent } from './client_monitor_event'
 
 @Entity()
 export class ClientMonitorGpu {
-  @ManyToOne('ClientMonitorEvent', 'gpus')
+  @ManyToOne('ClientMonitorEvent', { inversedBy: 'gpus', deleteRule: 'cascade' })
   monitorEvent: ClientMonitorEvent
 
   @PrimaryKey({ type: 'bigint' })

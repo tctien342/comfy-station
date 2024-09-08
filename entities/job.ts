@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import type { User } from './user'
 import { v4 } from 'uuid'
 import type { JobItem } from './job_item'
@@ -8,7 +8,7 @@ export class Job {
   @PrimaryKey({ type: 'string' })
   id = v4()
 
-  @ManyToOne({ entity: 'User', inversedBy: 'jobs', index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'jobs', index: true, deleteRule: 'cascade' })
   owner: User
 
   @Property({ type: 'string' })

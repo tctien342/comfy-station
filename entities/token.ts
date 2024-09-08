@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { ETokenType } from './enum'
 
@@ -38,7 +38,7 @@ export class Token {
   @Property({ type: 'float', default: 0 })
   weightOffset!: number
 
-  @ManyToOne('User', 'tokens')
+  @ManyToOne('User', { inversedBy: 'tokens', index: true, deleteRule: 'cascade' })
   createdBy: User
 
   @Property({ type: 'timestamp', nullable: true })
@@ -52,19 +52,24 @@ export class Token {
 
   @OneToMany({
     entity: 'TokenPermission',
-    mappedBy: 'token'
+    mappedBy: 'token',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   grantedWorkflows = new Collection<TokenPermission>(this)
 
   @OneToMany({
     entity: 'TokenShared',
-    mappedBy: 'token'
+    mappedBy: 'token',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   sharedUsers = new Collection<TokenShared>(this)
 
   @OneToMany({
     entity: 'Trigger',
-    mappedBy: 'token'
+    mappedBy: 'token',
+    cascade: [Cascade.REMOVE]
   })
   triggers = new Collection<Trigger>(this)
 

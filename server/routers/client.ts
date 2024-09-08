@@ -136,6 +136,10 @@ export const clientRouter = router({
       if (input.auth && (!input.username || !input.password)) {
         throw new Error('Username or password is required')
       }
+      const existed = await ctx.em.findOne(Client, { host: input.host })
+      if (existed) {
+        throw new Error('Client already exists')
+      }
       const api = new ComfyApi(input.host, 'test', {
         credentials: input.auth ? { type: 'basic', username: input.username!, password: input.password! } : undefined
       })

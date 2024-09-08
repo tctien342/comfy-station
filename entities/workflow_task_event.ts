@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { ETaskStatus, EValueType } from './enum'
 
 import type { WorkflowTask } from './workflow_task'
@@ -17,7 +17,7 @@ export class WorkflowTaskEvent {
   @PrimaryKey({ type: 'bigint' })
   id!: number
 
-  @ManyToOne({ entity: 'WorkflowTask', inversedBy: 'events', index: true })
+  @ManyToOne({ entity: 'WorkflowTask', inversedBy: 'events', index: true, deleteRule: 'cascade' })
   task: WorkflowTask
 
   @Property({ type: 'varchar', default: ETaskStatus.Queuing, index: true })
@@ -34,7 +34,8 @@ export class WorkflowTaskEvent {
 
   @OneToMany({
     entity: 'Attachment',
-    mappedBy: 'taskEvent'
+    mappedBy: 'taskEvent',
+    cascade: [Cascade.REMOVE]
   })
   attachments = new Set<Attachment>()
 

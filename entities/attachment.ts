@@ -21,19 +21,19 @@ export class Attachment {
   @Property({ type: 'varchar', default: EStorageType.LOCAL })
   storageType!: EStorageType
 
-  @ManyToOne('WorkflowTaskEvent', { nullable: true })
+  @ManyToOne('WorkflowTaskEvent', { nullable: true, deleteRule: 'set null' })
   taskEvent?: WorkflowTaskEvent
 
-  @ManyToOne('WorkflowTask', { nullable: true })
+  @ManyToOne('WorkflowTask', { nullable: true, deleteRule: 'set null' })
   task?: WorkflowTask
 
-  @ManyToOne('Workflow', { index: true, nullable: true })
+  @ManyToOne('Workflow', { index: true, nullable: true, deleteRule: 'set null' })
   workflow?: Workflow
 
-  @OneToOne({ entity: 'User', mappedBy: 'avatar', nullable: true })
+  @OneToOne({ entity: 'User', mappedBy: 'avatar', nullable: true, deleteRule: 'set null' })
   user?: User
 
-  @OneToOne({ entity: 'Resource', mappedBy: 'image', nullable: true })
+  @OneToOne({ entity: 'Resource', mappedBy: 'image', nullable: true, deleteRule: 'set null' })
   resource?: Resource
 
   @Property({ type: 'timestamp' })

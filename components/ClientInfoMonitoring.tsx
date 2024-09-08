@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { MonitoringStat } from './MonitoringStat'
 
 import { ArrowPathIcon, CircleStackIcon, CpuChipIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { Button } from './ui/button'
 import { HamburgerMenuIcon, SquareIcon } from '@radix-ui/react-icons'
 import { TaskBar } from './TaskBar'
 import {
@@ -136,7 +135,7 @@ export const ClientInfoMonitoring: IComponent<{
             <div className='flex flex-col flex-auto'>
               <h1 className='uppercase text-sm font-bold'>{client.name || `NODE #${client.id.slice(0, 4)}`}</h1>
               <div className='text-xs relative h-4 w-full justify-center items-center'>
-                <OverflowText className='w-full absolute'>{client.host}</OverflowText>
+                <OverflowText className='w-full absolute text-left'>{client.host}</OverflowText>
               </div>
             </div>
           </div>

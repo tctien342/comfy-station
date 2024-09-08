@@ -10,7 +10,8 @@ export class ClientActionEvent {
 
   @ManyToOne({
     entity: 'Client',
-    inversedBy: 'actionEvents'
+    inversedBy: 'actionEvents',
+    deleteRule: 'cascade'
   })
   client: Client
 
@@ -20,7 +21,7 @@ export class ClientActionEvent {
   @Property({ nullable: true, type: 'json' })
   data?: object
 
-  @OneToOne({ entity: 'Trigger', type: 'Trigger', inversedBy: 'clientActionEvent' })
+  @OneToOne({ entity: 'Trigger', type: 'Trigger', inversedBy: 'clientActionEvent', deleteRule: 'cascade' })
   trigger: Trigger
 
   @Property({ type: 'timestamp' })

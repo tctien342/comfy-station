@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { ETaskStatus } from './enum'
 
 import type { Client } from './client'
@@ -12,10 +12,10 @@ export class WorkflowTask {
   @PrimaryKey({ type: 'string' })
   id: string
 
-  @ManyToOne('Workflow', { index: true })
+  @ManyToOne('Workflow', { index: true, deleteRule: 'cascade' })
   workflow: Workflow
 
-  @ManyToOne('Client', { nullable: true, index: true })
+  @ManyToOne('Client', { nullable: true, index: true, deleteRule: 'set null' })
   client?: Client
 
   @Property({ type: 'varchar', default: ETaskStatus.Queuing, index: true })
@@ -33,7 +33,7 @@ export class WorkflowTask {
   @Property({ type: 'int', nullable: true })
   executionTime?: number
 
-  @OneToOne('Trigger')
+  @OneToOne('Trigger', { deleteRule: 'cascade' })
   trigger: Trigger
 
   @Property({ type: 'timestamp' })
@@ -44,22 +44,27 @@ export class WorkflowTask {
 
   @OneToMany({
     entity: 'WorkflowTaskEvent',
-    mappedBy: 'task'
+    mappedBy: 'task',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   events = new Collection<WorkflowTaskEvent>(this)
 
   @OneToMany({
     entity: 'WorkflowTask',
-    mappedBy: 'parent'
+    mappedBy: 'parent',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   subTasks = new Collection<WorkflowTask>(this)
 
-  @ManyToOne({ type: 'WorkflowTask', nullable: true })
+  @ManyToOne({ type: 'WorkflowTask', nullable: true, deleteRule: 'cascade' })
   parent?: WorkflowTask
 
   @OneToMany({
     entity: 'Attachment',
-    mappedBy: 'task'
+    mappedBy: 'task',
+    cascade: [Cascade.REMOVE]
   })
   attachments = new Set<Attachment>()
 

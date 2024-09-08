@@ -81,9 +81,13 @@ class CachingService extends EventTarget {
     await this.cache.set(key, JSON.stringify(value))
   }
 
-  async get<K extends keyof TCachingKeyMap>(category: K, id: string | number): Promise<TCachingKeyMap[K]['detail']> {
+  async get<K extends keyof TCachingKeyMap>(
+    category: K,
+    id: string | number
+  ): Promise<TCachingKeyMap[K]['detail'] | null> {
     const key = `${category}:${id}`
     const value = await this.cache.get(key)
+    if (!value) return null
     return JSON.parse(value)
   }
 

@@ -1,4 +1,4 @@
-import { defineConfig } from '@mikro-orm/better-sqlite'
+import { defineConfig } from '@mikro-orm/libsql'
 import { Client } from './entities/client'
 import { ClientStatusEvent } from './entities/client_status_event'
 import { ClientMonitorEvent } from './entities/client_monitor_event'

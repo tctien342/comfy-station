@@ -39,25 +39,29 @@ export class Client {
 
   @OneToMany({
     entity: 'ClientMonitorEvent',
-    mappedBy: 'client'
+    mappedBy: 'client',
+    orphanRemoval: true
   })
   monitorEvents = new Collection<ClientMonitorEvent>(this)
 
   @OneToMany({
     entity: 'WorkflowTask',
-    mappedBy: 'client'
+    mappedBy: 'client',
+    orphanRemoval: true
   })
   tasks = new Collection<WorkflowTask>(this)
 
   @OneToMany({
     entity: 'ClientStatusEvent',
-    mappedBy: 'client'
+    mappedBy: 'client',
+    orphanRemoval: true
   })
   statusEvents = new Collection<ClientStatusEvent>(this)
 
   @OneToMany({
     entity: 'ClientActionEvent',
-    mappedBy: 'client'
+    mappedBy: 'client',
+    orphanRemoval: true
   })
   actionEvents = new Collection<ClientActionEvent>(this)
 

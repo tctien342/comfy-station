@@ -15,10 +15,10 @@ export class WorkflowEditEvent {
   @PrimaryKey({ type: 'bigint' })
   id!: number
 
-  @ManyToOne({ entity: 'Workflow', inversedBy: 'editedActions', index: true })
+  @ManyToOne({ entity: 'Workflow', inversedBy: 'editedActions', index: true, deleteRule: 'cascade' })
   workflow: Workflow
 
-  @ManyToOne({ entity: 'User', inversedBy: 'editWorkflowActions', index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'editWorkflowActions', index: true, deleteRule: 'cascade' })
   user: User
 
   @Property({ type: 'varchar', default: EWorkflowEditType.Create, index: true })

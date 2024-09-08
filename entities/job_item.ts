@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, Property } from '@mikro-orm/core'
 import type { Job } from './job'
 import type { EJobType } from './enum'
 import type { Trigger } from './trigger'
@@ -8,7 +8,7 @@ export class JobItem {
   @Property({ type: 'bigint', primary: true })
   id!: number
 
-  @ManyToOne({ entity: 'Job', inversedBy: 'tasks', primary: true })
+  @ManyToOne({ entity: 'Job', inversedBy: 'tasks', primary: true, deleteRule: 'cascade' })
   job: Job
 
   @Property({ type: 'varchar', index: true })
@@ -19,7 +19,9 @@ export class JobItem {
 
   @OneToMany({
     entity: 'Trigger',
-    mappedBy: 'jobTask'
+    mappedBy: 'jobTask',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   triggers = new Collection<Trigger>(this)
 

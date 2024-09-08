@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { EValueType, EWorkflowActiveStatus } from './enum'
 
@@ -88,30 +88,37 @@ export class Workflow {
   @Property({ type: 'float', default: 0 })
   baseWeight!: number // Weight of this workflow, more weight means lower priority
 
-  @ManyToOne({ entity: 'User', inversedBy: 'workflows', index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'workflows', index: true, deleteRule: 'cascade' })
   author: User
 
   @OneToMany({
     entity: 'WorkflowEditEvent',
-    mappedBy: 'workflow'
+    mappedBy: 'workflow',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   editedActions = new Collection<WorkflowEditEvent>(this)
 
   @OneToMany({
     entity: 'TokenPermission',
-    mappedBy: 'workflow'
+    mappedBy: 'workflow',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   grantedTokens = new Collection<TokenPermission>(this)
 
   @OneToMany({
     entity: 'Attachment',
-    mappedBy: 'workflow'
+    mappedBy: 'workflow',
+    cascade: [Cascade.REMOVE]
   })
   attachments = new Set<Attachment>()
 
   @OneToMany({
     entity: 'WorkflowTask',
-    mappedBy: 'workflow'
+    mappedBy: 'workflow',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   tasks = new Collection<WorkflowTask>(this)
 

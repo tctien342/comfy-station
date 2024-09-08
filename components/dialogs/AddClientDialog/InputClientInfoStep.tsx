@@ -10,10 +10,13 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { AddClientDialogContext, EImportStep } from '.'
 import { trpc } from '@/utils/trpc'
+import { useToast } from '@/hooks/useToast'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 export const InputClientInfoStep: IComponent = () => {
   const { clientInfo, setClientInfo, setStep } = useContext(AddClientDialogContext)
   const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
   const formSchema = z.object({
     // Regex is url host name
     host: z
@@ -57,9 +60,13 @@ export const InputClientInfoStep: IComponent = () => {
         setStep?.(EImportStep.FEATURE_CHECKING)
       })
       .catch((error: Error) => {
-        if (error.message === 'Client not reachable') {
-          form.setError('host', { message: 'Client not reachable' })
+        if (error.message) {
+          form.setError('host', { message: error.message })
         }
+        toast({
+          description: error.message,
+          variant: 'destructive'
+        })
       })
       .finally(() => {
         setLoading(false)

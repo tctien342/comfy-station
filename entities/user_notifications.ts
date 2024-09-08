@@ -17,7 +17,7 @@ export class UserNotification {
   @Property({ type: 'boolean', default: false, index: true })
   read!: boolean
 
-  @ManyToOne({ entity: 'User', inversedBy: 'notifications', index: true })
+  @ManyToOne({ entity: 'User', inversedBy: 'notifications', index: true, deleteRule: 'cascade' })
   user: User
 
   @Property({ type: 'string' })

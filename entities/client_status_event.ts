@@ -8,7 +8,7 @@ export class ClientStatusEvent {
   @PrimaryKey({ type: 'bigint' })
   id!: number
 
-  @ManyToOne('Client', 'statusEvents')
+  @ManyToOne('Client', { inversedBy: 'statusEvents', deleteRule: 'cascade' })
   client!: Client
 
   @Property({ type: 'varchar', default: EClientStatus.Offline })

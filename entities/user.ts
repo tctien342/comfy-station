@@ -1,4 +1,4 @@
-import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { createHmac } from 'crypto'
 import { EUserRole } from './enum'
@@ -49,43 +49,56 @@ export class User {
 
   @OneToMany({
     entity: 'Workflow',
-    mappedBy: 'author'
+    mappedBy: 'author',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   workflows = new Collection<Workflow>(this)
 
   @OneToMany({
     entity: 'Token',
-    mappedBy: 'createdBy'
+    mappedBy: 'createdBy',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   tokens = new Collection<Token>(this)
 
   @OneToMany({
     entity: 'TokenShared',
-    mappedBy: 'user'
+    mappedBy: 'user',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   sharedTokens = new Collection<TokenShared>(this)
 
   @OneToMany({
     entity: 'WorkflowEditEvent',
-    mappedBy: 'user'
+    mappedBy: 'user',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   editWorkflowActions = new Collection<WorkflowEditEvent>(this)
 
   @OneToMany({
     entity: 'Job',
-    mappedBy: 'owner'
+    mappedBy: 'owner',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   jobs = new Collection<Job>(this)
 
   @OneToMany({
     entity: 'UserNotification',
-    mappedBy: 'user'
+    mappedBy: 'user',
+    cascade: [Cascade.REMOVE],
+    orphanRemoval: true
   })
   notifications = new Collection<UserNotification>(this)
 
   @OneToMany({
     entity: 'Trigger',
-    mappedBy: 'user'
+    mappedBy: 'user',
+    cascade: [Cascade.REMOVE]
   })
   triggers = new Collection<Trigger>(this)
 

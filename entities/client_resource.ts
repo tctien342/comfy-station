@@ -20,7 +20,7 @@ export class Resource {
   @Property({ type: 'string', nullable: true })
   displayName?: string
 
-  @OneToOne({ entity: 'Attachment', inversedBy: 'resource', nullable: true })
+  @OneToOne({ entity: 'Attachment', inversedBy: 'resource', nullable: true, deleteRule: 'set null' })
   image?: Attachment
 
   @Property({ type: 'timestamp' })

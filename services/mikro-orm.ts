@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/better-sqlite'
+import { MikroORM } from '@mikro-orm/libsql'
 
 import dbConfig from '../mikro-orm.config'
 import { Logger } from '@saintno/needed-tools'
@@ -10,10 +10,10 @@ export class MikroORMInstance {
   private constructor() {
     this.logger = new Logger('MikroORMInstance')
     this.orm = MikroORM.init(dbConfig).then(async (orm) => {
-      const generator = orm.getSchemaGenerator()
-      await generator.updateSchema().catch((e) => {
-        this.logger.i('init', 'Schema is updated', e)
-      })
+      // const generator = orm.getSchemaGenerator()
+      // await generator.updateSchema().catch((e) => {
+      //   this.logger.i('init', 'Schema is updated', e)
+      // })
       this.logger.i('init', 'MikroORM initialized')
       return orm
     })

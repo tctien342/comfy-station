@@ -2,16 +2,29 @@
 
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { Card } from '@/components/ui/card'
-import { usePathname, useRouter } from '@/routing'
-import { SessionProvider, useSession } from 'next-auth/react'
+import { Toaster } from '@/components/ui/toaster'
+import useDarkMode from '@/hooks/useDarkmode'
+import { useRouter } from '@/routing'
+import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 
-import type React from 'react'
-import { use, useEffect, type PropsWithChildren } from 'react'
-
-export const AuthLayout: React.FC<PropsWithChildren> = ({ children }) => {
+export const ClientLayout: IComponent = ({ children }) => {
   const pathname = usePathname()
   const session = useSession()
   const router = useRouter()
+  const isDarkMode = useDarkMode()
+
+  useEffect(() => {
+    const root = document.getElementsByTagName('html')?.[0]
+    if (root) {
+      if (isDarkMode) {
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+      }
+    }
+  }, [isDarkMode])
 
   useEffect(() => {
     if (session.status === 'authenticated' && !pathname.includes('/main')) {
@@ -33,6 +46,7 @@ export const AuthLayout: React.FC<PropsWithChildren> = ({ children }) => {
         </div>
       )}
       {children}
+      <Toaster />
     </>
   )
 }

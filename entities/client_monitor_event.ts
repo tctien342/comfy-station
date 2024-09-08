@@ -10,7 +10,8 @@ export class ClientMonitorEvent {
 
   @ManyToOne({
     entity: 'Client',
-    inversedBy: 'monitorEvents'
+    inversedBy: 'monitorEvents',
+    deleteRule: 'cascade'
   })
   client!: Client
 
@@ -23,7 +24,7 @@ export class ClientMonitorEvent {
   @Property({ type: 'double', nullable: true })
   memoryTotal?: number
 
-  @OneToMany('ClientMonitorGpu', 'monitorEvent', { cascade: [Cascade.ALL] })
+  @OneToMany('ClientMonitorGpu', 'monitorEvent', { cascade: [Cascade.ALL], orphanRemoval: true })
   gpus = new Collection<ClientMonitorGpu>(this)
 
   @Property({ type: 'timestamp' })
