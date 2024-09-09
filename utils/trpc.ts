@@ -1,6 +1,6 @@
 import superjson from 'superjson'
 
-import { createWSClient, httpBatchLink, splitLink, wsLink } from '@trpc/client'
+import { createWSClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLink, wsLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import { ssrPrepass } from '@trpc/next/ssrPrepass'
 import type { AppRouter } from '@/server/routers/_app'
@@ -37,9 +37,19 @@ export const trpc = createTRPCNext<AppRouter>({
               client: wsClient,
               transformer: superjson
             }),
-            false: httpBatchLink({
-              url: '/api/trpc',
-              transformer: superjson
+            false: splitLink({
+              condition: (op) => isNonJsonSerializable(op.input),
+              true: httpLink({
+                url: getBaseUrl() + '/api/trpc',
+                transformer: {
+                  serialize: (data) => data as FormData,
+                  deserialize: superjson.deserialize
+                }
+              }),
+              false: httpBatchLink({
+                url: '/api/trpc',
+                transformer: superjson
+              })
             })
           })
         ]

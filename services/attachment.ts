@@ -1,3 +1,4 @@
+import { Attachment } from '@/entities/attachment'
 import { BackendENV } from '@/env'
 import {
   S3Client,
@@ -52,6 +53,10 @@ class AttachmentService {
     } else {
       this.logger.i('Init', 'Using local storage for file storage')
     }
+  }
+
+  async getAttachmentURL(item: Attachment) {
+    return this.getFileURL(item.fileName)
   }
 
   async getFileURL(fileName: string) {

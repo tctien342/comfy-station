@@ -76,7 +76,17 @@
 }
 
 html {
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
+}
+
+.btn {
+  @apply transition-all hover:opacity-80 active:scale-105;
+  &-xl {
+    @apply px-8 py-4 rounded-full transition-all hover:opacity-80 active:scale-95;
+  }
+  &-sm {
+    @apply px-4 py-2 text-sm rounded-full transition-all hover:opacity-80 active:scale-95;
+  }
 }

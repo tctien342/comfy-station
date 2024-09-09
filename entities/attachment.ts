@@ -6,6 +6,8 @@ import type { WorkflowTaskEvent } from './workflow_task_event'
 import type { Workflow } from './workflow'
 import type { User } from './user'
 import type { Resource } from './client_resource'
+import { BackendENV } from '@/env'
+import { createHash } from 'crypto'
 
 @Entity()
 export class Attachment {
@@ -14,6 +16,9 @@ export class Attachment {
 
   @Property({ type: 'string' })
   fileName: string
+
+  @Property({ type: 'bigint' })
+  size: number // In bytes
 
   @Property({ type: 'varchar', default: EAttachmentStatus.PENDING, index: true })
   status!: EAttachmentStatus
@@ -42,7 +47,23 @@ export class Attachment {
   @Property({ type: 'timestamp', onUpdate: () => new Date() })
   updateAt = new Date()
 
-  constructor(fileName: string) {
+  constructor(fileName: string, size: number) {
     this.fileName = fileName
+    this.size = size
+    this.storageType = BackendENV.S3_ENDPOINT ? EStorageType.S3 : EStorageType.LOCAL
+  }
+
+  static fileMD5(buffer: ArrayBuffer) {
+    return new Promise<string>((resolve, reject) => {
+      try {
+        const hash = createHash('md5')
+        const data = new Uint8Array(buffer)
+        hash.update(data)
+        const md5 = hash.digest('hex')
+        resolve(md5)
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 }

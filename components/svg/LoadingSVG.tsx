@@ -1,13 +1,13 @@
 import { cn } from '@/lib/utils'
 import React from 'react'
 
-export const LoadingSVG: ISvgComponent = ({ width = '100%', height = '100%', className = 'fill-foreground' }) => {
+export const LoadingSVG: ISvgComponent = ({ width = '100%', height = '100%', className }) => {
   return (
     <svg
       height={height}
       width={width}
       aria-hidden='true'
-      className={cn('text-gray-200 animate-spin dark:text-gray-600', className)}
+      className={cn('text-gray-200 animate-spin repeat-infinite dark:text-gray-600 fill-foreground', className)}
       viewBox='0 0 100 101'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'

@@ -20,6 +20,9 @@ export class Resource {
   @Property({ type: 'string', nullable: true })
   displayName?: string
 
+  @Property({ type: 'string', nullable: true })
+  description?: string
+
   @OneToOne({ entity: 'Attachment', inversedBy: 'resource', nullable: true, deleteRule: 'set null' })
   image?: Attachment
 
