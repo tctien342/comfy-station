@@ -55,10 +55,10 @@ export const resourceRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input
       const resource = await ctx.em.findOneOrFail(Resource, { id }, { populate: ['image', 'tags'] })
-      if (data.title) {
+      if (data.title !== undefined) {
         resource.displayName = data.title
       }
-      if (data.description) {
+      if (data.description !== undefined) {
         resource.description = data.description
       }
       if (data.tags) {

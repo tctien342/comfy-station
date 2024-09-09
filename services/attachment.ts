@@ -13,8 +13,6 @@ import { Logger } from '@saintno/needed-tools'
 import fs from 'fs'
 import mime from 'mime'
 
-const LOCAL_STORAGE_PATH = __dirname + '/../public/attachments/'
-
 export enum EAttachmentType {
   S3 = 's3',
   LOCAL = 'local'
@@ -24,6 +22,7 @@ class AttachmentService {
   private static instance: AttachmentService
   private s3?: S3Client
   private logger: Logger
+  private localPath = process.cwd() + '/public/attachments/'
 
   static getInstance(): AttachmentService {
     if (!AttachmentService.instance) {
@@ -70,10 +69,10 @@ class AttachmentService {
         }
       }
     }
-    if (fs.existsSync(LOCAL_STORAGE_PATH + fileName)) {
+    if (fs.existsSync(this.localPath + fileName)) {
       return {
         type: EAttachmentType.LOCAL,
-        url: '/files/' + fileName
+        url: '/attachments/' + fileName
       }
     }
     return undefined
@@ -112,14 +111,17 @@ class AttachmentService {
         await this.s3.send(command)
         return true
       } else {
+        if (!fs.existsSync(this.localPath)) {
+          fs.mkdirSync(this.localPath, { recursive: true })
+        }
         // Save file locally
-        const filePath = `${LOCAL_STORAGE_PATH}${fileName}`
+        const filePath = `${this.localPath}${fileName}`
         fs.writeFileSync(filePath, file)
         return true
       }
     } catch (e) {
       console.error(e)
-      return false
+      throw e
     }
   }
 
@@ -155,7 +157,7 @@ class AttachmentService {
         return true
       }
     }
-    return fs.existsSync(LOCAL_STORAGE_PATH + fileName)
+    return fs.existsSync(this.localPath + fileName)
   }
 }
 
