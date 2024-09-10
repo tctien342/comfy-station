@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/useToast'
 import { trpc } from '@/utils/trpc'
 import { CheckIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useRef } from 'react'
+import { FocusEventHandler, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -46,8 +46,8 @@ export const CheckpointItem: IComponent<{
 
   const shortName = ckptName.slice(0, 2)
   const formSchema = z.object({
-    displayName: z.string().optional(),
-    description: z.string().optional()
+    displayName: z.string().optional().nullable().default(''),
+    description: z.string().optional().nullable().default('')
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
@@ -65,8 +65,8 @@ export const CheckpointItem: IComponent<{
       updater
         .mutateAsync({
           id,
-          title: formData.displayName,
-          description: formData.description
+          title: formData.displayName ?? '',
+          description: formData.description ?? ''
         })
         .then(() => refetch())
     })
@@ -115,6 +115,13 @@ export const CheckpointItem: IComponent<{
     })
   }
 
+  const handleFocusOut: FocusEventHandler<HTMLFormElement> = (event) => {
+    const form = event.currentTarget
+    if (!form.contains(event.relatedTarget)) {
+      handlePressSubmit()
+    }
+  }
+
   return (
     <div className='w-full flex p-2 py-4 gap-2'>
       <input
@@ -139,7 +146,7 @@ export const CheckpointItem: IComponent<{
       <div className='w-full flex flex-col gap-2'>
         <span className='text-sm font-semibold'>{ckptName}</span>
         <Form {...form}>
-          <form className='space-y-4 min-w-80' onChange={handlePressSubmit}>
+          <form className='space-y-4 min-w-80' onBlur={handleFocusOut}>
             <FormField
               name='displayName'
               render={({ field }) => (
@@ -173,7 +180,12 @@ export const CheckpointItem: IComponent<{
           {!!data?.id && (
             <div className='ml-auto'>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger className='flex items-center gap-1'>
+                  {!!data?.updateAt && (
+                    <span className='text-xs text-secondary-foreground'>
+                      {new Date(data?.updateAt).toLocaleString()}
+                    </span>
+                  )}
                   <LoadableButton loading={updater.isPending} variant='ghost' size='icon'>
                     <CheckIcon className='text-green-500' width={18} height={18} />
                   </LoadableButton>
