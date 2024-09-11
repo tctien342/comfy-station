@@ -1,5 +1,6 @@
 import { LoadableButton } from '@/components/LoadableButton'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
+import { MultiSelect } from '@/components/ui-ext/multi-select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
@@ -12,7 +13,8 @@ import { useToast } from '@/hooks/useToast'
 import { trpc } from '@/utils/trpc'
 import { CheckIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FocusEventHandler, useEffect, useRef } from 'react'
+import { Tag } from 'lucide-react'
+import { ComponentType, FocusEventHandler, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -40,6 +42,10 @@ export const CheckpointItem: IComponent<{
       enabled: !!data?.image?.id
     }
   )
+
+  const { data: tags, refetch: refetchTags } = trpc.tag.list.useQuery()
+
+  const createTag = trpc.tag.create.useMutation()
   const creator = trpc.resource.create.useMutation()
   const uploader = trpc.attachment.upload.useMutation()
   const updater = trpc.resource.update.useMutation()
@@ -122,6 +128,25 @@ export const CheckpointItem: IComponent<{
     }
   }
 
+  const tagsOptions =
+    tags?.map(
+      (
+        tag
+      ): {
+        label: string
+        value: string
+        icon?: ComponentType<{
+          className?: string
+        }>
+      } => {
+        return {
+          label: tag.info.name,
+          value: tag.info.id,
+          icon: Tag
+        }
+      }
+    ) ?? []
+
   return (
     <div className='w-full flex p-2 py-4 gap-2'>
       <input
@@ -174,9 +199,18 @@ export const CheckpointItem: IComponent<{
           </form>
         </Form>
         <div className='w-full flex flex-wrap items-center'>
-          <Button variant='ghost' size='icon'>
-            <PlusIcon width={16} height={16} />
-          </Button>
+          <MultiSelect
+            options={tagsOptions}
+            onValueChange={(e) => {}}
+            onCreateNew={(tag) => {
+              createTag.mutateAsync(tag).then(() => refetchTags())
+            }}
+            defaultValue={[]}
+            placeholder='Select frameworks'
+            variant='inverted'
+            animation={2}
+            maxCount={3}
+          />
           {!!data?.id && (
             <div className='ml-auto'>
               <Tooltip>

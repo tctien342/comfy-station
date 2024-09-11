@@ -1,6 +1,7 @@
 import { Tag } from '@/entities/tag'
 import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
+import { z } from 'zod'
 
 export const tagRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {
@@ -14,5 +15,10 @@ export const tagRouter = router({
         }
       })
     )
+  }),
+  create: privateProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    const tag = ctx.em.create(Tag, { name: input }, { partial: true })
+    await ctx.em.persistAndFlush(tag)
+    return tag
   })
 })
