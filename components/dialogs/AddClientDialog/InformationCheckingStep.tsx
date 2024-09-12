@@ -21,8 +21,8 @@ const extraCls = 'border rounded-lg bg-secondary/20 shadow-inner'
 export const InformationCheckingStep: IComponent = () => {
   const parentRef = useRef<HTMLDivElement>(null)
   const [activeTab, setActiveTab] = useState(0)
-  const { clientInfo, setStep } = useContext(AddClientDialogContext)
-  const { data, isLoading } = trpc.client.resources.useQuery(
+  const { clientInfo, setStep, setDisplayName } = useContext(AddClientDialogContext)
+  const { data, isLoading } = trpc.client.getResourcesNewClient.useQuery(
     {
       host: clientInfo!.host,
       auth: clientInfo!.auth,
@@ -77,7 +77,7 @@ export const InformationCheckingStep: IComponent = () => {
                 <span className='ml-auto text-xs text-secondary-foreground'>{extNodes.length} nodes</span>
                 <ChevronsUpDown className='h-4 w-4' />
               </CollapsibleTrigger>
-              <CollapsibleContent className='bg-secondary shadow-inner divide-y-[1px]'>
+              <CollapsibleContent className='bg-secondary/50 shadow-inner divide-y-[1px]'>
                 {extNodes.map((node) => {
                   return (
                     <div key={node.name} className='p-2 pl-4 flex gap-4'>
@@ -122,7 +122,7 @@ export const InformationCheckingStep: IComponent = () => {
           return null
       }
     },
-    [activeTab, data?.checkpoints, data?.extensions]
+    [activeTab, data]
   )
 
   const renderListContent = useMemo(() => {
@@ -231,6 +231,8 @@ export const InformationCheckingStep: IComponent = () => {
             title='NODE NAME'
             description='Naming for this node'
             inputType='input'
+            value={clientInfo?.displayName ?? ''}
+            onChange={(e) => setDisplayName?.(e)}
             placeholder={clientInfo?.host}
           />
         </div>
@@ -239,7 +241,7 @@ export const InformationCheckingStep: IComponent = () => {
             Back
             <ChevronLeftIcon width={16} height={16} className='ml-2' />
           </Button>
-          <LoadableButton>
+          <LoadableButton onClick={() => setStep?.(EImportStep.IMPORTING)}>
             Add
             <Save width={16} height={16} className='ml-2' />
           </LoadableButton>

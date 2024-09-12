@@ -15,13 +15,20 @@ export const resourceRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      return ctx.em.findOne(
+      const resource = await ctx.em.findOne(
         Resource,
         { name: input.name, type: input.type },
         {
-          populate: ['image', 'tags']
+          populate: ['image', 'tags', 'clients.name', 'clients.host']
         }
       )
+      if (!resource) {
+        return null
+      }
+      return {
+        info: resource,
+        clients: resource.clients
+      }
     }),
   create: adminProcedure
     .input(

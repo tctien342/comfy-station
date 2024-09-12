@@ -7,6 +7,7 @@ import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { CheckingFeatureStep } from './CheckingFeatureStep'
 import { InformationCheckingStep } from './InformationCheckingStep'
 import { cn } from '@/lib/utils'
+import { ImportClientStep } from './ImportClientStep'
 
 export enum EImportStep {
   'INPUT_CLIENT_INFO',
@@ -17,12 +18,14 @@ export enum EImportStep {
 }
 
 interface IAddClientContext {
+  show?: boolean
   currentStep: EImportStep
   clientInfo?: {
     host: string
     auth: boolean
     username?: string
     password?: string
+    displayName?: string
     result: {
       ping: number
       feature: {
@@ -31,7 +34,9 @@ interface IAddClientContext {
       }
     }
   }
+  setDialog?: (show: boolean) => void
   setStep?: (step: EImportStep) => void
+  setDisplayName?: (name: string) => void
   setClientInfo?: (info: IAddClientContext['clientInfo']) => void
 }
 
@@ -40,12 +45,25 @@ export const AddClientDialogContext = createContext<IAddClientContext>({
 })
 
 export const AddClientDialog: IComponent = () => {
+  const [show, setShow] = useState(false)
   const [currentStep, setCurrentStep] = useState(EImportStep.INPUT_CLIENT_INFO)
   const [clientInfo, setClientInfo] = useState<IAddClientContext['clientInfo']>()
+
+  const handleSetDisplayName = (name: string) => {
+    setClientInfo((prev) => {
+      return { ...prev!, displayName: name }
+    })
+  }
   return (
-    <Dialog>
+    <Dialog open={show} onOpenChange={setShow}>
       <DialogTrigger className='ml-auto'>
-        <Button size='icon' variant='ghost'>
+        <Button
+          onClick={() => {
+            setShow(true)
+          }}
+          size='icon'
+          variant='ghost'
+        >
           <PlusIcon width={16} height={16} />
         </Button>
       </DialogTrigger>
@@ -53,7 +71,16 @@ export const AddClientDialog: IComponent = () => {
         <DialogHeader>
           <DialogTitle className='text-base font-bold'>ADD NEW WORKER NODE</DialogTitle>
         </DialogHeader>
-        <AddClientDialogContext.Provider value={{ currentStep, clientInfo, setClientInfo, setStep: setCurrentStep }}>
+        <AddClientDialogContext.Provider
+          value={{
+            currentStep,
+            clientInfo,
+            setClientInfo,
+            setDialog: setShow,
+            setStep: setCurrentStep,
+            setDisplayName: handleSetDisplayName
+          }}
+        >
           <div
             className={cn('w-full h-full flex items-center justify-center relative', {
               'border rounded-lg bg-secondary/20 shadow-inner': currentStep !== EImportStep.INFORMATION_CHECKING
@@ -63,6 +90,7 @@ export const AddClientDialog: IComponent = () => {
               {currentStep === EImportStep.INPUT_CLIENT_INFO && <InputClientInfoStep />}
               {currentStep === EImportStep.FEATURE_CHECKING && <CheckingFeatureStep />}
               {currentStep === EImportStep.INFORMATION_CHECKING && <InformationCheckingStep />}
+              {currentStep === EImportStep.IMPORTING && <ImportClientStep />}
             </SimpleTransitionLayout>
           </div>
         </AddClientDialogContext.Provider>

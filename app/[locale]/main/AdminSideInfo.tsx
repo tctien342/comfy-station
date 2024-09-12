@@ -6,6 +6,7 @@ import { TaskBigStat } from '@/components/TaskBigStat'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useAppStore } from '@/states/app'
 import { trpc } from '@/utils/trpc'
 import { MoonIcon, PlusIcon, SunIcon } from '@heroicons/react/24/outline'
@@ -20,10 +21,10 @@ export const AdminSideInfo: IComponent = () => {
   const [clientStats, setClientStats] = useState<{ online: number; offline: number; error: number }>()
 
   const { data: tasks, isLoading: isTaskLoading, refetch: reloadTasks } = trpc.task.lastTasks.useQuery({ limit: 30 })
-  const { data: clients } = trpc.client.list.useQuery()
+  const { data: clients, refetch: reloadClients } = trpc.client.list.useQuery()
   const { data: avatarInfo } = trpc.attachment.get.useQuery({ id: session.data?.user?.avatar?.id || '' })
 
-  trpc.client.clientOverviewStat.useSubscription(undefined, {
+  trpc.client.overview.useSubscription(undefined, {
     onData: (data) => {
       setClientStats(data)
     }
@@ -34,6 +35,8 @@ export const AdminSideInfo: IComponent = () => {
       setTaskStats(data)
     }
   })
+
+  useGlobalEvent(EGlobalEvent.RLOAD_CLIENTS, reloadClients)
 
   const handlePressLogout = () => {
     signOut()

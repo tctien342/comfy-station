@@ -34,12 +34,12 @@ export const ClientInfoMonitoring: IComponent<{
     limit: 20
   })
 
-  trpc.client.monitoringClient.useSubscription(client.id, {
+  trpc.client.monitorSystem.useSubscription(client.id, {
     onData: (data) => {
       setMonitoring(data)
     }
   })
-  trpc.client.clientStatus.useSubscription(client.id, {
+  trpc.client.monitorStatus.useSubscription(client.id, {
     onData: (data) => {
       setStatus(data)
     }

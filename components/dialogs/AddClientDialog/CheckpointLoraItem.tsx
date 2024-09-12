@@ -28,7 +28,11 @@ export const CheckpointLoraItem: IComponent<{
   const debounce = useActionDebounce(1000, true)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
-  const { data, isLoading, refetch } = trpc.resource.get.useQuery(
+  const {
+    data: resourceInfo,
+    isLoading,
+    refetch
+  } = trpc.resource.get.useQuery(
     {
       name: ckptName,
       type
@@ -38,6 +42,8 @@ export const CheckpointLoraItem: IComponent<{
       refetchOnWindowFocus: false
     }
   )
+  const data = resourceInfo?.info
+
   const { data: image, isLoading: imageLoading } = trpc.attachment.get.useQuery(
     {
       id: data?.image?.id!
@@ -158,9 +164,7 @@ export const CheckpointLoraItem: IComponent<{
                 {tag.countResource} <Box width={12} height={12} className='ml-1' />
               </Badge>
             </TooltipTrigger>
-            <TooltipContent>
-              Used in {tag.countResource} resources
-            </TooltipContent>
+            <TooltipContent>Used in {tag.countResource} resources</TooltipContent>
           </Tooltip>
         )
       }

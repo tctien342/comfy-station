@@ -9,15 +9,17 @@ export interface IInputNumberConfig {
   max: number
   step?: number
   round?: number
+  tooltip?: string
 }
 export interface IInputStringConfig {
   default?: string
   multiline?: boolean
   dynamicPrompts?: boolean
+  tooltip?: string
 }
 
 export type TStringInput = ['STRING', IInputStringConfig]
-export type TBoolInput = ['BOOLEAN', { default: boolean }]
+export type TBoolInput = ['BOOLEAN', { default: boolean; tooltip?: string }]
 export type TNumberInput = ['INT' | 'FLOAT', IInputNumberConfig]
 
 @Entity()
@@ -45,10 +47,12 @@ export class Extension {
   outputNode!: boolean
 
   @Property({ type: 'json', nullable: true })
-  inputConf?: { [key: string]: [string[]] | [string] | TBoolInput | TNumberInput }
+  inputConf?: {
+    [key: string]: [string[], { tooltip?: string }] | [string, { tooltip?: string }] | TBoolInput | TNumberInput
+  }
 
   @Property({ type: 'json', nullable: true })
-  outputConf?: { output: string; isList: boolean; name: string }[]
+  outputConf?: { output: string; isList: boolean; name: string; tooltip?: string }[]
 
   @Property({ type: 'timestamp' })
   createdAt = new Date()

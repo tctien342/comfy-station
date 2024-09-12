@@ -36,7 +36,7 @@ export class ComfyPoolInstance {
     const em = await MikroORMInstance.getInstance().getEM()
     const clients = await em.find(Client, {}, { populate: ['password'] })
 
-    clients.forEach((clientConf) => {
+    for (const clientConf of clients) {
       const client = new ComfyApi(clientConf.host, clientConf.id, {
         credentials:
           clientConf.auth === EAuthMode.Basic
@@ -47,8 +47,9 @@ export class ComfyPoolInstance {
               }
             : undefined
       })
-      this.pool.addClient(client)
-    })
+      client.on('reconnected', () => console.log('CONSOLELOG WTFFFFFFFFFFFFF'))
+      await this.pool.addClient(client)
+    }
   }
 
   private bindEvents() {
@@ -109,6 +110,7 @@ export class ComfyPoolInstance {
         this.logger.i('disconnected', `Client ${ev.detail.clientIdx} disconnected`, {
           id: ev.detail.client.id
         })
+        ev.detail.client.on('all', (ev) => console.log(ev.detail))
         const em = await MikroORMInstance.getInstance().getEM()
         const client = await em.findOne(Client, { id: ev.detail.client.id })
         if (client) {

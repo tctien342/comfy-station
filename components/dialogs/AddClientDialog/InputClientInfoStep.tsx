@@ -38,7 +38,7 @@ export const InputClientInfoStep: IComponent = () => {
       auth: clientInfo?.auth ?? false
     }
   })
-  const { mutateAsync } = trpc.client.testClient.useMutation()
+  const { mutateAsync } = trpc.client.testNewClient.useMutation()
 
   const haveAuth = form.watch('auth')
   const handlePressSubmit = form.handleSubmit((data) => {
