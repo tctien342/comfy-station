@@ -5,6 +5,7 @@ import { router } from '../trpc'
 import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment'
 import { EAttachmentStatus } from '@/entities/enum'
+import { ImageUtil } from '../utils/ImageUtil'
 
 export const attachmentRouter = router({
   get: privateProcedure
@@ -24,14 +25,42 @@ export const attachmentRouter = router({
     .input(
       zfd.formData({
         file: zfd.file(),
-        name: z.string()
+        name: z.string(),
+        /**
+         * The maximum width and height of the image
+         */
+        maxWidthHeightSize: z
+          .string()
+          .transform((v) => Number(v))
+          .optional(),
+        /**
+         * The type of compress image
+         */
+        type: z.enum(['preview-image-jpg', 'high-jpg', 'jpg']).optional()
       })
     )
     .mutation(async ({ input, ctx }) => {
       const storageService = AttachmentService.getInstance()
       const file = input.file
       const buffArr = await file.arrayBuffer()
-      const buff = Buffer.from(buffArr)
+      let buff = Buffer.from(buffArr)
+      const imgObj = new ImageUtil(buff)
+      if (input.maxWidthHeightSize) {
+        await imgObj.ensureMax(input.maxWidthHeightSize)
+      }
+      if (input.type) {
+        switch (input.type) {
+          case 'preview-image-jpg':
+            buff = await imgObj.intoPreviewJPG()
+            break
+          case 'high-jpg':
+            buff = await imgObj.intoHighJPG()
+            break
+          case 'jpg':
+            buff = await imgObj.intoJPG()
+            break
+        }
+      }
       /**
        * Avoid uploading the same file multiple times
        */

@@ -100,7 +100,8 @@ export const CheckpointItem: IComponent<{
     const formData = new FormData()
     formData.append('file', file)
     formData.append('name', file.name)
-    console.log(file, formData)
+    formData.append('maxWidthHeightSize', '512')
+    formData.append('type', 'preview-image-jpg')
     await uploader.mutateAsync(formData).then((res) => {
       if (res.status === EAttachmentStatus.UPLOADED) {
         toast({
