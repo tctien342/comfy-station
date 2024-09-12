@@ -1,17 +1,27 @@
 import { AnimateDiv } from '@/components/AnimateDiv'
 import { ResourceItem } from '@/components/ResourceItem'
 import { cn } from '@/lib/utils'
-import { AddClientDialogContext } from '.'
-import { useContext, useMemo, useState } from 'react'
+import { AddClientDialogContext, EImportStep } from '.'
+import { useCallback, useContext, useMemo, useRef, useState } from 'react'
 import { trpc } from '@/utils/trpc'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
-import { CheckpointItem } from './CheckpointItem'
+import { CheckpointLoraItem } from './CheckpointLoraItem'
+import { InputItem } from '@/components/InputItem'
+import { Blocks, ChevronLeftIcon, ChevronsUpDown, Code, Home, Lock, Save, Tag } from 'lucide-react'
+import { LoadableButton } from '@/components/LoadableButton'
+import { Button } from '@/components/ui/button'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { AccordionItem, AccordionTrigger, AccordionContent } from '@radix-ui/react-accordion'
+import { toReadableName } from '@/utils/node'
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@radix-ui/react-collapsible'
+import { EResourceType } from '@/entities/enum'
 
 const extraCls = 'border rounded-lg bg-secondary/20 shadow-inner'
 
 export const InformationCheckingStep: IComponent = () => {
+  const parentRef = useRef<HTMLDivElement>(null)
   const [activeTab, setActiveTab] = useState(0)
-  const { clientInfo } = useContext(AddClientDialogContext)
+  const { clientInfo, setStep } = useContext(AddClientDialogContext)
   const { data, isLoading } = trpc.client.resources.useQuery(
     {
       host: clientInfo!.host,
@@ -22,14 +32,113 @@ export const InformationCheckingStep: IComponent = () => {
     { enabled: clientInfo !== undefined }
   )
 
+  const itemCount = useMemo(() => {
+    if (activeTab === 0) return data?.checkpoints.length
+    if (activeTab === 1) return Object.keys(data?.extensions ?? {}).length
+    if (activeTab === 2) return data?.lora.length
+    if (activeTab === 3) return data?.samplerInfo.sampler[0].length
+    if (activeTab === 4) return data?.samplerInfo.scheduler[0].length
+    return 0
+  }, [
+    activeTab,
+    data?.checkpoints.length,
+    data?.extensions,
+    data?.lora.length,
+    data?.samplerInfo.sampler,
+    data?.samplerInfo.scheduler
+  ])
+
+  const rowVirtualizer = useVirtualizer({
+    count: itemCount,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 288
+  })
+
+  const items = rowVirtualizer.getVirtualItems()
+
+  const renderItem = useCallback(
+    (idx: number) => {
+      if (!data) return null
+      switch (activeTab) {
+        case 0:
+          const ckpgName = data.checkpoints[idx]
+          if (!ckpgName) return null
+          return <CheckpointLoraItem key={ckpgName} resourceFileName={ckpgName} />
+        case 1:
+          const extName = Object.keys(data.extensions ?? {})[idx]
+          if (!extName) return null
+          const extNodes = data.extensions[extName]
+          const name = toReadableName(extName)
+          return (
+            <Collapsible>
+              <CollapsibleTrigger className='p-2 px-4 w-full flex gap-2 items-center'>
+                <Blocks width={16} height={16} />
+                {name}
+                <span className='ml-auto text-xs text-secondary-foreground'>{extNodes.length} nodes</span>
+                <ChevronsUpDown className='h-4 w-4' />
+              </CollapsibleTrigger>
+              <CollapsibleContent className='bg-secondary shadow-inner divide-y-[1px]'>
+                {extNodes.map((node) => {
+                  return (
+                    <div key={node.name} className='p-2 pl-4 flex gap-4'>
+                      <Code width={16} height={16} className='min-w-fit mt-1' />
+                      <div>
+                        <h1 className='font-semibold'>{node.name}</h1>
+                        <p className='text-sm'>{node.description}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </CollapsibleContent>
+            </Collapsible>
+          )
+        case 2:
+          const lora = data.lora[idx]
+          if (!lora) return null
+          return <CheckpointLoraItem key={lora} resourceFileName={lora} type={EResourceType.Lora} />
+        case 3:
+          const sampler = data.samplerInfo.sampler[0][idx]
+          if (!sampler) return null
+          return (
+            <div key={sampler.name} className='p-2 pl-4 flex gap-4'>
+              <Code width={16} height={16} className='min-w-fit mt-1' />
+              <div>
+                <h1 className='font-semibold'>{sampler}</h1>
+              </div>
+            </div>
+          )
+        case 4:
+          const scheduler = data.samplerInfo.scheduler[0][idx]
+          if (!scheduler) return null
+          return (
+            <div key={scheduler.name} className='p-2 pl-4 flex gap-4'>
+              <Code width={16} height={16} className='min-w-fit mt-1' />
+              <div>
+                <h1 className='font-semibold'>{scheduler}</h1>
+              </div>
+            </div>
+          )
+        default:
+          return null
+      }
+    },
+    [activeTab, data?.checkpoints, data?.extensions]
+  )
+
   const renderListContent = useMemo(() => {
-    switch (activeTab) {
-      case 0:
-        return data?.checkpoints.map((ckptName) => <CheckpointItem key={ckptName} ckptName={ckptName} />)
-      default:
-        return <div></div>
-    }
-  }, [activeTab, data?.checkpoints])
+    return items.map((virtualRow) => {
+      return (
+        <div
+          key={virtualRow.key}
+          data-index={virtualRow.index}
+          ref={rowVirtualizer.measureElement}
+          className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
+        >
+          {renderItem(virtualRow.index)}
+        </div>
+      )
+    })
+  }, [items, renderItem, rowVirtualizer.measureElement])
 
   return (
     <div className='absolute top-0 w-full h-full flex gap-2'>
@@ -76,11 +185,66 @@ export const InformationCheckingStep: IComponent = () => {
         />
       </AnimateDiv>
       <AnimateDiv delayShow={200} className={cn('w-2/4', extraCls)}>
-        <SimpleTransitionLayout deps={[activeTab]} className='overflow-auto h-full divide-y-[1px]'>
-          {renderListContent}
+        <SimpleTransitionLayout deps={[activeTab]} className='h-full'>
+          <div ref={parentRef} className='h-full divide-y-[1px] overflow-y-auto contain-strict'>
+            <div
+              style={{
+                height: rowVirtualizer.getTotalSize(),
+                width: '100%',
+                position: 'relative'
+              }}
+            >
+              <div
+                className=' divide-y-[1px]'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${items[0]?.start ?? 0}px)`
+                }}
+              >
+                {renderListContent}
+              </div>
+            </div>
+          </div>
         </SimpleTransitionLayout>
       </AnimateDiv>
-      <AnimateDiv delayShow={400} className={cn('w-1/4', extraCls)}></AnimateDiv>
+      <AnimateDiv delayShow={400} className={cn('w-1/4 p-2', extraCls)}>
+        <h1 className='font-semibold'>NODE INFORMATION</h1>
+        <p className='text-sm font-light'>Input the node details before created</p>
+        <div className='mt-3 flex flex-col gap-3'>
+          <InputItem
+            Icon={Home}
+            title='SERVER ADDRESS'
+            description='Current address of this node'
+            value={clientInfo?.host}
+          />
+          <InputItem
+            Icon={Lock}
+            title='AUTHENTICATION'
+            description='Authentication mode of this mode'
+            value={clientInfo?.auth ? 'Enabled' : 'Disabled'}
+          />
+          <InputItem
+            Icon={Tag}
+            title='NODE NAME'
+            description='Naming for this node'
+            inputType='input'
+            placeholder={clientInfo?.host}
+          />
+        </div>
+        <div className='flex gap-2 w-full justify-end mt-4'>
+          <Button onClick={() => setStep?.(EImportStep.FEATURE_CHECKING)} variant='secondary' className=''>
+            Back
+            <ChevronLeftIcon width={16} height={16} className='ml-2' />
+          </Button>
+          <LoadableButton>
+            Add
+            <Save width={16} height={16} className='ml-2' />
+          </LoadableButton>
+        </div>
+      </AnimateDiv>
     </div>
   )
 }

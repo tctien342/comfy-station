@@ -4,24 +4,45 @@ import { createWSClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLi
 import { createTRPCNext } from '@trpc/next'
 import { ssrPrepass } from '@trpc/next/ssrPrepass'
 import type { AppRouter } from '@/server/routers/_app'
-
-export const wsClient = createWSClient({
-  url: 'ws://localhost:3000/api/ws'
-})
+import { BackendENV } from '@/env'
 
 function getBaseUrl() {
   if (typeof window !== 'undefined')
     // browser should use relative path
     return ''
+  if (BackendENV.APP_HOSTNAME) {
+    return `https://${BackendENV.APP_HOSTNAME}`
+  }
   if (process.env.VERCEL_URL)
     // reference for vercel.com
     return `https://${process.env.VERCEL_URL}`
   if (process.env.RENDER_INTERNAL_HOSTNAME)
     // reference for render.com
-    return `http://${process.env.RENDER_INTERNAL_HOSTNAME}:${process.env.PORT}`
+    return `http://${process.env.RENDER_INTERNAL_HOSTNAME}`
   // assume localhost
   return `http://localhost:${process.env.PORT ?? 3000}`
 }
+
+function getBaseWsUrl() {
+  if (typeof window !== 'undefined')
+    // browser should use relative path
+    return ''
+  if (BackendENV.APP_HOSTNAME) {
+    return `wss://${BackendENV.APP_HOSTNAME}`
+  }
+  if (process.env.VERCEL_URL)
+    // reference for vercel.com
+    return `wss://${process.env.VERCEL_URL}`
+  if (process.env.RENDER_INTERNAL_HOSTNAME)
+    // reference for render.com
+    return `ws://${process.env.RENDER_INTERNAL_HOSTNAME}`
+  // assume localhost
+  return `ws://localhost:${process.env.PORT ?? 3000}`
+}
+
+export const wsClient = createWSClient({
+  url: `${getBaseWsUrl()}/api/ws`
+})
 
 export const trpc = createTRPCNext<AppRouter>({
   transformer: superjson,
@@ -37,6 +58,9 @@ export const trpc = createTRPCNext<AppRouter>({
               client: wsClient,
               transformer: superjson
             }),
+            /**
+             * Add support for file uploads
+             */
             false: splitLink({
               condition: (op) => isNonJsonSerializable(op.input),
               true: httpLink({

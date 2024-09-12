@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { EAttachmentStatus, EStorageType } from './enum'
 import type { WorkflowTask } from './workflow_task'
@@ -35,11 +35,11 @@ export class Attachment {
   @ManyToOne('Workflow', { index: true, nullable: true, deleteRule: 'set null' })
   workflow?: Workflow
 
-  @OneToOne({ entity: 'User', mappedBy: 'avatar', nullable: true, deleteRule: 'set null' })
-  user?: User
+  @OneToMany({ entity: 'User', mappedBy: 'avatar', nullable: true })
+  users = new Collection<User>(this)
 
-  @OneToOne({ entity: 'Resource', mappedBy: 'image', nullable: true, deleteRule: 'set null' })
-  resource?: Resource
+  @OneToMany({ entity: 'Resource', mappedBy: 'image', nullable: true })
+  resources? = new Collection<Resource>(this)
 
   @Property({ type: 'timestamp' })
   createdAt = new Date()

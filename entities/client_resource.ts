@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { EResourceType } from './enum'
 import type { Client } from './client'
@@ -23,7 +23,7 @@ export class Resource {
   @Property({ type: 'string', nullable: true })
   description?: string
 
-  @OneToOne({ entity: 'Attachment', inversedBy: 'resource', nullable: true, deleteRule: 'set null' })
+  @ManyToOne({ entity: 'Attachment', inversedBy: 'resources', nullable: true })
   image?: Attachment
 
   @Property({ type: 'timestamp' })

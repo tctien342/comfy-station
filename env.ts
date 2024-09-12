@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 const ENVBackendSchema = z.object({
+  APP_HOSTNAME: z.string().optional(),
   S3_ENDPOINT: z.string().optional(),
   S3_BUCKET_NAME: z.string().optional(),
   S3_REGION: z.string().optional(),

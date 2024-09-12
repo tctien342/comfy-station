@@ -63,7 +63,7 @@ export const resourceRouter = router({
       }
       if (data.tags) {
         resource.tags.removeAll()
-        for (const tag in data.tags) {
+        for (const tag of data.tags) {
           const tagEntity = await ctx.em.findOne(Tag, { name: tag })
           if (tagEntity) {
             resource.tags.add(tagEntity)

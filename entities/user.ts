@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { createHmac } from 'crypto'
 import { EUserRole } from './enum'
@@ -29,7 +29,7 @@ export class User {
   @Property({ type: 'string', lazy: true })
   password: string
 
-  @OneToOne({ entity: 'Attachment', inversedBy: 'user', nullable: true })
+  @ManyToOne({ entity: 'Attachment', inversedBy: 'users', nullable: true })
   avatar?: Attachment
 
   @Property({ type: 'int', default: EUserRole.User, index: true })

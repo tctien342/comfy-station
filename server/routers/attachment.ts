@@ -6,6 +6,7 @@ import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment'
 import { EAttachmentStatus } from '@/entities/enum'
 import { ImageUtil } from '../utils/ImageUtil'
+import { ECompressPreset } from '@/hooks/useAttachmentUploader'
 
 export const attachmentRouter = router({
   get: privateProcedure
@@ -36,7 +37,7 @@ export const attachmentRouter = router({
         /**
          * The type of compress image
          */
-        type: z.enum(['preview-image-jpg', 'high-jpg', 'jpg']).optional()
+        type: z.nativeEnum(ECompressPreset).optional()
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -50,13 +51,13 @@ export const attachmentRouter = router({
       }
       if (input.type) {
         switch (input.type) {
-          case 'preview-image-jpg':
+          case ECompressPreset.PREVIEW:
             buff = await imgObj.intoPreviewJPG()
             break
-          case 'high-jpg':
+          case ECompressPreset.HIGH_JPG:
             buff = await imgObj.intoHighJPG()
             break
-          case 'jpg':
+          case ECompressPreset.JPG:
             buff = await imgObj.intoJPG()
             break
         }
@@ -74,14 +75,13 @@ export const attachmentRouter = router({
         if (existingAttachment.status === EAttachmentStatus.UPLOADED) {
           return existingAttachment
         } else {
-          ctx.em.remove(existingAttachment)
+          await ctx.em.removeAndFlush(existingAttachment)
         }
       }
-      const attachment = ctx.em.create(Attachment, { fileName: input.name, size }, { partial: true })
+      const attachment = ctx.em.create(Attachment, { fileName: newName, size }, { partial: true })
       await ctx.em.persistAndFlush(attachment)
       try {
         await storageService.uploadFile(buff, newName)
-        attachment.fileName = newName
         attachment.status = EAttachmentStatus.UPLOADED
         await ctx.em.persistAndFlush(attachment)
         return attachment

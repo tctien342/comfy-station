@@ -2,32 +2,36 @@ import { LoadableButton } from '@/components/LoadableButton'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { MultiSelect } from '@/components/ui-ext/multi-select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { EAttachmentStatus, EResourceType } from '@/entities/enum'
 import { useActionDebounce } from '@/hooks/useAction'
+import { ECompressPreset, useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useToast } from '@/hooks/useToast'
 import { trpc } from '@/utils/trpc'
-import { CheckIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { CheckIcon } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Tag } from 'lucide-react'
-import { ComponentType, FocusEventHandler, useEffect, useRef } from 'react'
+import { Blocks, Box, Tag } from 'lucide-react'
+import { FocusEventHandler, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-export const CheckpointItem: IComponent<{
-  ckptName: string
-}> = ({ ckptName }) => {
+export const CheckpointLoraItem: IComponent<{
+  resourceFileName: string
+  type?: EResourceType.Lora | EResourceType.Checkpoint
+}> = ({ resourceFileName: ckptName, type = EResourceType.Checkpoint }) => {
   const fileRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
   const debounce = useActionDebounce(1000, true)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+
   const { data, isLoading, refetch } = trpc.resource.get.useQuery(
     {
       name: ckptName,
-      type: EResourceType.Checkpoint
+      type
     },
     {
       refetchOnMount: false,
@@ -44,11 +48,10 @@ export const CheckpointItem: IComponent<{
   )
 
   const { data: tags, refetch: refetchTags } = trpc.tag.list.useQuery()
-
   const createTag = trpc.tag.create.useMutation()
   const creator = trpc.resource.create.useMutation()
-  const uploader = trpc.attachment.upload.useMutation()
   const updater = trpc.resource.update.useMutation()
+  const { uploader, uploadAttachment } = useAttachmentUploader()
 
   const shortName = ckptName.slice(0, 2)
   const formSchema = z.object({
@@ -58,16 +61,20 @@ export const CheckpointItem: IComponent<{
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema)
   })
-  const handlePressSubmit = form.handleSubmit(async (formData) => {
-    let id = data?.id
-    if (!id) {
+
+  const ensureCreated = async () => {
+    if (!data?.id) {
       const item = await creator.mutateAsync({
         name: ckptName,
-        type: EResourceType.Checkpoint
+        type
       })
-      id = item.id
+      return item.id
     }
+    return data.id
+  }
+  const handlePressSubmit = form.handleSubmit(async (formData) => {
     debounce(async () => {
+      const id = await ensureCreated()
       updater
         .mutateAsync({
           id,
@@ -78,31 +85,36 @@ export const CheckpointItem: IComponent<{
     })
   })
 
+  const handleUpdateTags = async (newTags: string[]) => {
+    setSelectedTags(newTags)
+    debounce(async () => {
+      const id = await ensureCreated()
+      updater
+        .mutateAsync({
+          id,
+          tags: newTags
+        })
+        .then(() => refetch())
+    })
+  }
+
   useEffect(() => {
     if (data) {
       form.reset({
         displayName: data.displayName,
         description: data.description
       })
+      setSelectedTags(data.tags.map((tag) => tag.name))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   const handleUploadImage = async (file: File) => {
-    let id = data?.id
-    if (!id) {
-      const item = await creator.mutateAsync({
-        name: ckptName,
-        type: EResourceType.Checkpoint
-      })
-      id = item.id
-    }
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('name', file.name)
-    formData.append('maxWidthHeightSize', '512')
-    formData.append('type', 'preview-image-jpg')
-    await uploader.mutateAsync(formData).then((res) => {
+    let id = await ensureCreated()
+    uploadAttachment(file, {
+      resizeToMax: 512,
+      compressPreset: ECompressPreset.PREVIEW
+    }).then((res) => {
       if (res.status === EAttachmentStatus.UPLOADED) {
         toast({
           title: 'Image uploaded'
@@ -129,24 +141,31 @@ export const CheckpointItem: IComponent<{
     }
   }
 
-  const tagsOptions =
-    tags?.map(
-      (
-        tag
-      ): {
-        label: string
-        value: string
-        icon?: ComponentType<{
-          className?: string
-        }>
-      } => {
-        return {
-          label: tag.info.name,
-          value: tag.info.id,
-          icon: Tag
-        }
+  const tagsOptions = useMemo(() => {
+    if (!tags) return []
+    return tags?.map((tag) => {
+      return {
+        label: tag.info.name,
+        value: tag.info.name,
+        icon: Tag,
+        suffix: (
+          <Tooltip>
+            <TooltipTrigger className='flex flex-auto justify-end gap-1 ml-4'>
+              {/* <Badge variant='outline'>
+                {tag.countExtension} <Blocks width={12} height={12} className='ml-1' />
+              </Badge> */}
+              <Badge variant='outline'>
+                {tag.countResource} <Box width={12} height={12} className='ml-1' />
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              Used in {tag.countResource} resources
+            </TooltipContent>
+          </Tooltip>
+        )
       }
-    ) ?? []
+    })
+  }, [tags])
 
   return (
     <div className='w-full flex p-2 py-4 gap-2'>
@@ -163,7 +182,7 @@ export const CheckpointItem: IComponent<{
         }}
       />
       <Avatar onClick={() => fileRef.current?.click()} className='m-2 w-16 h-16 !rounded-md cursor-pointer btn'>
-        <AvatarImage src={uploader.isPending ? undefined : image?.url || undefined} alt={ckptName || '@checkpoint'} />
+        <AvatarImage src={uploader.isPending ? undefined : image?.url || undefined} alt={ckptName || `@${type}`} />
         <AvatarFallback className='rounded-md uppercase'>
           {uploader.isPending && <LoadingSVG width={16} height={16} className='repeat-infinite' />}
           {!uploader.isPending && shortName}
@@ -201,16 +220,16 @@ export const CheckpointItem: IComponent<{
         </Form>
         <div className='w-full flex flex-wrap items-center'>
           <MultiSelect
+            modalPopover
             options={tagsOptions}
-            onValueChange={(e) => {}}
+            defaultValue={selectedTags}
+            onValueChange={handleUpdateTags}
             onCreateNew={(tag) => {
-              createTag.mutateAsync(tag).then(() => refetchTags())
+              createTag.mutateAsync(tag).then(() => refetchTags().then(() => setSelectedTags([...selectedTags, tag])))
             }}
-            defaultValue={[]}
-            placeholder='Select frameworks'
+            placeholder='Select tags'
             variant='inverted'
-            animation={2}
-            maxCount={3}
+            animation={1}
           />
           {!!data?.id && (
             <div className='ml-auto'>

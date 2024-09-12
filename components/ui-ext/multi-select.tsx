@@ -57,6 +57,7 @@ interface MultiSelectProps
     value: string
     /** Optional icon component to display alongside the option. */
     icon?: React.ComponentType<{ className?: string }>
+    suffix?: React.ReactNode
   }[]
 
   /**
@@ -160,6 +161,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     }
 
     const handlePressCreateNew = () => {
+      console.log('WTF')
       if (crrInputVal) {
         onCreateNew?.(crrInputVal)
         setCrrInputVal('')
@@ -269,7 +271,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
         </PopoverTrigger>
         <PopoverContent className='w-auto p-0' align='start' onEscapeKeyDown={() => setIsPopoverOpen(false)}>
           <Command>
-            <CommandInput onValueChange={setCrrInputVal} placeholder='Search...' onKeyDown={handleInputKeyDown} />
+            <CommandInput
+              value={crrInputVal}
+              onValueChange={setCrrInputVal}
+              placeholder='Search...'
+              onKeyDown={handleInputKeyDown}
+            />
             <CommandList>
               <CommandEmpty className='p-1'>
                 {/* Create new */}
@@ -280,9 +287,8 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
               <CommandGroup>
                 <Button
                   disabled={crrInputVal.length === 0}
-                  key={'new'}
                   variant='ghost'
-                  onSelect={handlePressCreateNew}
+                  onClick={handlePressCreateNew}
                   className='cursor-pointer w-full justify-start mb-1'
                 >
                   <Plus width={14} height={14} className='mr-2 h-4 w-4 text-muted-foreground' />
@@ -319,6 +325,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                       </div>
                       {option.icon && <option.icon className='mr-2 h-4 w-4 text-muted-foreground' />}
                       <span>{option.label}</span>
+                      {option.suffix}
                     </CommandItem>
                   )
                 })}
