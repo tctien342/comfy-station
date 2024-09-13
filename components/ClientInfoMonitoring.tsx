@@ -18,10 +18,14 @@ import {
 } from './ui/dropdown-menu'
 import { LoadableButton } from './LoadableButton'
 import { OverflowText } from './OverflowText'
+import { SimpleTransitionLayout } from './SimpleTranslation'
+import { useToast } from '@/hooks/useToast'
+import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 
 export const ClientInfoMonitoring: IComponent<{
   client: Client
 }> = ({ client }) => {
+  const { toast } = useToast()
   const [actioning, setActioning] = useState(false)
   const [status, setStatus] = useState<EClientStatus>()
   const [monitoring, setMonitoring] = useState<TMonitorEvent>()
@@ -45,6 +49,7 @@ export const ClientInfoMonitoring: IComponent<{
     }
   })
 
+  const deleter = trpc.client.delete.useMutation()
   const { mutateAsync } = trpc.client.control.useMutation()
 
   const handlePressAction = async (mode: 'FREE_VRAM' | 'REBOOT' | 'INTERRUPT') => {
@@ -55,6 +60,27 @@ export const ClientInfoMonitoring: IComponent<{
     }).finally(() => {
       setActioning(false)
     })
+  }
+
+  const handlePressDelete = async () => {
+    setActioning(true)
+    deleter
+      .mutateAsync(client.host)
+      .then(() => {
+        dispatchGlobalEvent(EGlobalEvent.RLOAD_CLIENTS)
+        toast({
+          description: 'Client deleted successfully'
+        })
+      })
+      .catch(() => {
+        toast({
+          description: 'Failed to delete client',
+          variant: 'destructive'
+        })
+      })
+      .finally(() => {
+        setActioning(false)
+      })
   }
 
   useEffect(() => {
@@ -130,6 +156,15 @@ export const ClientInfoMonitoring: IComponent<{
                   <SquareIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>Cancel current task</span>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={status !== EClientStatus.Online}
+                  className='text-destructive cursor-pointer'
+                  onClick={handlePressDelete}
+                >
+                  <TrashIcon className='mr-2' width={16} height={16} />
+                  <span className='min-w-[100px]'>Delete this client</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className='flex flex-col flex-auto'>
@@ -141,7 +176,12 @@ export const ClientInfoMonitoring: IComponent<{
           </div>
           <TaskBar className='max-w-[200px]' tasks={clientTasks || []} loading={taskLoading} total={20} />
         </div>
-        <div className='h-full p-2 flex flex-col gap-1 min-w-fit'>{renderStats}</div>
+        <SimpleTransitionLayout
+          deps={[String(status === EClientStatus.Offline)]}
+          className='h-full p-2 flex flex-col gap-1 min-w-fit'
+        >
+          {renderStats}
+        </SimpleTransitionLayout>
       </div>
       <div
         className={cn('w-2 transition-all', {

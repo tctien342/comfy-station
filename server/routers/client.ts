@@ -27,6 +27,24 @@ export const clientRouter = router({
   list: adminProcedure.query(async ({ ctx }) => {
     return ctx.em.find(Client, {})
   }),
+  delete: adminProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    const client = await ctx.em.findOne(Client, { host: input })
+    if (!client) {
+      throw new Error('Client not found')
+    }
+    const pool = ComfyPoolInstance.getInstance().pool
+    const clientIns = pool.pickById(input)
+    if (clientIns) {
+      pool.removeClient(clientIns)
+    }
+    client.actionEvents.removeAll()
+    client.monitorEvents.removeAll()
+    client.statusEvents.removeAll()
+    client.extensions.removeAll()
+    await ctx.em.remove(client).flush()
+    await cacher.set('CLIENT_STATUS', input, EClientStatus.Offline)
+    return true
+  }),
   monitorSystem: adminProcedure.input(z.string()).subscription(async ({ input, ctx }) => {
     return observable<TMonitorEvent>((subscriber) => {
       const off = cacher.on('SYSTEM_MONITOR', input, (ev) => {
@@ -114,9 +132,9 @@ export const clientRouter = router({
     }),
   overview: adminProcedure.subscription(async ({ ctx }) => {
     const cacher = CachingService.getInstance()
-    const clients = await ctx.em.find(Client, {})
 
     const getStatues = async () => {
+      const clients = await ctx.em.find(Client, {})
       const data = await Promise.all(clients.map((client) => cacher.get('CLIENT_STATUS', client.id)))
       return {
         online: data.filter((e) => !!e && [EClientStatus.Online, EClientStatus.Executing].includes(e)).length,
@@ -261,8 +279,8 @@ export const clientRouter = router({
           }
           const importSamplerScheduler = async () => {
             const samplerInfo = await api.getSamplerInfo()
-            const samplers = samplerInfo.sampler[0] as string[]
-            const schedulers = samplerInfo.scheduler[0] as string[]
+            const samplers = samplerInfo.sampler?.[0] as string[]
+            const schedulers = samplerInfo.scheduler?.[0] as string[]
             for (const sampler of samplers) {
               let resource = await ctx.em.findOne(Resource, { name: sampler, type: EResourceType.Sampler })
               if (!resource) {

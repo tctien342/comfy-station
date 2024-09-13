@@ -39,18 +39,18 @@ export default defineCommand({
   async run({ args }) {
     const db = await MikroORMInstance.getInstance().getEM()
     if (!args.host) {
-      const clients = await db.find(Client, {})
+      const clients = await db.find(Client, {}, { populate: ['password'] })
       consola.info('List of available clients:')
       clients.forEach((client) => {
         consola.info(`- ${client.host}`)
       })
-      return
+      process.exit(0)
     }
     if (args.delete) {
       const client = await db.findOne(Client, { host: args.host })
       if (!client) {
         consola.error('Client not found')
-        return
+        process.exit(0)
       }
       client.actionEvents.removeAll()
       client.monitorEvents.removeAll()
@@ -58,7 +58,7 @@ export default defineCommand({
       client.extensions.removeAll()
       await db.remove(client).flush()
       consola.success('Client removed')
-      return
+      process.exit(0)
     }
     const client = await db.findOne(Client, { host: args.host })
     if (!client) {
@@ -75,7 +75,7 @@ export default defineCommand({
       const ping = await api.ping()
       if (!ping.status || !('time' in ping)) {
         consola.error('Client not reachable')
-        return
+        process.exit(0)
       }
       const newClient = new Client(args.host)
       if (args.username && args.password) {
