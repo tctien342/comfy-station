@@ -1,15 +1,10 @@
 import { useContext } from 'react'
 import { AddClientDialogContext, EImportStep } from '.'
 import { SimpleInfoItem } from '@/components/SimpleInfoItem'
-import {
-  ArrowRightIcon,
-  ArrowTopRightOnSquareIcon,
-  CheckIcon,
-  ChevronLeftIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline'
+import { ArrowTopRightOnSquareIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Button } from '@/components/ui/button'
 import { LoadableButton } from '@/components/LoadableButton'
+import { ArrowRight, ChevronLeft } from 'lucide-react'
 
 export const CheckingFeatureStep: IComponent = () => {
   const { clientInfo, setStep } = useContext(AddClientDialogContext)
@@ -69,11 +64,11 @@ export const CheckingFeatureStep: IComponent = () => {
       <div className='flex gap-2 w-full justify-center mt-4'>
         <Button onClick={() => setStep?.(EImportStep.INPUT_CLIENT_INFO)} variant='secondary' className=''>
           Back
-          <ChevronLeftIcon width={16} height={16} className='ml-2' />
+          <ChevronLeft width={16} height={16} className='ml-2' />
         </Button>
         <LoadableButton onClick={handleContinue}>
           Continue
-          <ArrowRightIcon width={16} height={16} className='ml-2' />
+          <ArrowRight width={16} height={16} className='ml-2' />
         </LoadableButton>
       </div>
       <div className='flex flex-col gap-2 w-full justify-center mt-4'>

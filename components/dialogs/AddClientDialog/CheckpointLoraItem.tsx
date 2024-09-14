@@ -236,7 +236,7 @@ export const CheckpointLoraItem: IComponent<{
             animation={1}
           />
           {!!data?.id && (
-            <div className='ml-auto'>
+            <div className='ml-auto mt-2'>
               <Tooltip>
                 <TooltipTrigger className='flex items-center gap-1'>
                   {!!data?.updateAt && (

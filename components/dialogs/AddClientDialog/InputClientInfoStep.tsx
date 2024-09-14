@@ -11,7 +11,8 @@ import { z } from 'zod'
 import { AddClientDialogContext, EImportStep } from '.'
 import { trpc } from '@/utils/trpc'
 import { useToast } from '@/hooks/useToast'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArrowLongRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArrowRight } from 'lucide-react'
 
 export const InputClientInfoStep: IComponent = () => {
   const { clientInfo, setClientInfo, setStep } = useContext(AddClientDialogContext)
@@ -127,7 +128,7 @@ export const InputClientInfoStep: IComponent = () => {
         />
         <div className='flex justify-end w-full'>
           <LoadableButton loading={loading} type='submit' color='primary'>
-            Next <EnterIcon className='ml-2 w-4 h-4' />
+            Next <ArrowRight className='ml-2 w-4 h-4' />
           </LoadableButton>
         </div>
       </form>

@@ -13,8 +13,7 @@ export enum EImportStep {
   'INPUT_CLIENT_INFO',
   'FEATURE_CHECKING',
   'INFORMATION_CHECKING',
-  'IMPORTING',
-  'FINISH'
+  'IMPORTING'
 }
 
 interface IAddClientContext {
