@@ -1,34 +1,31 @@
-import type { CreateWSSContextFnOptions } from '@trpc/server/adapters/ws'
 import { MikroORMInstance } from '@/services/mikro-orm'
-import { getServerSession, Session } from 'next-auth'
-import { NextAuthOptions } from '@/app/api/auth/[...nextauth]/route'
-import { getSession } from 'next-auth/react'
-import { FetchHandlerRequestOptions } from '@trpc/server/adapters/fetch'
-import { headers } from 'next/headers'
+import { verify } from 'jsonwebtoken'
+import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
+import { User } from '@/entities/user'
 
 /**
  * Creates context for an incoming request
  * @link https://trpc.io/docs/v11/context
  */
-export const createContext = async (opts: FetchHandlerRequestOptions<any>) => {
+export const createContext = async (opts: CreateNextContextOptions) => {
   const orm = await MikroORMInstance.getInstance().getORM()
-  const _headers = new Headers(headers())
-  const session = await getServerSession(NextAuthOptions)
-  _headers.set('x-trpc-source', 'rsc')
+  const headers = opts.req.headers
+  const rawAuthorization = headers['authorization'] ?? opts.info?.connectionParams?.Authorization
+  const accessToken = rawAuthorization?.replace('Bearer ', '')
 
-  return {
-    session,
-    em: orm.em.fork(),
-    headers: Object.fromEntries(_headers)
-  }
-}
-
-export const createContextWs = async (opts: CreateWSSContextFnOptions) => {
-  const orm = await MikroORMInstance.getInstance().getORM()
-  const session = await getSession({ req: opts.req as any })
-  return {
-    session,
-    em: orm.em.fork()
+  try {
+    let user: User | null = null
+    if (accessToken) {
+      const tokenInfo = verify(accessToken, process.env.NEXTAUTH_SECRET ?? 'secret') as { email: string }
+      user = await orm.em.fork().findOne(User, { email: tokenInfo.email })
+    }
+    return {
+      session: { user },
+      em: orm.em.fork(),
+      headers
+    }
+  } catch (e) {
+    throw new Error('Invalid access token')
   }
 }
 

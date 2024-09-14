@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { EAttachmentStatus, EStorageType } from './enum'
 import type { WorkflowTask } from './workflow_task'
@@ -53,7 +53,7 @@ export class Attachment {
     this.storageType = BackendENV.S3_ENDPOINT ? EStorageType.S3 : EStorageType.LOCAL
   }
 
-  static fileMD5(buffer: ArrayBuffer) {
+  static fileMD5(buffer: ArrayBuffer | Buffer) {
     return new Promise<string>((resolve, reject) => {
       try {
         const hash = createHash('md5')

@@ -1,11 +1,17 @@
 'use client'
 
-import { trpc } from '@/utils/trpc'
+import { setAuthToken, trpc } from '@/utils/trpc'
+import { useSession } from 'next-auth/react'
 
 import type React from 'react'
-import type { PropsWithChildren } from 'react'
+
+import { useEffect, type PropsWithChildren } from 'react'
 
 const TRPCLayout: React.FC<PropsWithChildren> = ({ children }) => {
+  const { data: session } = useSession()
+  useEffect(() => {
+    setAuthToken(session?.accessToken ?? '')
+  }, [session])
   return <>{children}</>
 }
 

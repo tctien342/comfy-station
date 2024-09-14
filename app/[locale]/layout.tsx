@@ -26,7 +26,7 @@ export default async function RootLayout({
     <html lang={locale} className=''>
       <body>
         <SessionLayout session={session}>
-          <NextIntlClientProvider messages={messages}>
+          <NextIntlClientProvider timeZone='UTC' messages={messages}>
             <BackgroundSVG
               preserveAspectRatio='none'
               className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
