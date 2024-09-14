@@ -1,3 +1,4 @@
+const { resolve } = require('path')
 const million = require('million/compiler')
 const createNextIntlPlugin = require('next-intl/plugin')
 

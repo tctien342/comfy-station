@@ -36,8 +36,8 @@ export const InformationCheckingStep: IComponent = () => {
     if (activeTab === 0) return data?.checkpoints.length
     if (activeTab === 1) return Object.keys(data?.extensions ?? {}).length
     if (activeTab === 2) return data?.lora.length
-    if (activeTab === 3) return data?.samplerInfo.sampler[0].length
-    if (activeTab === 4) return data?.samplerInfo.scheduler[0].length
+    if (activeTab === 3) return data?.samplerInfo.sampler?.[0].length
+    if (activeTab === 4) return data?.samplerInfo.scheduler?.[0].length
     return 0
   }, [
     activeTab,
@@ -49,7 +49,7 @@ export const InformationCheckingStep: IComponent = () => {
   ])
 
   const rowVirtualizer = useVirtualizer({
-    count: itemCount,
+    count: itemCount ?? 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 288
   })
@@ -97,10 +97,10 @@ export const InformationCheckingStep: IComponent = () => {
           if (!lora) return null
           return <CheckpointLoraItem key={lora} resourceFileName={lora} type={EResourceType.Lora} />
         case 3:
-          const sampler = data.samplerInfo.sampler[0][idx]
+          const sampler = data.samplerInfo.sampler?.[0][idx]
           if (!sampler) return null
           return (
-            <div key={sampler.name} className='p-2 pl-4 flex gap-4'>
+            <div key={sampler} className='p-2 pl-4 flex gap-4'>
               <Code width={16} height={16} className='min-w-fit mt-1' />
               <div>
                 <h1 className='font-semibold'>{sampler}</h1>
@@ -108,10 +108,10 @@ export const InformationCheckingStep: IComponent = () => {
             </div>
           )
         case 4:
-          const scheduler = data.samplerInfo.scheduler[0][idx]
+          const scheduler = data.samplerInfo.scheduler?.[0][idx]
           if (!scheduler) return null
           return (
-            <div key={scheduler.name} className='p-2 pl-4 flex gap-4'>
+            <div key={scheduler} className='p-2 pl-4 flex gap-4'>
               <Code width={16} height={16} className='min-w-fit mt-1' />
               <div>
                 <h1 className='font-semibold'>{scheduler}</h1>
@@ -171,17 +171,17 @@ export const InformationCheckingStep: IComponent = () => {
           active={activeTab === 3}
           onClick={() => setActiveTab(3)}
           title='Samplers'
-          description={data?.samplerInfo.sampler[1]?.tooltip ?? 'List of available sampler in this server'}
+          description={data?.samplerInfo.sampler?.[1]?.tooltip ?? 'List of available sampler in this server'}
           loading={isLoading}
-          count={data?.samplerInfo.sampler[0]?.length}
+          count={data?.samplerInfo.sampler?.[0]?.length}
         />
         <ResourceItem
           active={activeTab === 4}
           onClick={() => setActiveTab(4)}
           title='Schedulers'
-          description={data?.samplerInfo.scheduler[1]?.tooltip ?? 'List of available scheduler in this server'}
+          description={data?.samplerInfo.scheduler?.[1]?.tooltip ?? 'List of available scheduler in this server'}
           loading={isLoading}
-          count={data?.samplerInfo.scheduler[0]?.length}
+          count={data?.samplerInfo.scheduler?.[0]?.length}
         />
       </AnimateDiv>
       <AnimateDiv delayShow={200} className={cn('w-2/4', extraCls)}>
