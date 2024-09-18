@@ -21,6 +21,7 @@ import { OverflowText } from './OverflowText'
 import { SimpleTransitionLayout } from './SimpleTranslation'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
+import { TriangleAlertIcon } from 'lucide-react'
 
 export const ClientInfoMonitoring: IComponent<{
   client: Client
@@ -92,6 +93,13 @@ export const ClientInfoMonitoring: IComponent<{
       return (
         <div className='h-full flex justify-center items-center text-foreground/20 font-bold px-4'>
           <span>OFFLINE</span>
+        </div>
+      )
+    if (status === EClientStatus.Error)
+      return (
+        <div className='h-full flex flex-col gap-2 justify-center items-center text-destructive/20 font-bold px-4'>
+          <TriangleAlertIcon width={24} height={24} />
+          <span>ERROR</span>
         </div>
       )
     if (!monitoring) return null
