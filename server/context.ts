@@ -2,6 +2,7 @@ import { MikroORMInstance } from '@/services/mikro-orm'
 import { verify } from 'jsonwebtoken'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import { User } from '@/entities/user'
+import { BackendENV } from '@/env'
 
 /**
  * Creates context for an incoming request
@@ -16,7 +17,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   try {
     let user: User | null = null
     if (accessToken) {
-      const tokenInfo = verify(accessToken, process.env.NEXTAUTH_SECRET ?? 'secret') as { email: string }
+      const tokenInfo = verify(accessToken, BackendENV.NEXTAUTH_SECRET ?? 'secret') as { email: string }
       user = await orm.em.fork().findOne(User, { email: tokenInfo.email })
     }
     return {

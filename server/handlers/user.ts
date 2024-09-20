@@ -1,4 +1,5 @@
 import { User } from '@/entities/user'
+import { BackendENV } from '@/env'
 import { MikroORMInstance } from '@/services/mikro-orm'
 import { IncomingMessage, ServerResponse } from 'http'
 import { verify } from 'jsonwebtoken'
@@ -51,7 +52,7 @@ export const handleGetUserByJWT = async (
       const { token } = JSON.parse(body)
       // Check if email and password are correct
       const em = await mikro.getEM()
-      const tokenInfo = verify(token, process.env.NEXTAUTH_SECRET ?? 'secret') as { email: string }
+      const tokenInfo = verify(token, BackendENV.NEXTAUTH_SECRET ?? 'secret') as { email: string }
       const user = await em.fork().findOne(User, { email: tokenInfo.email })
       if (!user) {
         res.writeHead(401)

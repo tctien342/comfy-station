@@ -18,9 +18,17 @@ import { EResourceType } from '@/entities/enum'
 
 const extraCls = 'border rounded-lg bg-secondary/20 shadow-inner'
 
+enum EActiveTab {
+  Checkpoints,
+  Extensions,
+  Loras,
+  Samplers,
+  Schedulers
+}
+
 export const InformationCheckingStep: IComponent = () => {
   const parentRef = useRef<HTMLDivElement>(null)
-  const [activeTab, setActiveTab] = useState(0)
+  const [activeTab, setActiveTab] = useState<EActiveTab>(EActiveTab.Checkpoints)
   const { clientInfo, setStep, setDisplayName } = useContext(AddClientDialogContext)
   const { data, isLoading } = trpc.client.getResourcesNewClient.useQuery(
     {
@@ -33,12 +41,20 @@ export const InformationCheckingStep: IComponent = () => {
   )
 
   const itemCount = useMemo(() => {
-    if (activeTab === 0) return data?.checkpoints.length
-    if (activeTab === 1) return Object.keys(data?.extensions ?? {}).length
-    if (activeTab === 2) return data?.lora.length
-    if (activeTab === 3) return data?.samplerInfo.sampler?.[0].length
-    if (activeTab === 4) return data?.samplerInfo.scheduler?.[0].length
-    return 0
+    switch (activeTab) {
+      case EActiveTab.Checkpoints:
+        return data?.checkpoints.length
+      case EActiveTab.Extensions:
+        return Object.keys(data?.extensions ?? {}).length
+      case EActiveTab.Loras:
+        return data?.lora.length
+      case EActiveTab.Samplers:
+        return data?.samplerInfo.sampler?.[0].length
+      case EActiveTab.Schedulers:
+        return data?.samplerInfo.scheduler?.[0].length
+      default:
+        return 0
+    }
   }, [
     activeTab,
     data?.checkpoints.length,
@@ -60,11 +76,11 @@ export const InformationCheckingStep: IComponent = () => {
     (idx: number) => {
       if (!data) return null
       switch (activeTab) {
-        case 0:
+        case EActiveTab.Checkpoints:
           const ckpgName = data.checkpoints[idx]
           if (!ckpgName) return null
           return <CheckpointLoraItem key={ckpgName} resourceFileName={ckpgName} />
-        case 1:
+        case EActiveTab.Extensions:
           const extName = Object.keys(data.extensions ?? {})[idx]
           if (!extName) return null
           const extNodes = data.extensions[extName]
@@ -92,11 +108,11 @@ export const InformationCheckingStep: IComponent = () => {
               </CollapsibleContent>
             </Collapsible>
           )
-        case 2:
+        case EActiveTab.Loras:
           const lora = data.lora[idx]
           if (!lora) return null
           return <CheckpointLoraItem key={lora} resourceFileName={lora} type={EResourceType.Lora} />
-        case 3:
+        case EActiveTab.Samplers:
           const sampler = data.samplerInfo.sampler?.[0][idx]
           if (!sampler) return null
           return (
@@ -107,7 +123,7 @@ export const InformationCheckingStep: IComponent = () => {
               </div>
             </div>
           )
-        case 4:
+        case EActiveTab.Schedulers:
           const scheduler = data.samplerInfo.scheduler?.[0][idx]
           if (!scheduler) return null
           return (
@@ -144,40 +160,40 @@ export const InformationCheckingStep: IComponent = () => {
     <div className='absolute top-0 w-full h-full flex gap-2'>
       <AnimateDiv className={cn('w-1/4 p-2 space-y-2', extraCls)}>
         <ResourceItem
-          active={activeTab === 0}
-          onClick={() => setActiveTab(0)}
+          active={activeTab === EActiveTab.Checkpoints}
+          onClick={() => setActiveTab(EActiveTab.Checkpoints)}
           title='Checkpoints'
           description='List of available checkpoint in this server'
           loading={isLoading}
           count={data?.checkpoints.length}
         />
         <ResourceItem
-          active={activeTab === 1}
-          onClick={() => setActiveTab(1)}
+          active={activeTab === EActiveTab.Extensions}
+          onClick={() => setActiveTab(EActiveTab.Extensions)}
           title='Extensions'
           description='List of available extensions in this server'
           loading={isLoading}
           count={data ? Object.keys(data.extensions).length : undefined}
         />
         <ResourceItem
-          active={activeTab === 2}
-          onClick={() => setActiveTab(2)}
+          active={activeTab === EActiveTab.Loras}
+          onClick={() => setActiveTab(EActiveTab.Loras)}
           title='Loras'
           description='List of available lora in this server'
           loading={isLoading}
           count={data?.lora.length}
         />
         <ResourceItem
-          active={activeTab === 3}
-          onClick={() => setActiveTab(3)}
+          active={activeTab === EActiveTab.Samplers}
+          onClick={() => setActiveTab(EActiveTab.Samplers)}
           title='Samplers'
           description={data?.samplerInfo.sampler?.[1]?.tooltip ?? 'List of available sampler in this server'}
           loading={isLoading}
           count={data?.samplerInfo.sampler?.[0]?.length}
         />
         <ResourceItem
-          active={activeTab === 4}
-          onClick={() => setActiveTab(4)}
+          active={activeTab === EActiveTab.Schedulers}
+          onClick={() => setActiveTab(EActiveTab.Schedulers)}
           title='Schedulers'
           description={data?.samplerInfo.scheduler?.[1]?.tooltip ?? 'List of available scheduler in this server'}
           loading={isLoading}

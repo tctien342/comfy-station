@@ -4,6 +4,7 @@ import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import type { User } from '@/entities/user'
 import { getBaseUrl } from '@/utils/trpc'
+import { BackendENV } from '@/env'
 
 const getUserInfomationByCredentials = async (email: string, password: string) => {
   const data = await fetch(`${getBaseUrl()}/user/credential`, {
@@ -46,10 +47,10 @@ export const NextAuthOptions: AuthOptions = {
       }
     })
   ],
-  secret: process.env.NEXTAUTH_SECRET ?? 'secret',
+  secret: BackendENV.NEXTAUTH_SECRET ?? 'secret',
   callbacks: {
     async jwt({ token }) {
-      const accessToken = jwt.sign({ email: token.email }, process.env.NEXTAUTH_SECRET ?? 'secret')
+      const accessToken = jwt.sign({ email: token.email }, BackendENV.NEXTAUTH_SECRET ?? 'secret')
       return { ...token, accessToken }
     },
     async session({ session, token }) {

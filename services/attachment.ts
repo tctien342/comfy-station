@@ -6,7 +6,8 @@ import {
   DeleteObjectCommand,
   PutObjectCommandInput,
   GetObjectCommand,
-  HeadObjectCommand
+  HeadObjectCommand,
+  ListBucketsCommand
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Logger } from '@saintno/needed-tools'
@@ -45,12 +46,30 @@ class AttachmentService {
         },
         region: BackendENV.S3_REGION
       })
-      this.logger.i('Init', 'Using S3 for file storage', {
+      this.logger.i('init', 'Using S3 for file storage', {
         endpoint: BackendENV.S3_ENDPOINT,
         region: BackendENV.S3_REGION
       })
+      this.checkS3Connection().then((connected) => {
+        if (!connected) {
+          this.logger.w('init', 'Failed to connect to S3, fallback into localstorage')
+          this.s3 = undefined
+        } else {
+          this.logger.i('init', 'S3 connection successful')
+        }
+      })
     } else {
-      this.logger.i('Init', 'Using local storage for file storage')
+      this.logger.i('init', 'Using local storage for file storage')
+    }
+  }
+
+  async checkS3Connection() {
+    if (!this.s3) return false
+    try {
+      await this.s3.send(new ListBucketsCommand({}))
+      return true
+    } catch (error: any) {
+      return false
     }
   }
 
@@ -75,7 +94,7 @@ class AttachmentService {
         url: '/attachments/' + fileName
       }
     }
-    return undefined
+    return null
   }
   async getSignedUrl(fileName: string): Promise<string | undefined> {
     if (await this.existObject(fileName)) {
