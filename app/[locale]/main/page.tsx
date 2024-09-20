@@ -1,7 +1,7 @@
 'use client'
 
-import { trpc } from '@/utils/trpc'
 import { AdminSideInfo } from './AdminSideInfo'
+import { TopBar } from './TopBar'
 
 /**
  * Current redirect to /auth/basic
@@ -9,7 +9,9 @@ import { AdminSideInfo } from './AdminSideInfo'
 export default function Home() {
   return (
     <>
-      <div className='flex-auto h-full bg-background border rounded-lg'></div>
+      <div className='flex-auto flex flex-col h-full bg-background border rounded-lg'>
+        <TopBar />
+      </div>
       <div className='w-1/4 min-w-[290px] max-w-[360px] h-full bg-background border rounded-lg'>
         <AdminSideInfo />
       </div>
