@@ -1,25 +1,25 @@
-import { LoadableButton } from '@/components/LoadableButton'
-import { ArrowRight, ChevronLeft } from 'lucide-react'
-import { useContext } from 'react'
-import { AddWorkflowDialogContext, EImportStep } from '..'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { ViewInputNode } from './ViewInputNode'
+import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
+import { CreateInputNode } from './CreateInputNode'
 
 export const MappingInput: IComponent = () => {
-  const { setStep } = useContext(AddWorkflowDialogContext)
-
-  const handlePressNext = () => {}
+  const [isCreateNew, setIsCreateNew] = useState(false)
   return (
-    <div className='space-y-4 min-w-80'>
-      <div className='flex gap-2 w-full justify-end items-center mt-4'>
-        <Button onClick={() => setStep?.(EImportStep.S1_WORKFLOW_INFO)} variant='secondary' className=''>
-          Back
-          <ChevronLeft width={16} height={16} className='ml-2' />
-        </Button>
-        <LoadableButton>
-          Continue
-          <ArrowRight width={16} height={16} className='ml-2' />
-        </LoadableButton>
-      </div>
-    </div>
+    <SimpleTransitionLayout deps={[String(isCreateNew)]} className='h-full'>
+      {isCreateNew ? (
+        <CreateInputNode
+          onHide={() => {
+            setIsCreateNew(false)
+          }}
+        />
+      ) : (
+        <ViewInputNode
+          onCreateNew={() => {
+            setIsCreateNew(true)
+          }}
+        />
+      )}
+    </SimpleTransitionLayout>
   )
 }

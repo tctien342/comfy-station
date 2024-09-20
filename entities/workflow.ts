@@ -1,6 +1,6 @@
 import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { EValueType, EWorkflowActiveStatus } from './enum'
+import { EValueSelectionType, EValueType, EWorkflowActiveStatus } from './enum'
 
 import type { User } from './user'
 import type { WorkflowEditEvent } from './workflow_edit_event'
@@ -25,7 +25,7 @@ export interface IMapTarget {
 
 export interface IMaperBase {
   key: string
-  type: EValueType | EValueType
+  type: EValueType | EValueSelectionType
   iconName?: string
   description?: string
 }
@@ -72,6 +72,12 @@ export class Workflow {
 
   @Property({ type: 'string' })
   rawWorkflow: string
+
+  @Property({ type: 'boolean', default: false })
+  hideWorkflow = false
+
+  @Property({ type: 'boolean', default: false })
+  allowLocalhost = false
 
   @Property({ type: 'json', nullable: true })
   mapInput?: { [key: string]: IMapperInput }

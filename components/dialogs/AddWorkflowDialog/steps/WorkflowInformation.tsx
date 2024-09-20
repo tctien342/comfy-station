@@ -29,8 +29,8 @@ export const WorkflowInformation: IComponent = () => {
       description: workflow?.description,
       baseCost: workflow?.cost,
       baseWeight: workflow?.baseWeight,
-      hideWorkflow: false,
-      allowLocalhost: false
+      hideWorkflow: workflow?.hideWorkflow,
+      allowLocalhost: workflow?.allowLocalhost
     }
   })
 
@@ -40,103 +40,108 @@ export const WorkflowInformation: IComponent = () => {
       name: data.name,
       description: data.description,
       cost: data.baseCost,
-      baseWeight: data.baseWeight
+      baseWeight: data.baseWeight,
+      hideWorkflow: data.hideWorkflow,
+      allowLocalhost: data.allowLocalhost
     }))
     setStep?.(EImportStep.S2_MAPPING_INPUT)
   })
   return (
-    <Form {...form}>
-      <form className='space-y-4 min-w-80' onSubmit={handlePressSubmit}>
-        <FormField
-          name='name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder='Enter your workflow name here....' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          name='description'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea placeholder='Workflow description..... (Markdown supported)' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          name='baseCost'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Base Cost</FormLabel>
-              <FormControl>
-                <Input placeholder='0' type='number' {...field} />
-              </FormControl>
-              <FormDescription>For estimate user’s balance when using this workflow.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          name='baseWeight'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Base Weight</FormLabel>
-              <FormControl>
-                <Input placeholder='0' type='number' {...field} />
-              </FormControl>
-              <FormDescription>
-                For estimate workflow priority when executing in queue. More weight mean lower priority. This value can
-                be negative.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          name='hideWorkflow'
-          render={({ field }) => (
-            <FormItem>
-              <div className='flex items-center space-x-2'>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-                <Label htmlFor='airplane-mode'>Hide workflow from user</Label>
-              </div>
-              <FormDescription>
-                Only admin and editor can view full workflow executing. User can only seen some parts of it.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          name='allowLocalhost'
-          render={({ field }) => (
-            <FormItem>
-              <div className='flex items-center space-x-2'>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-                <Label htmlFor='airplane-mode'>Allow execute with localhost</Label>
-              </div>
-              <FormDescription>
-                Allow user using their localhost Comfyui client to execute the workflow. This will turn off the hide
-                workflow option because it running on client side.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className='flex justify-end w-full'>
-          <LoadableButton type='submit' color='primary'>
-            Next <ArrowRight className='ml-2 w-4 h-4' />
-          </LoadableButton>
-        </div>
-      </form>
-    </Form>
+    <>
+      <h1 className='font-semibold'>WORKFOW INFORMATION</h1>
+      <Form {...form}>
+        <form className='space-y-4 min-w-80' onSubmit={handlePressSubmit}>
+          <FormField
+            name='name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input placeholder='Enter your workflow name here....' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name='description'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder='Workflow description..... (Markdown supported)' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name='baseCost'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Base Cost</FormLabel>
+                <FormControl>
+                  <Input placeholder='0' type='number' {...field} />
+                </FormControl>
+                <FormDescription>For estimate user’s balance when using this workflow.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name='baseWeight'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Base Weight</FormLabel>
+                <FormControl>
+                  <Input placeholder='0' type='number' {...field} />
+                </FormControl>
+                <FormDescription>
+                  For estimate workflow priority when executing in queue. More weight mean lower priority. This value
+                  can be negative.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name='hideWorkflow'
+            render={({ field }) => (
+              <FormItem>
+                <div className='flex items-center space-x-2'>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Label htmlFor='airplane-mode'>Hide workflow from user</Label>
+                </div>
+                <FormDescription>
+                  Only admin and editor can view full workflow executing. User can only seen some parts of it.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name='allowLocalhost'
+            render={({ field }) => (
+              <FormItem>
+                <div className='flex items-center space-x-2'>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Label htmlFor='airplane-mode'>Allow execute with localhost</Label>
+                </div>
+                <FormDescription>
+                  Allow user using their localhost Comfyui client to execute the workflow. This will turn off the hide
+                  workflow option because it running on client side.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className='flex justify-end w-full'>
+            <LoadableButton type='submit' color='primary'>
+              Next <ArrowRight className='ml-2 w-4 h-4' />
+            </LoadableButton>
+          </div>
+        </form>
+      </Form>
+    </>
   )
 }

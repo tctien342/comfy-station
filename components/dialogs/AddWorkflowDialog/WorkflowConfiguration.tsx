@@ -12,7 +12,7 @@ export const WorkflowConfiguration: IComponent = () => {
       return (
         <div
           key={index}
-          className={cn({
+          className={cn('transition-all duration-500', {
             'text-foreground': index === currentStep - 1,
             'text-border': index !== currentStep - 1
           })}
@@ -23,20 +23,11 @@ export const WorkflowConfiguration: IComponent = () => {
     })
   }, [currentStep])
 
-  const label = {
-    [EImportStep.S0_UPLOAD_WORKFLOW]: '',
-    [EImportStep.S1_WORKFLOW_INFO]: 'WORKFOW INFORMATION',
-    [EImportStep.S2_MAPPING_INPUT]: 'MAP INPUT NODE',
-    [EImportStep.S3_MAPPING_OUTPUT]: 'MAP OUTPUT NODE',
-    [EImportStep.S4_FINALIZE]: 'FINALIZE'
-  }[currentStep]
-
   return (
     <div className='w-full h-full border rounded-lg bg-secondary/20 shadow-inner p-2'>
-      <div className='w-full flex flex-col'>
+      <div className='w-full flex flex-col h-full'>
         <div className='flex gap-1 text-sm font-medium'>{renderSteps}</div>
-        <h1 className='font-semibold'>{label}</h1>
-        <SimpleTransitionLayout deps={[currentStep]} className='w-full overflow-hidden'>
+        <SimpleTransitionLayout deps={[currentStep]} className='w-full h-full overflow-hidden'>
           {currentStep === EImportStep.S1_WORKFLOW_INFO && <WorkflowInformation />}
           {currentStep === EImportStep.S2_MAPPING_INPUT && <MappingInput />}
         </SimpleTransitionLayout>
