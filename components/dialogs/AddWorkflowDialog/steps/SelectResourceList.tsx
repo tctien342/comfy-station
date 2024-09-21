@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'
+import { Label } from '@/components/ui/label'
 
 export const SelectResourceList: IComponent<{
   selected?: string[]
@@ -106,13 +107,14 @@ export const SelectResourceList: IComponent<{
           {renderTable}
         </SheetContent>
       </Sheet>
+      <Label>Default Selection</Label>
       <Popover open={open} modal onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant='outline'
             role='combobox'
             aria-expanded={open}
-            className='w-full justify-between whitespace-pre-wrap'
+            className='w-full h-fit justify-between whitespace-pre-wrap'
           >
             {defaultValue ? currentName : 'Select default item...'}
             <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
@@ -135,7 +137,7 @@ export const SelectResourceList: IComponent<{
                         setOpen(false)
                       }}
                     >
-                      <Check className={cn('mr-2 h-4 w-4', defaultValue === item ? 'opacity-100' : 'opacity-0')} />
+                      <Check className={cn('mr-2 h-4 w-4', defaultValue === item?.id ? 'opacity-100' : 'opacity-0')} />
                       {item?.displayName?.trim() || item?.name || key}
                     </CommandItem>
                   )

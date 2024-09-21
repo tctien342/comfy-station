@@ -94,13 +94,13 @@ export const AddWorkflowDialog: IComponent = () => {
             })}
           >
             {currentStep !== EImportStep.S0_UPLOAD_WORKFLOW && !!rawWorkflow && (
-              <div className='w-3/4 h-full border rounded-lg bg-secondary/20 shadow-inner animate-in fade-in-10 overflow-hidden'>
+              <div className='w-3/4 hidden md:block h-full border rounded-lg bg-secondary/20 shadow-inner animate-in fade-in-10 overflow-hidden'>
                 <WorkflowVisualize workflow={rawWorkflow} />
               </div>
             )}
             <SimpleTransitionLayout
               deps={[String(currentStep === EImportStep.S0_UPLOAD_WORKFLOW)]}
-              className='flex flex-col h-full flex-1 items-center'
+              className='flex flex-col min-w-[400px] w-full md:w-auto h-full flex-1 items-center'
             >
               {currentStep === EImportStep.S0_UPLOAD_WORKFLOW && <UploadWorkflow />}
               {currentStep !== EImportStep.S0_UPLOAD_WORKFLOW && <WorkflowConfiguration />}

@@ -38,7 +38,6 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 export const CreateInputNode: IComponent<{
   config?: IMapperInput
@@ -75,6 +74,9 @@ export const CreateInputNode: IComponent<{
   const mappingType = form.watch('type')
 
   const isSelectionType = z.nativeEnum(EValueSelectionType).safeParse(mappingType)
+  const allowDefaultType = z
+    .enum([EValueType.Boolean, EValueType.String, EValueType.Number, EValueType.Seed])
+    .safeParse(mappingType)
 
   useEffect(() => {
     switch (mappingType) {
@@ -150,18 +152,6 @@ export const CreateInputNode: IComponent<{
                             String
                           </div>
                         </SelectItem>
-                        <SelectItem value={EValueType.Image}>
-                          <div className='flex items-center'>
-                            <PhotoIcon className='mr-2 h-4 w-4' />
-                            Image
-                          </div>
-                        </SelectItem>
-                        <SelectItem value={EValueType.File}>
-                          <div className='flex items-center'>
-                            <DocumentArrowUpIcon className='mr-2 h-4 w-4' />
-                            File
-                          </div>
-                        </SelectItem>
                         <SelectItem value={EValueType.Boolean}>
                           <div className='flex items-center'>
                             <CheckIcon className='mr-2 h-4 w-4' />
@@ -174,6 +164,22 @@ export const CreateInputNode: IComponent<{
                             Seed
                           </div>
                         </SelectItem>
+                        <SelectSeparator />
+                        <SelectGroup>
+                          <SelectLabel>Upload input</SelectLabel>
+                          <SelectItem value={EValueType.Image}>
+                            <div className='flex items-center'>
+                              <PhotoIcon className='mr-2 h-4 w-4' />
+                              Image
+                            </div>
+                          </SelectItem>
+                          <SelectItem value={EValueType.File}>
+                            <div className='flex items-center'>
+                              <DocumentArrowUpIcon className='mr-2 h-4 w-4' />
+                              File
+                            </div>
+                          </SelectItem>
+                        </SelectGroup>
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
@@ -283,7 +289,7 @@ export const CreateInputNode: IComponent<{
               />
             </>
           )}
-          {!isSelectionType.success && (
+          {allowDefaultType.success && (
             <FormField
               name='default'
               render={({ field }) => {
