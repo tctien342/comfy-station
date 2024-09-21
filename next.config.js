@@ -20,4 +20,4 @@ const nextConfig = {
     return config
   }
 }
-module.exports = million.next(withNextIntl(nextConfig))
+module.exports = million.next(withNextIntl(nextConfig), { rsc: true })

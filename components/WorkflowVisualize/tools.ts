@@ -44,7 +44,7 @@ export function transformNodes(workflowData: IWorkflow): Node[] {
       label: nodeData.info?.displayName || nodeData._meta?.title || nodeData.class_type
     },
     style: {
-      color: nodeData.info?.outputNode ? 'blue' : 'unset'
+      color: nodeData.info?.outputNode ? '#3B82F6' : 'unset'
     },
     position: { x: 0, y: 0 } // Position will be set later
   }))

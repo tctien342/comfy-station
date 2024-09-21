@@ -60,7 +60,8 @@ export enum EValueSelectionType {
   Checkpoint = 'Checkpoint',
   Lora = 'Lora',
   Sampler = 'Sampler',
-  Scheduler = 'Scheduler'
+  Scheduler = 'Scheduler',
+  Custom = 'Custom'
 }
 
 export enum EResourceType {

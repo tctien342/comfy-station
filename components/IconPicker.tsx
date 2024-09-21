@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Icons from '@heroicons/react/16/solid'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
@@ -13,6 +13,13 @@ export const IconPicker: IComponent<{
 
   // Get the list of icon names from lucide-react
   const iconNames = Object.keys(Icons)
+
+  useEffect(() => {
+    if (value !== selectedIconName) {
+      setSelectedIconName(value ?? 'ArrowDownIcon')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
 
   return (
     <Popover modal>

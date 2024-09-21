@@ -6,7 +6,7 @@ import { CreateInputNode } from './CreateInputNode'
 export const MappingInput: IComponent = () => {
   const [isCreateNew, setIsCreateNew] = useState(false)
   return (
-    <SimpleTransitionLayout deps={[String(isCreateNew)]} className='h-full'>
+    <SimpleTransitionLayout deps={[String(isCreateNew)]} className='h-full w-full'>
       {isCreateNew ? (
         <CreateInputNode
           onHide={() => {

@@ -7,6 +7,9 @@ import { Tag } from '@/entities/tag'
 import { Attachment } from '@/entities/attachment'
 
 export const resourceRouter = router({
+  list: privateProcedure.input(z.object({ type: z.nativeEnum(EResourceType) })).query(async ({ ctx, input }) => {
+    return ctx.em.find(Resource, { type: input.type }, { populate: ['image', 'tags'] })
+  }),
   get: privateProcedure
     .input(
       z.object({

@@ -53,8 +53,6 @@ export const CheckpointLoraItem: IComponent<{
     }
   )
 
-  console.log({ image })
-
   const { data: tags, refetch: refetchTags } = trpc.tag.list.useQuery()
   const createTag = trpc.tag.create.useMutation()
   const creator = trpc.resource.create.useMutation()
