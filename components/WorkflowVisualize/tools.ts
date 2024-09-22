@@ -1,5 +1,6 @@
 import { Node, Edge } from '@xyflow/react'
 import dagre from 'dagre'
+import { EHightlightType } from './state'
 
 export function applyLayout(nodes: Node[], edges: Edge[]): Node[] {
   const dagreGraph = new dagre.graphlib.Graph()
@@ -21,7 +22,7 @@ export function applyLayout(nodes: Node[], edges: Edge[]): Node[] {
 
   return nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id)
-    const newNode = {
+    return {
       ...node,
       targetPosition: 'top',
       sourcePosition: 'bottom',
@@ -32,22 +33,42 @@ export function applyLayout(nodes: Node[], edges: Edge[]): Node[] {
         y: nodeWithPosition.y - nodeHeight / 2
       }
     } as Node
-    return newNode
   })
 }
 
-export function transformNodes(workflowData: IWorkflow): Node[] {
-  return Object.entries(workflowData).map(([nodeId, nodeData], index) => ({
-    id: nodeId,
-    type: 'default',
-    data: {
-      label: nodeData.info?.displayName || nodeData._meta?.title || nodeData.class_type
-    },
-    style: {
-      color: nodeData.info?.outputNode ? '#3B82F6' : 'unset'
-    },
-    position: { x: 0, y: 0 } // Position will be set later
-  }))
+export function transformNodes(
+  workflowData: IWorkflow,
+  hightlightArr?: { id: string; type: EHightlightType }[]
+): Node[] {
+  return Object.entries(workflowData).map(([nodeId, nodeData], index) => {
+    const hlData = hightlightArr?.find((hl) => hl.id === nodeId)
+    let borderColor = undefined
+    switch (hlData?.type) {
+      case EHightlightType.INPUT:
+        borderColor = '#10B981'
+        break
+      case EHightlightType.OUTPUT:
+        borderColor = '#3B82F6'
+        break
+      case EHightlightType.SELECTING:
+        borderColor = '#F59E0B'
+        break
+      default:
+        break
+    }
+    return {
+      id: nodeId,
+      type: 'default',
+      data: {
+        label: nodeData.info?.displayName || nodeData._meta?.title || nodeData.class_type
+      },
+      style: {
+        color: nodeData.info?.outputNode ? '#3B82F6' : 'unset',
+        borderColor
+      },
+      position: { x: 0, y: 0 } // Position will be set later
+    }
+  })
 }
 
 export function transformEdges(workflowData: IWorkflow): Edge[] {

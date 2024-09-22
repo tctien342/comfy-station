@@ -13,7 +13,7 @@ import {
   SelectSeparator
 } from '@/components/ui/select'
 import { EValueSelectionType, EValueType } from '@/entities/enum'
-import { IMapperInput } from '@/entities/workflow'
+import { IMapperInput, IMapTarget } from '@/entities/workflow'
 import {
   BeakerIcon,
   BoldIcon,
@@ -38,12 +38,14 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { ConnectionList } from './ConnectionList'
 
 export const CreateInputNode: IComponent<{
   config?: IMapperInput
   onHide: () => void
 }> = ({ onHide, config }) => {
   const [selections, setSelections] = useState<string[]>([])
+  const [connections, setConnections] = useState<Array<IMapTarget>>([])
   const formSchema = z.object({
     // Regex is url host name
     type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType)]),
@@ -347,8 +349,8 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
+          <ConnectionList connections={connections} onUpdate={setConnections} />
         </div>
-
         <div className='flex gap-2 pt-2 w-full justify-end items-center'>
           <Button onClick={onHide} variant='secondary' className=''>
             Back
