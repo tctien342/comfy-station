@@ -30,7 +30,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronLeft, PlusIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { SelectResourceList } from './SelectResourceList'
@@ -39,11 +39,13 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ConnectionList } from './ConnectionList'
+import { AddWorkflowDialogContext } from '..'
 
 export const CreateInputNode: IComponent<{
   config?: IMapperInput
   onHide: () => void
 }> = ({ onHide, config }) => {
+  const { workflow, setWorkflow } = useContext(AddWorkflowDialogContext)
   const [selections, setSelections] = useState<string[]>([])
   const [connections, setConnections] = useState<Array<IMapTarget>>([])
   const formSchema = z.object({
@@ -120,7 +122,22 @@ export const CreateInputNode: IComponent<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mappingType])
 
-  const handleSubmit = form.handleSubmit((data) => {})
+  const handleSubmit = form.handleSubmit((data) => {
+    setWorkflow?.((prev) => ({
+      ...workflow,
+      mapInput: {
+        ...prev?.mapInput,
+        [data.name]: {
+          ...data,
+          iconName: data.icon,
+          key: data.name,
+          selections,
+          target: connections
+        }
+      }
+    }))
+    onHide()
+  })
 
   return (
     <Form {...form}>

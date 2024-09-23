@@ -1,18 +1,25 @@
 import { LoadableButton } from '@/components/LoadableButton'
 import { Button } from '@/components/ui/button'
-import { PlusIcon, ChevronLeft, ArrowRight, InfoIcon } from 'lucide-react'
+import { PlusIcon, ChevronLeft, ArrowRight, InfoIcon, ChevronsLeftRight } from 'lucide-react'
 import { AddWorkflowDialogContext, EImportStep } from '..'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { useContext, useMemo } from 'react'
+import { ArrowLongRightIcon } from '@heroicons/react/24/outline'
+import { useKeygen } from '@/hooks/useKeygen'
+import { cx } from 'class-variance-authority'
+
+import * as Icons from '@heroicons/react/16/solid'
 
 export const ViewInputNode: IComponent<{
   onCreateNew: () => void
 }> = ({ onCreateNew }) => {
+  const { gen } = useKeygen()
   const { setStep, workflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const mappedInput = workflow?.mapInput
 
   const renderMappedInput = useMemo(() => {
-    if (!mappedInput?.length) {
+    const inputs = Object.entries(mappedInput || {})
+    if (!inputs.length) {
       return (
         <Alert>
           <InfoIcon className='w-4 h-4' />
@@ -21,10 +28,37 @@ export const ViewInputNode: IComponent<{
         </Alert>
       )
     }
-    return Object.entries(mappedInput).map(([key, value]) => {
-      return <div key={key}></div>
+    return inputs.map(([key, input]) => {
+      const Icon = input.iconName ? Icons[input.iconName as keyof typeof Icons] : ChevronsLeftRight
+      return (
+        <Alert key={key}>
+          <Icon className='w-4 h-4' />
+          <AlertTitle>
+            <div
+              className={cx('gap-2 flex', {
+                'flex-col': input.target.length > 1,
+                'flex-row': input.target.length === 1
+              })}
+            >
+              <span>{input.key}</span>
+              {input.target.map((target) => {
+                const node = rawWorkflow?.[target.nodeName]
+                return (
+                  <div key={gen(target)} className='flex items-center gap-2'>
+                    <ArrowLongRightIcon width={16} height={16} />
+                    <span>{node?.info?.displayName || node?.info?.name || node?.class_type || target.nodeName}</span>
+                    <ArrowLongRightIcon width={16} height={16} />
+                    <span>{target.keyName}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </AlertTitle>
+          <AlertDescription>{input.description?.trim() || 'No description'}</AlertDescription>
+        </Alert>
+      )
     })
-  }, [mappedInput])
+  }, [gen, mappedInput, rawWorkflow])
 
   return (
     <>
