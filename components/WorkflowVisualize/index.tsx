@@ -42,11 +42,12 @@ export const WorkflowVisualize: IComponent<{
         }
       })
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hightlightArr])
 
   useEffect(() => {
     setNodes((nds) => applyLayout(nds, edges))
-  }, [edges])
+  }, [edges, setNodes])
 
   return (
     <div className='w-full h-full'>

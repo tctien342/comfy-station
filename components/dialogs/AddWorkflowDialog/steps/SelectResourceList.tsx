@@ -114,9 +114,9 @@ export const SelectResourceList: IComponent<{
             variant='outline'
             role='combobox'
             aria-expanded={open}
-            className='w-full h-fit justify-between whitespace-pre-wrap'
+            className='w-full h-fit justify-between whitespace-normal break-words'
           >
-            {defaultValue ? currentName : 'Select default item...'}
+            <p className='w-full text-start'>{defaultValue ? currentName : 'Select default item...'}</p>
             <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
           </Button>
         </PopoverTrigger>

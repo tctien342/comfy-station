@@ -1,6 +1,15 @@
 import { LoadableButton } from '@/components/LoadableButton'
 import { Button } from '@/components/ui/button'
-import { PlusIcon, ChevronLeft, ArrowRight, InfoIcon, ChevronsLeftRight } from 'lucide-react'
+import {
+  PlusIcon,
+  ChevronLeft,
+  ArrowRight,
+  InfoIcon,
+  ChevronsLeftRight,
+  DollarSign,
+  CheckCheck,
+  Variable
+} from 'lucide-react'
 import { AddWorkflowDialogContext, EImportStep } from '..'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { useContext, useMemo } from 'react'
@@ -9,10 +18,13 @@ import { useKeygen } from '@/hooks/useKeygen'
 import { cx } from 'class-variance-authority'
 
 import * as Icons from '@heroicons/react/16/solid'
+import { IMapperInput } from '@/entities/workflow'
+import { Badge } from '@/components/ui/badge'
 
 export const ViewInputNode: IComponent<{
   onCreateNew: () => void
-}> = ({ onCreateNew }) => {
+  onEdit: (inputConfig: IMapperInput) => void
+}> = ({ onCreateNew, onEdit }) => {
   const { gen } = useKeygen()
   const { setStep, workflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const mappedInput = workflow?.mapInput
@@ -31,11 +43,11 @@ export const ViewInputNode: IComponent<{
     return inputs.map(([key, input]) => {
       const Icon = input.iconName ? Icons[input.iconName as keyof typeof Icons] : ChevronsLeftRight
       return (
-        <Alert key={key}>
+        <Alert key={key} onClick={() => onEdit(input)} className='cursor-pointer hover:opacity-70 transition-all'>
           <Icon className='w-4 h-4' />
           <AlertTitle>
             <div
-              className={cx('gap-2 flex', {
+              className={cx('gap-2 flex whitespace-nowrap flex-wrap', {
                 'flex-col': input.target.length > 1,
                 'flex-row': input.target.length === 1
               })}
@@ -54,11 +66,31 @@ export const ViewInputNode: IComponent<{
               })}
             </div>
           </AlertTitle>
-          <AlertDescription>{input.description?.trim() || 'No description'}</AlertDescription>
+          <AlertDescription className='flex flex-col'>
+            <p>{input.description?.trim() || 'No description'}</p>
+            <div className='flex gap-1 flex-wrap'>
+              <Badge variant='secondary' className='mt-2'>
+                <Variable width={14} height={14} className='mr-1' />
+                {input.type}
+              </Badge>
+              {!!input.selections?.length && (
+                <Badge variant='secondary' className='mt-2'>
+                  <CheckCheck width={14} height={14} className='mr-1' />
+                  Selections {input.selections.length}
+                </Badge>
+              )}
+              {!!input.cost?.related && (
+                <Badge variant='secondary' className='mt-2'>
+                  <DollarSign width={14} height={14} className='mr-1' />
+                  Cost related
+                </Badge>
+              )}
+            </div>
+          </AlertDescription>
         </Alert>
       )
     })
-  }, [gen, mappedInput, rawWorkflow])
+  }, [gen, mappedInput, onEdit, rawWorkflow])
 
   return (
     <>

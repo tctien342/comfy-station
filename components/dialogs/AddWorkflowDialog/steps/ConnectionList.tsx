@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { IMapTarget } from '@/entities/workflow'
 import { useKeygen } from '@/hooks/useKeygen'
-import { ChevronsLeftRight, PlusIcon, TriangleAlertIcon } from 'lucide-react'
+import { ChevronsLeftRight, PlusIcon, Trash2, TriangleAlertIcon } from 'lucide-react'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { AddWorkflowDialogContext } from '..'
 import { ConnectionPicker } from './ConnectionPicker'
@@ -78,10 +78,10 @@ export const ConnectionList: IComponent<{
             <Button
               size='icon'
               className='ml-auto'
-              variant='destructive'
+              variant='outline'
               onClick={() => handleDeleteConnection(connection)}
             >
-              <XMarkIcon width={16} height={16} />
+              <Trash2 width={16} height={16} />
             </Button>
           </div>
         </div>

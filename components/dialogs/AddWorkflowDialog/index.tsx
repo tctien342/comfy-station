@@ -11,6 +11,7 @@ import { WorkflowVisualize } from '@/components/WorkflowVisualize'
 import { Trash, XIcon } from 'lucide-react'
 import { WorkflowConfiguration } from './WorkflowConfiguration'
 import { Workflow } from '@/entities/workflow'
+import { useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
 
 export enum EImportStep {
   'S0_UPLOAD_WORKFLOW',
@@ -37,12 +38,15 @@ export const AddWorkflowDialogContext = createContext<IAddWorkflowContext>({
 
 export const AddWorkflowDialog: IComponent = () => {
   const [show, setShow] = useState(false)
+  const { updateHightlightArr } = useWorkflowVisStore()
   const [rawWorkflow, setRawWorkflow] = useState<IWorkflow>()
   const [workflow, setWorkflow] = useState<Partial<Workflow>>()
   const [currentStep, setCurrentStep] = useState(EImportStep.S0_UPLOAD_WORKFLOW)
 
   const handlePressCancel = () => {
     setRawWorkflow(undefined)
+    setWorkflow(undefined)
+    updateHightlightArr([])
     setCurrentStep(EImportStep.S0_UPLOAD_WORKFLOW)
   }
 

@@ -122,7 +122,7 @@ export const ConnectionPicker: IComponent<{
             )}
           />
           {!!currentNodeValue && (
-            <div className='bg-gray-100 p-2 text-xs rounded-md'>
+            <div className='bg-secondary p-2 text-xs rounded-md break-words'>
               <strong>Current value:</strong> {currentNodeValue}
             </div>
           )}

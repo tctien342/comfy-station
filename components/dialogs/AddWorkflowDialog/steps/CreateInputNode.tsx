@@ -29,7 +29,7 @@ import {
   VariableIcon
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronLeft, PlusIcon } from 'lucide-react'
+import { ChevronLeft, PlusIcon, Trash } from 'lucide-react'
 import { useContext, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -40,23 +40,25 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ConnectionList } from './ConnectionList'
 import { AddWorkflowDialogContext } from '..'
+import e from 'cors'
 
 export const CreateInputNode: IComponent<{
   config?: IMapperInput
   onHide: () => void
 }> = ({ onHide, config }) => {
+  const isUpdating = !!config
   const { workflow, setWorkflow } = useContext(AddWorkflowDialogContext)
-  const [selections, setSelections] = useState<string[]>([])
-  const [connections, setConnections] = useState<Array<IMapTarget>>([])
+  const [selections, setSelections] = useState<string[]>(config?.selections ?? [])
+  const [connections, setConnections] = useState<Array<IMapTarget>>(config?.target ?? [])
   const formSchema = z.object({
     // Regex is url host name
     type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType)]),
     icon: z.string().optional(),
     costRelated: z.boolean().default(false),
-    costPerUnit: z.number().optional(),
+    costPerUnit: z.coerce.number().optional(),
     default: z.union([z.string(), z.number(), z.boolean()]).optional(),
-    min: z.number().optional(),
-    max: z.number().optional(),
+    min: z.coerce.number().optional(),
+    max: z.coerce.number().optional(),
     name: z.string(),
     description: z.string().optional()
   })
@@ -83,6 +85,7 @@ export const CreateInputNode: IComponent<{
     .safeParse(mappingType)
 
   useEffect(() => {
+    if (mappingType === config?.type) return
     switch (mappingType) {
       case EValueType.Number:
         form.setValue('icon', 'VariableIcon')
@@ -123,27 +126,66 @@ export const CreateInputNode: IComponent<{
   }, [mappingType])
 
   const handleSubmit = form.handleSubmit((data) => {
-    setWorkflow?.((prev) => ({
-      ...workflow,
-      mapInput: {
-        ...prev?.mapInput,
-        [data.name]: {
-          ...data,
-          iconName: data.icon,
-          key: data.name,
-          selections,
-          target: connections
+    if (config) {
+      // Update current config
+      setWorkflow?.((prev) => ({
+        ...workflow,
+        mapInput: {
+          ...prev?.mapInput,
+          [config.key]: {
+            ...config,
+            ...data,
+            key: data.name,
+            iconName: data.icon,
+            selections,
+            cost: {
+              related: data.costRelated ?? false,
+              costPerUnit: data.costPerUnit ?? 0
+            },
+            target: connections
+          }
         }
-      }
-    }))
+      }))
+    } else {
+      setWorkflow?.((prev) => ({
+        ...workflow,
+        mapInput: {
+          ...prev?.mapInput,
+          [data.name]: {
+            ...data,
+            iconName: data.icon,
+            key: data.name,
+            cost: {
+              related: data.costRelated ?? false,
+              costPerUnit: data.costPerUnit ?? 0
+            },
+            selections,
+            target: connections
+          }
+        }
+      }))
+    }
     onHide()
   })
+
+  const handlePressDelete = () => {
+    if (config) {
+      setWorkflow?.((prev) => {
+        const { [config.key]: _, ...rest } = prev?.mapInput || {}
+        return {
+          ...prev,
+          mapInput: rest
+        }
+      })
+    }
+    onHide()
+  }
 
   return (
     <Form {...form}>
       <form className='w-full h-full flex flex-col' onSubmit={handleSubmit}>
         <div className='space-y-2 h-auto'>
-          <h1 className='font-semibold mb-1'>CREATE INPUT NODE</h1>
+          <h1 className='font-semibold mb-1'>{isUpdating ? 'UPDATE' : 'CREATE'} INPUT NODE</h1>
           <FormField
             name='type'
             render={({ field }) => (
@@ -153,7 +195,7 @@ export const CreateInputNode: IComponent<{
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder='Select a verified email to display' />
+                        <SelectValue placeholder='Select type of input' />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -368,14 +410,20 @@ export const CreateInputNode: IComponent<{
           />
           <ConnectionList connections={connections} onUpdate={setConnections} />
         </div>
-        <div className='flex gap-2 pt-2 w-full justify-end items-center'>
-          <Button onClick={onHide} variant='secondary' className=''>
+        <div className='flex gap-2 pt-2 w-full items-center'>
+          {isUpdating && (
+            <Button onClick={handlePressDelete} variant='destructive' className=''>
+              Delete
+              <Trash width={16} height={16} className='ml-2' />
+            </Button>
+          )}
+          <Button onClick={onHide} variant='secondary' className='ml-auto'>
             Back
             <ChevronLeft width={16} height={16} className='ml-2' />
           </Button>
           <LoadableButton>
-            Add
-            <PlusIcon width={16} height={16} className='ml-2' />
+            {isUpdating ? 'Update' : 'Create'}
+            {isUpdating ? <CheckIcon width={16} height={16} className='ml-2' /> : <PlusIcon width={16} height={16} />}
           </LoadableButton>
         </div>
       </form>
