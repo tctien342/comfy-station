@@ -25,8 +25,8 @@ export const WorkflowVisualize: IComponent<{
             borderColor = '#10B981'
             break
           case EHightlightType.OUTPUT:
-            // Green
-            borderColor = '#10B981'
+            // Blue
+            borderColor = '#3B82F6'
             break
           case EHightlightType.SELECTING:
             borderColor = '#F59E0B'
@@ -51,7 +51,21 @@ export const WorkflowVisualize: IComponent<{
   }, [edges, setNodes])
 
   return (
-    <div className='w-full h-full'>
+    <div className='w-full h-full relative'>
+      <div className='absolute z-10 top-4 left-4 border p-2 rounded-full flex gap-4'>
+        <div className='flex gap-1 items-center text-xs'>
+          <div className='w-2 h-min aspect-square bg-[#10B981] rounded-full' />
+          <span>INPUT</span>
+        </div>
+        <div className='flex gap-1 items-center text-xs'>
+          <div className='w-2 h-min aspect-square bg-[#3B82F6] rounded-full' />
+          <span>OUTPUT</span>
+        </div>
+        <div className='flex gap-1 items-center text-xs'>
+          <div className='w-2 h-min aspect-square bg-[#F59E0B] rounded-full' />
+          <span>SELECTING</span>
+        </div>
+      </div>
       <ReactFlow nodes={nodes} edges={edges} fitView colorMode={isDark ? 'dark' : 'light'}>
         <Background />
         <Controls />

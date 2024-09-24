@@ -144,6 +144,11 @@ class AttachmentService {
     }
   }
 
+  async uploadBlob(blob: Blob, fileName: string) {
+    const buffer = Buffer.from(await blob.arrayBuffer())
+    return this.uploadFile(buffer, fileName)
+  }
+
   async deleteFile(fileUrl: string): Promise<void> {
     if (this.s3) {
       // Delete file from S3 bucket

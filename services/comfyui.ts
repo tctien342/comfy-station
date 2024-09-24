@@ -1,4 +1,4 @@
-import { ComfyApi, ComfyPool, TMonitorEvent } from '@saintno/comfyui-sdk'
+import { ComfyApi, ComfyPool, PromptBuilder, TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
 import { MikroORMInstance } from './mikro-orm'
 import { Client } from '@/entities/client'
@@ -9,6 +9,7 @@ import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
 import CachingService from './caching'
 
 import { throttle } from 'lodash'
+import { Workflow } from '@/entities/workflow'
 
 const MONITOR_INTERVAL = 5000
 const cacher = CachingService.getInstance()

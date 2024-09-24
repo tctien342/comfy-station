@@ -10,7 +10,7 @@ import { isValidWorkflow } from '@/utils/workflow'
 export const UploadWorkflow: IComponent = () => {
   const { toast } = useToast()
   const extensionFilter = trpc.extension.filter.useMutation()
-  const { setRawWorkflow, setStep } = useContext(AddWorkflowDialogContext)
+  const { setRawWorkflow, setWorkflow, setStep } = useContext(AddWorkflowDialogContext)
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       // Handle the files here
@@ -34,6 +34,7 @@ export const UploadWorkflow: IComponent = () => {
             }
           }
           setRawWorkflow?.(rawWorkflow)
+          setWorkflow?.((prev) => ({ ...prev, rawWorkflow: JSON.stringify(rawWorkflow) }))
           setStep?.(EImportStep.S1_WORKFLOW_INFO)
         } catch (e) {
           toast?.({
@@ -45,7 +46,7 @@ export const UploadWorkflow: IComponent = () => {
       }
       reader.readAsText(acceptedFiles[0])
     },
-    [extensionFilter, setRawWorkflow, setStep, toast]
+    [extensionFilter, setRawWorkflow, setStep, setWorkflow, toast]
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

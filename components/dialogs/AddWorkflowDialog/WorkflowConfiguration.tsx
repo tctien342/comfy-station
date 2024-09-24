@@ -6,6 +6,7 @@ import { WorkflowInformation } from './steps/WorkflowInformation'
 import { MappingInput } from './steps/MappingInput'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MappingOutput } from './steps/MappingOutput'
+import { FinalizeStep } from './steps/Finalize'
 
 export const WorkflowConfiguration: IComponent = () => {
   const { currentStep, setStep } = useContext(AddWorkflowDialogContext)
@@ -40,6 +41,7 @@ export const WorkflowConfiguration: IComponent = () => {
                 {currentStep === EImportStep.S1_WORKFLOW_INFO && <WorkflowInformation />}
                 {currentStep === EImportStep.S2_MAPPING_INPUT && <MappingInput />}
                 {currentStep === EImportStep.S3_MAPPING_OUTPUT && <MappingOutput />}
+                {currentStep === EImportStep.S4_FINALIZE && <FinalizeStep />}
               </div>
             </ScrollArea>
           </div>

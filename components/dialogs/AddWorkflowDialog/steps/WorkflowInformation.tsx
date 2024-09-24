@@ -10,8 +10,11 @@ import { useContext } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { AddWorkflowDialogContext, EImportStep } from '..'
+import { cn } from '@/lib/utils'
 
-export const WorkflowInformation: IComponent = () => {
+export const WorkflowInformation: IComponent<{
+  readonly?: boolean
+}> = ({ readonly }) => {
   const { setStep, workflow, setWorkflow } = useContext(AddWorkflowDialogContext)
   const formSchema = z.object({
     // Regex is url host name
@@ -24,6 +27,7 @@ export const WorkflowInformation: IComponent = () => {
   })
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    disabled: readonly,
     defaultValues: {
       name: workflow?.name,
       description: workflow?.description,
@@ -48,7 +52,13 @@ export const WorkflowInformation: IComponent = () => {
   })
   return (
     <>
-      <h1 className='font-semibold'>WORKFOW INFORMATION</h1>
+      <h1
+        className={cn('font-semibold', {
+          'text-sm': readonly
+        })}
+      >
+        WORKFOW INFORMATION
+      </h1>
       <Form {...form}>
         <form className='space-y-4 min-w-80' onSubmit={handlePressSubmit}>
           <FormField
@@ -109,7 +119,7 @@ export const WorkflowInformation: IComponent = () => {
             render={({ field }) => (
               <FormItem>
                 <div className='flex items-center space-x-2'>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch disabled={readonly} checked={field.value} onCheckedChange={field.onChange} />
                   <Label htmlFor='airplane-mode'>Hide workflow from user</Label>
                 </div>
                 <FormDescription>
@@ -124,7 +134,7 @@ export const WorkflowInformation: IComponent = () => {
             render={({ field }) => (
               <FormItem>
                 <div className='flex items-center space-x-2'>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch disabled={readonly} checked={field.value} onCheckedChange={field.onChange} />
                   <Label htmlFor='airplane-mode'>Allow execute with localhost</Label>
                 </div>
                 <FormDescription>
@@ -135,11 +145,13 @@ export const WorkflowInformation: IComponent = () => {
               </FormItem>
             )}
           />
-          <div className='flex justify-end w-full'>
-            <LoadableButton type='submit' color='primary'>
-              Next <ArrowRight className='ml-2 w-4 h-4' />
-            </LoadableButton>
-          </div>
+          {!readonly && (
+            <div className='flex justify-end w-full'>
+              <LoadableButton type='submit' color='primary'>
+                Next <ArrowRight className='ml-2 w-4 h-4' />
+              </LoadableButton>
+            </div>
+          )}
         </form>
       </Form>
     </>

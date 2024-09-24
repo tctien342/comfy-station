@@ -8,7 +8,8 @@ import {
   ChevronsLeftRight,
   DollarSign,
   CheckCheck,
-  Variable
+  Variable,
+  CornerDownRight
 } from 'lucide-react'
 import { AddWorkflowDialogContext, EImportStep } from '..'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
@@ -20,11 +21,13 @@ import { cx } from 'class-variance-authority'
 import * as Icons from '@heroicons/react/16/solid'
 import { IMapperInput } from '@/entities/workflow'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 export const ViewInputNode: IComponent<{
-  onCreateNew: () => void
-  onEdit: (inputConfig: IMapperInput) => void
-}> = ({ onCreateNew, onEdit }) => {
+  readonly?: boolean
+  onCreateNew?: () => void
+  onEdit?: (inputConfig: IMapperInput) => void
+}> = ({ readonly, onCreateNew, onEdit }) => {
   const { gen } = useKeygen()
   const { setStep, workflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const mappedInput = workflow?.mapInput
@@ -43,7 +46,17 @@ export const ViewInputNode: IComponent<{
     return inputs.map(([key, input]) => {
       const Icon = input.iconName ? Icons[input.iconName as keyof typeof Icons] : ChevronsLeftRight
       return (
-        <Alert key={key} onClick={() => onEdit(input)} className='cursor-pointer hover:opacity-70 transition-all'>
+        <Alert
+          key={key}
+          onClick={() => {
+            if (!readonly) {
+              onEdit?.(input)
+            }
+          }}
+          className={cn('hover:opacity-70 transition-all', {
+            'cursor-pointer': !readonly
+          })}
+        >
           <Icon className='w-4 h-4' />
           <AlertTitle>
             <div
@@ -53,17 +66,18 @@ export const ViewInputNode: IComponent<{
               })}
             >
               <span>{input.key}</span>
-              {input.target.map((target) => {
-                const node = rawWorkflow?.[target.nodeName]
-                return (
-                  <div key={gen(target)} className='flex items-center gap-2'>
-                    <ArrowLongRightIcon width={16} height={16} />
-                    <span>{node?.info?.displayName || node?.info?.name || node?.class_type || target.nodeName}</span>
-                    <ArrowLongRightIcon width={16} height={16} />
-                    <span>{target.keyName}</span>
-                  </div>
-                )
-              })}
+              {input.target.length === 1 &&
+                input.target.map((target) => {
+                  const node = rawWorkflow?.[target.nodeName]
+                  return (
+                    <div key={gen(target)} className='flex items-center gap-2'>
+                      <ArrowLongRightIcon width={16} height={16} />
+                      <span>{node?.info?.displayName || node?.info?.name || node?.class_type || target.nodeName}</span>
+                      <ArrowLongRightIcon width={16} height={16} />
+                      <span>{target.keyName}</span>
+                    </div>
+                  )
+                })}
             </div>
           </AlertTitle>
           <AlertDescription className='flex flex-col'>
@@ -86,30 +100,56 @@ export const ViewInputNode: IComponent<{
                 </Badge>
               )}
             </div>
+            {input.target.length > 1 && (
+              <>
+                <p className='text-xs font-bold mt-2'>MULTIPLE CONNECTIONS</p>
+                {input.target.map((target) => {
+                  const node = rawWorkflow?.[target.nodeName]
+                  return (
+                    <div key={gen(target)} className='flex items-center gap-2'>
+                      <CornerDownRight width={16} height={16} />
+                      <span>{node?.info?.displayName || node?.info?.name || node?.class_type || target.nodeName}</span>
+                      <ArrowLongRightIcon width={16} height={16} />
+                      <span>{target.keyName}</span>
+                    </div>
+                  )
+                })}
+              </>
+            )}
           </AlertDescription>
         </Alert>
       )
     })
-  }, [gen, mappedInput, onEdit, rawWorkflow])
+  }, [gen, mappedInput, onEdit, rawWorkflow, readonly])
 
   return (
     <>
-      <h1 className='font-semibold'>MAP INPUT NODE</h1>
+      <h1
+        className={cn('font-semibold', {
+          'text-sm': readonly
+        })}
+      >
+        MAP INPUT NODE
+      </h1>
       <div className='space-y-4 min-w-80 pt-2'>
         {renderMappedInput}
-        <Button onClick={onCreateNew} className='w-full' variant='outline'>
-          Add more input <PlusIcon className='w-4 h-4 ml-2' />
-        </Button>
-        <div className='flex gap-2 w-full justify-end items-center mt-4'>
-          <Button onClick={() => setStep?.(EImportStep.S1_WORKFLOW_INFO)} variant='secondary' className=''>
-            Back
-            <ChevronLeft width={16} height={16} className='ml-2' />
-          </Button>
-          <LoadableButton onClick={() => setStep?.(EImportStep.S3_MAPPING_OUTPUT)}>
-            Continue
-            <ArrowRight width={16} height={16} className='ml-2' />
-          </LoadableButton>
-        </div>
+        {!readonly && (
+          <>
+            <Button onClick={onCreateNew} className='w-full' variant='outline'>
+              Add more input <PlusIcon className='w-4 h-4 ml-2' />
+            </Button>
+            <div className='flex gap-2 w-full justify-end items-center mt-4'>
+              <Button onClick={() => setStep?.(EImportStep.S1_WORKFLOW_INFO)} variant='secondary' className=''>
+                Back
+                <ChevronLeft width={16} height={16} className='ml-2' />
+              </Button>
+              <LoadableButton onClick={() => setStep?.(EImportStep.S3_MAPPING_OUTPUT)}>
+                Continue
+                <ArrowRight width={16} height={16} className='ml-2' />
+              </LoadableButton>
+            </div>
+          </>
+        )}
       </div>
     </>
   )
