@@ -105,7 +105,7 @@ export const ViewInputNode: IComponent<{
             Back
             <ChevronLeft width={16} height={16} className='ml-2' />
           </Button>
-          <LoadableButton>
+          <LoadableButton onClick={() => setStep?.(EImportStep.S3_MAPPING_OUTPUT)}>
             Continue
             <ArrowRight width={16} height={16} className='ml-2' />
           </LoadableButton>

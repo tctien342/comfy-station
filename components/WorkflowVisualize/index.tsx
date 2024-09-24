@@ -25,7 +25,8 @@ export const WorkflowVisualize: IComponent<{
             borderColor = '#10B981'
             break
           case EHightlightType.OUTPUT:
-            borderColor = '#3B82F6'
+            // Green
+            borderColor = '#10B981'
             break
           case EHightlightType.SELECTING:
             borderColor = '#F59E0B'

@@ -55,10 +55,10 @@ export const trpc = createTRPCNext<AppRouter>({
       // during client requests
       return {
         links: [
-          loggerLink({
-            enabled: (opts) =>
-              process.env.NODE_ENV === 'development' || (opts.direction === 'down' && opts.result instanceof Error)
-          }),
+          // loggerLink({
+          //   enabled: (opts) =>
+          //     process.env.NODE_ENV === 'development' || (opts.direction === 'down' && opts.result instanceof Error)
+          // }),
           splitLink({
             condition: (op) => op.type === 'subscription',
             true: wsLink({

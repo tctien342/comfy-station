@@ -7,6 +7,7 @@ export const IconPicker: IComponent<{
   value?: string
   onSelect?: (iconName: string) => void
 }> = ({ value, onSelect }) => {
+  const [showIconPicker, setShowIconPicker] = useState(false)
   const [selectedIconName, setSelectedIconName] = useState<string>(value ?? 'ArrowDownIcon')
 
   const IconComponent = Icons[selectedIconName as keyof typeof Icons]
@@ -21,8 +22,14 @@ export const IconPicker: IComponent<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
+  const handleSelectionIcon = (iconName: string) => {
+    onSelect?.(iconName)
+    setSelectedIconName(iconName)
+    setShowIconPicker(false)
+  }
+
   return (
-    <Popover modal>
+    <Popover modal open={showIconPicker} onOpenChange={setShowIconPicker}>
       <PopoverTrigger asChild>
         <Button variant='outline'>
           <IconComponent className='h-4 w-4' />
@@ -33,15 +40,7 @@ export const IconPicker: IComponent<{
           {iconNames.map((iconName) => {
             const Icon = Icons[iconName as keyof typeof Icons]
             return (
-              <Button
-                key={iconName}
-                variant='ghost'
-                size='icon'
-                onClick={() => {
-                  onSelect?.(iconName)
-                  setSelectedIconName(iconName)
-                }}
-              >
+              <Button key={iconName} variant='ghost' size='icon' onClick={() => handleSelectionIcon(iconName)}>
                 <Icon className='h-4 w-4' />
               </Button>
             )
