@@ -18,7 +18,13 @@ export const WorkflowVisualize: IComponent<{
   useEffect(() => {
     setNodes((nds) =>
       nds.map((node) => {
-        const hlData = hightlightArr?.find((hl) => hl.id === node.id)
+        const hlData = hightlightArr
+          ?.sort((a, b) => {
+            // PROCESSING have highest order
+            if (a.type === EHightlightType.PROCESSING) return 1
+            return 0
+          })
+          .find((hl) => hl.id === node.id)
         let borderColor = undefined
         switch (hlData?.type) {
           case EHightlightType.PROCESSING:

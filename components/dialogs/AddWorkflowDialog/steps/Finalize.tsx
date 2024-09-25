@@ -22,6 +22,7 @@ import { PhotoView } from 'react-photo-view'
 import { useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
 import { z } from 'zod'
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { cloneDeep } from 'lodash'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -51,17 +52,18 @@ export const FinalizeStep: IComponent = () => {
 
   const handlePressTest = async () => {
     if (!workflow) return
+    const wfObj = cloneDeep(inputWorkflowTest.current)
     // Check if there are files to upload
     const inputKeys = Object.keys(workflow?.mapInput || {})
     for (const key of inputKeys) {
       const input = workflow?.mapInput?.[key as keyof typeof workflow.mapInput]
       if (!input) continue
       if (input.type === EValueType.File || input.type === EValueType.Image) {
-        const files = inputWorkflowTest.current[key] as File[]
+        const files = wfObj[key] as File[]
         if (files.length > 0) {
           const file = files[0]
           if (file instanceof File) {
-            inputWorkflowTest.current[key] = await uploadAttachment(file)
+            wfObj[key] = await uploadAttachment(file)
           }
         }
       }
@@ -69,7 +71,7 @@ export const FinalizeStep: IComponent = () => {
     setLoading(true)
     mutateAsync({
       workflow,
-      input: inputWorkflowTest.current
+      input: wfObj
     })
   }
 
@@ -102,16 +104,6 @@ export const FinalizeStep: IComponent = () => {
                 onChanges={(files) => {
                   inputWorkflowTest.current[val] = files
                 }}
-              />
-            )}
-            {[EValueType.Number, EValueType.Seed].includes(input.type as EValueType) && (
-              <Input
-                disabled={loading}
-                defaultValue={String(input.default ?? '')}
-                onChange={(e) => {
-                  inputWorkflowTest.current[val] = e.target.value
-                }}
-                type='number'
               />
             )}
             {[EValueType.Number, EValueType.Seed].includes(input.type as EValueType) && (

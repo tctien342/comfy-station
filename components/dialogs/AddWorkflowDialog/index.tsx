@@ -51,7 +51,7 @@ export const AddWorkflowDialog: IComponent = () => {
   }
 
   return (
-    <Dialog open={show} onOpenChange={setShow}>
+    <Dialog open={show} modal onOpenChange={setShow}>
       <DialogTrigger>
         <Button
           onClick={() => {
