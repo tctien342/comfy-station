@@ -21,6 +21,9 @@ export const WorkflowVisualize: IComponent<{
         const hlData = hightlightArr?.find((hl) => hl.id === node.id)
         let borderColor = undefined
         switch (hlData?.type) {
+          case EHightlightType.PROCESSING:
+            borderColor = '#F87171'
+            break
           case EHightlightType.INPUT:
             borderColor = '#10B981'
             break
@@ -64,6 +67,10 @@ export const WorkflowVisualize: IComponent<{
         <div className='flex gap-1 items-center text-xs'>
           <div className='w-2 h-min aspect-square bg-[#F59E0B] rounded-full' />
           <span>SELECTING</span>
+        </div>
+        <div className='flex gap-1 items-center text-xs'>
+          <div className='w-2 h-min aspect-square bg-[#F87171] rounded-full' />
+          <span>PROCESSING</span>
         </div>
       </div>
       <ReactFlow nodes={nodes} edges={edges} fitView colorMode={isDark ? 'dark' : 'light'}>

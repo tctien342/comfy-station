@@ -9,17 +9,10 @@ import { CallWrapper } from '@saintno/comfyui-sdk'
 import { cloneDeep, uniqueId } from 'lodash'
 import AttachmentService, { EAttachmentType } from '@/services/attachment'
 import { EValueType } from '@/entities/enum'
+import { Attachment } from '@/entities/attachment'
+import { TWorkflowProgressMessage } from '@/types/task'
 
 const ee = new EventEmitter()
-
-type TWorkflowProgressMessage =
-  | { key: 'init' }
-  | { key: 'loading' }
-  | { key: 'start' }
-  | { key: 'progress'; data: { node: number } }
-  | { key: 'preview'; data: { blob: Blob } }
-  | { key: 'finished'; data: { output: any } }
-  | { key: 'failed' }
 
 export const workflowRouter = router({
   list: privateProcedure
@@ -63,28 +56,50 @@ export const workflowRouter = router({
       const handle = (data: { input: Record<string, any>; workflow: Workflow }) => {
         subscriber.next({ key: 'init' })
         const builder = Workflow.getBuilder(data.workflow)
-        for (const key in data.input) {
-          switch (data.workflow.mapInput?.[key].type) {
-            case EValueType.Number:
-            case EValueType.Seed:
-              builder.input(key, Number(data.input[key]))
-              break
-            case EValueType.String:
-              builder.input(key, String(data.input[key]))
-              break
-            default:
-              builder.input(key, data.input[key])
-              break
-          }
-        }
         const pool = ComfyPoolInstance.getInstance().pool
-        pool.run((api) => {
+        pool.run(async (api) => {
+          for (const key in data.input) {
+            const inputData = data.input[key] || data.workflow.mapInput?.[key].default
+            if (!inputData) {
+              continue
+            }
+            switch (data.workflow.mapInput?.[key].type) {
+              case EValueType.Number:
+              case EValueType.Seed:
+                builder.input(key, Number(inputData))
+                break
+              case EValueType.String:
+                builder.input(key, String(inputData))
+                break
+              case EValueType.File:
+              case EValueType.Image:
+                const file = inputData as Attachment
+                const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
+                if (!fileBlob) {
+                  return subscriber.next({ key: 'failed' })
+                }
+                const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
+                if (!uploadedImg) {
+                  subscriber.next({ key: 'failed' })
+                  return
+                }
+                console.log('Uploaded image', uploadedImg)
+                builder.input(key, uploadedImg.info.filename)
+                break
+              default:
+                builder.input(key, inputData)
+                break
+            }
+          }
           return new CallWrapper(api, builder)
             .onPending(() => {
               subscriber.next({ key: 'loading' })
             })
             .onProgress((e) => {
-              subscriber.next({ key: 'progress', data: { node: Number(e.node) } })
+              subscriber.next({
+                key: 'progress',
+                data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
+              })
             })
             .onPreview((e) => {
               subscriber.next({ key: 'preview', data: { blob: e } })
@@ -144,7 +159,6 @@ export const workflowRouter = router({
       }
       ee.on('start', handle)
       return () => {
-        console.log('WTF')
         ee.off('start', handle)
       }
     })

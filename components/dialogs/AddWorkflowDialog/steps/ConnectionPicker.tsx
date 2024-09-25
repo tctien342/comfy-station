@@ -59,7 +59,7 @@ export const ConnectionPicker: IComponent<{
 
   const handlePressCheck = () => {
     if (!pickedNode || !pickedInput) return
-    onPicked?.({ nodeName: pickedNode, keyName: pickedInput, mapVal: `${pickedNode}.inputs.${pickedNode}` })
+    onPicked?.({ nodeName: pickedNode, keyName: pickedInput, mapVal: `${pickedNode}.inputs.${pickedInput}` })
   }
 
   useEffect(() => {

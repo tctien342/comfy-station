@@ -48,7 +48,12 @@ export const CreateInputNode: IComponent<{
 }> = ({ onHide, config }) => {
   const isUpdating = !!config
   const { workflow, setWorkflow } = useContext(AddWorkflowDialogContext)
-  const [selections, setSelections] = useState<string[]>(config?.selections ?? [])
+  const [selections, setSelections] = useState<
+    {
+      id?: string
+      value: string
+    }[]
+  >(config?.selections ?? [])
   const [connections, setConnections] = useState<Array<IMapTarget>>(config?.target ?? [])
   const formSchema = z.object({
     // Regex is url host name

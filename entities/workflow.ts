@@ -48,7 +48,10 @@ export interface IMapperInput extends IMaperBase {
   /**
    * Only for types = Checkpoint | Lora | Sampler | Scheduler
    */
-  selections?: Array<string>
+  selections?: Array<{
+    id?: string
+    value: string
+  }>
   default?: string | number | boolean
 }
 

@@ -8,6 +8,9 @@ import { useRouter } from '@/routing'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
+import { PhotoProvider } from 'react-photo-view'
+
+import 'react-photo-view/dist/react-photo-view.css'
 
 export const ClientLayout: IComponent = ({ children }) => {
   const pathname = usePathname()
@@ -45,7 +48,7 @@ export const ClientLayout: IComponent = ({ children }) => {
           </Card>
         </div>
       )}
-      {children}
+      <PhotoProvider>{children}</PhotoProvider>
       <Toaster />
     </>
   )

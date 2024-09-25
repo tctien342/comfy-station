@@ -31,11 +31,12 @@ export const attachmentRouter = router({
       maxWidthHeightSize: z
         .string()
         .transform((v) => Number(v))
+        .nullable()
         .optional(),
       /**
        * The type of compress image
        */
-      type: z.nativeEnum(ECompressPreset).optional()
+      type: z.nativeEnum(ECompressPreset).nullable().optional()
     })
     const parsedData = schema.safeParse({
       file: input.get('file'),
@@ -44,6 +45,7 @@ export const attachmentRouter = router({
       type: input.get('type')
     })
     if (!parsedData.success) {
+      console.error(parsedData.error)
       throw new Error('Invalid input')
     }
     const inputData = parsedData.data

@@ -63,7 +63,12 @@ export const AddWorkflowDialog: IComponent = () => {
           <PlusIcon width={16} height={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className='max-w-full w-[calc(100vw-20px)] h-[calc(100vh-20px)] pt-4 bg-background flex flex-col [&>button]:hidden'>
+      <DialogContent
+        onEscapeKeyDown={(e) => {
+          e.preventDefault()
+        }}
+        className='max-w-full w-[calc(100vw-20px)] h-[calc(100vh-20px)] pt-4 bg-background flex flex-col [&>button]:hidden'
+      >
         <DialogHeader className='flex-row items-center gap-2'>
           <DialogTitle className='text-base font-bold flex-auto'>CREATE NEW WORKFLOW</DialogTitle>
           {currentStep !== EImportStep.S0_UPLOAD_WORKFLOW && (

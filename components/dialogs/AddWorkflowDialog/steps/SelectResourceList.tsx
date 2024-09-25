@@ -14,10 +14,18 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { Label } from '@/components/ui/label'
 
 export const SelectResourceList: IComponent<{
-  selected?: string[]
+  selected?: {
+    id?: string
+    value: string
+  }[]
   defaultValue?: string
   onChangeDefault?: (value: string) => void
-  onChange?: (value: string[]) => void
+  onChange?: (
+    value: {
+      id?: string
+      value: string
+    }[]
+  ) => void
   type: EValueSelectionType
 }> = ({ type, selected = [], onChange, defaultValue, onChangeDefault }) => {
   const [open, setOpen] = useState(false)
@@ -44,7 +52,16 @@ export const SelectResourceList: IComponent<{
             <TableHead>
               <Checkbox
                 checked={data?.length === selected.length}
-                onCheckedChange={(v) => onChange?.(v ? (data?.map((v) => v.id) ?? []) : [])}
+                onCheckedChange={(v) =>
+                  onChange?.(
+                    v
+                      ? (data?.map((v) => ({
+                          id: v.id,
+                          value: v.displayName?.trim() || v.name
+                        })) ?? [])
+                      : []
+                  )
+                }
               />
             </TableHead>
             <TableHead className='w-[100px]'>Thumbnail</TableHead>
@@ -59,14 +76,34 @@ export const SelectResourceList: IComponent<{
           {data?.map((item) => {
             const shortName = item.name.slice(0, 2).toUpperCase()
             const toggle = () =>
-              onChange?.(selected.includes(item.id) ? selected.filter((id) => id !== item.id) : [...selected, item.id])
+              onChange?.(
+                selected.some((v) => v.id === item.id)
+                  ? selected.filter((v) => v.id !== item.id)
+                  : [
+                      ...selected,
+                      {
+                        id: item.id,
+                        value: item.displayName?.trim() || item.name
+                      }
+                    ]
+              )
             return (
               <TableRow key={item.id} onClick={toggle} className='cursor-pointer'>
                 <TableCell>
                   <Checkbox
-                    checked={selected.includes(item.id)}
+                    checked={selected.some((v) => v.id === item.id)}
                     onCheckedChange={(v) =>
-                      onChange?.(v ? [...selected, item.id] : selected.filter((id) => id !== item.id))
+                      onChange?.(
+                        v
+                          ? [
+                              ...selected,
+                              {
+                                id: item.id,
+                                value: item.displayName?.trim() || item.name
+                              }
+                            ]
+                          : selected.filter((v) => v.id !== item.id)
+                      )
                     }
                   />
                 </TableCell>
@@ -87,7 +124,7 @@ export const SelectResourceList: IComponent<{
   }, [data, onChange, selected, type])
 
   const currentName = useMemo(() => {
-    const item = data?.find((item) => item.id === defaultValue)
+    const item = data?.find((item) => item.name === defaultValue || item.displayName === defaultValue)
     if (!item) return '-'
     return (item.displayName?.trim() || item.name).replaceAll('_', ' ')
   }, [data, defaultValue])
@@ -127,18 +164,20 @@ export const SelectResourceList: IComponent<{
               <CommandEmpty>No item found.</CommandEmpty>
               <CommandGroup>
                 {selected.map((key) => {
-                  const item = data?.find((v) => v.id === key)
+                  const item = data?.find((v) => v.id === key.id)
                   return (
                     <CommandItem
-                      key={key}
-                      value={key}
+                      key={key.id}
+                      value={key.value}
                       onSelect={(currentValue) => {
-                        onChangeDefault?.(currentValue === defaultValue ? '' : currentValue)
+                        onChangeDefault?.(
+                          currentValue === defaultValue ? '' : item?.displayName?.trim() || item?.name || ''
+                        )
                         setOpen(false)
                       }}
                     >
                       <Check className={cn('mr-2 h-4 w-4', defaultValue === item?.id ? 'opacity-100' : 'opacity-0')} />
-                      {item?.displayName?.trim() || item?.name || key}
+                      {item?.displayName?.trim() || item?.name || key.value}
                     </CommandItem>
                   )
                 })}

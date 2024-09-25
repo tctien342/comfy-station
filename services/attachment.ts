@@ -111,6 +111,39 @@ class AttachmentService {
     return undefined
   }
 
+  async getFileBlob(fileName: string): Promise<Blob | null> {
+    if (this.s3 && BackendENV.S3_BUCKET_NAME) {
+      try {
+        const params = {
+          Bucket: BackendENV.S3_BUCKET_NAME,
+          Key: fileName
+        }
+        const command = new GetObjectCommand(params)
+        const response = await this.s3.send(command)
+        const streamToBuffer = (stream: any): Promise<Buffer> =>
+          new Promise((resolve, reject) => {
+            const chunks: any[] = []
+            stream.on('data', (chunk: any) => chunks.push(chunk))
+            stream.on('error', reject)
+            stream.on('end', () => resolve(Buffer.concat(chunks)))
+          })
+        const buffer = await streamToBuffer(response.Body)
+        return new Blob([buffer], { type: response.ContentType })
+      } catch (error) {
+        this.logger.w('getFileBlob', 'Error fetching file from S3', { error })
+        return null
+      }
+    } else {
+      const filePath = `${this.localPath}${fileName}`
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath)
+        const mimeType = mime.getType(fileName) || 'application/octet-stream'
+        return new Blob([buffer], { type: mimeType })
+      }
+      return null
+    }
+  }
+
   async uploadFile(file: Buffer, fileName: string) {
     try {
       if (this.s3) {
