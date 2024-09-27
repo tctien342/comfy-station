@@ -76,11 +76,11 @@ export const workflowRouter = router({
                 const file = inputData as Attachment
                 const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
                 if (!fileBlob) {
-                  return subscriber.next({ key: 'failed' })
+                  return subscriber.next({ key: 'failed', detail: 'missing image' })
                 }
                 const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
                 if (!uploadedImg) {
-                  subscriber.next({ key: 'failed' })
+                  subscriber.next({ key: 'failed', detail: 'failed to upload image' })
                   return
                 }
                 console.log('Uploaded image', uploadedImg)
@@ -151,8 +151,8 @@ export const workflowRouter = router({
               subscriber.next({ key: 'finished', data: { output: outputData } })
             })
             .onFailed((e) => {
-              console.log(e)
-              subscriber.next({ key: 'failed' })
+              console.log('WTF', e)
+              subscriber.next({ key: 'failed', detail: (e.cause as any)?.error?.message || e.message })
             })
             .run()
         })
@@ -173,5 +173,6 @@ export const workflowRouter = router({
     .mutation(async ({ input, ctx }) => {
       ee.emit('start', input)
       return true
-    })
+    }),
+  importWorkflow: adminProcedure.input(z.object({})).mutation(async ({ input, ctx }) => {})
 })

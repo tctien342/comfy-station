@@ -98,7 +98,7 @@ export const ViewOutputNode: IComponent<{
                 Back
                 <ChevronLeft width={16} height={16} className='ml-2' />
               </Button>
-              <LoadableButton onClick={() => setStep?.(EImportStep.S3_MAPPING_OUTPUT)}>
+              <LoadableButton onClick={() => setStep?.(EImportStep.S4_FINALIZE)}>
                 Continue
                 <ArrowRight width={16} height={16} className='ml-2' />
               </LoadableButton>

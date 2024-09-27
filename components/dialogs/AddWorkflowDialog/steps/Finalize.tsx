@@ -5,7 +5,7 @@ import { ViewInputNode } from './ViewInputNode'
 import { ViewOutputNode } from './ViewOutputNode'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { LoadableButton } from '@/components/LoadableButton'
-import { Check, Play, Save, X } from 'lucide-react'
+import { Check, ChevronLeft, Play, Save, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { trpc } from '@/utils/trpc'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
@@ -35,6 +35,8 @@ export const FinalizeStep: IComponent = () => {
 
   const { uploadAttachment } = useAttachmentUploader()
   const { updateProcessing } = useWorkflowVisStore()
+
+  const isEnd = progressEv?.key === 'finished' || progressEv?.key === 'failed'
 
   trpc.workflow.testWorkflow.useSubscription(undefined, {
     onData: (ev) => {
@@ -124,12 +126,12 @@ export const FinalizeStep: IComponent = () => {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder='Select...' className='whitespace-normal break-words w-full' />
+                  <SelectValue placeholder='Select...' />
                 </SelectTrigger>
                 <SelectContent>
                   {input.selections!.map((selection) => (
                     <SelectItem key={selection.value} value={selection.value}>
-                      <div className='flex items-center whitespace-normal break-words'>{selection.value}</div>
+                      <div className='w-[300px] whitespace-normal break-words'>{selection.value}</div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -157,7 +159,7 @@ export const FinalizeStep: IComponent = () => {
     return (
       <div className='flex flex-col gap-2'>
         <Label>Status</Label>
-        {progressEv.key !== 'finished' && (
+        {!isEnd && (
           <div className='flex flex-row gap-2 items-center animate-pulse'>
             <LoadingSVG width={16} height={16} />
             {progressEv.key === 'init' && <Label>Initializing...</Label>}
@@ -167,7 +169,15 @@ export const FinalizeStep: IComponent = () => {
                 Running at node {progressEv.data.node}, {progressEv.data.value}/{progressEv.data.max}...
               </Label>
             )}
-            {progressEv.key === 'failed' && <Label>Failed</Label>}
+          </div>
+        )}
+        {progressEv.key === 'failed' && (
+          <div className='flex flex-col gap-2'>
+            <div className='flex gap-2 items-center w-full'>
+              <X width={16} height={16} className='text-destructive' />
+              <Label>Failed</Label>
+            </div>
+            <span className='text-xs'>{progressEv.detail}</span>
           </div>
         )}
         {progressEv.key === 'finished' && (
@@ -206,7 +216,7 @@ export const FinalizeStep: IComponent = () => {
         )}
       </div>
     )
-  }, [progressEv])
+  }, [isEnd, progressEv])
 
   return (
     <div className='absolute top-0 left-0 flex flex-col w-full h-full'>
@@ -221,7 +231,7 @@ export const FinalizeStep: IComponent = () => {
         {testMode ? (
           <>
             <Button onClick={() => setTestMode(false)} variant='ghost'>
-              Cancel <X className='w-4 h-4 ml-1' />
+              Back <ChevronLeft className='w-4 h-4 ml-1' />
             </Button>
             <LoadableButton loading={loading} onClick={handlePressTest}>
               Run <Play className='w-4 h-4 ml-1' />

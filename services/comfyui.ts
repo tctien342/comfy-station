@@ -9,7 +9,6 @@ import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
 import CachingService from './caching'
 
 import { throttle } from 'lodash'
-import { Workflow } from '@/entities/workflow'
 
 const MONITOR_INTERVAL = 5000
 const cacher = CachingService.getInstance()

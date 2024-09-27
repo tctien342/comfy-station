@@ -12,4 +12,4 @@ export type TWorkflowProgressMessage =
         }
       }
     }
-  | { key: 'failed' }
+  | { key: 'failed'; detail: string }
