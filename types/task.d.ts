@@ -3,7 +3,9 @@ export type TWorkflowProgressMessage =
   | { key: 'loading' }
   | { key: 'start' }
   | { key: 'progress'; data: { node: number; max: number; value: number } }
-  | { key: 'preview'; data: { blob: Blob } }
+  | { key: 'preview'; data: { blob64: string } }
+  | { key: 'downloading_output' }
+  | { key: 'uploading_output' }
   | {
       key: 'finished'
       data: {

@@ -314,7 +314,7 @@ export const clientRouter = router({
           }
           const importExtension = async () => {
             const extensions = (await api.getNodeDefs()) ?? []
-            for (const ext of Object.values(extensions)) {
+            const promises = Object.values(extensions).map(async (ext) => {
               let resource = await ctx.em.findOne(Extension, { pythonModule: ext.python_module, name: ext.name })
               if (!resource) {
                 resource = ctx.em.create(
@@ -338,7 +338,8 @@ export const clientRouter = router({
                 )
               }
               client.extensions.add(resource)
-            }
+            })
+            await Promise.all(promises)
             await ctx.em.persistAndFlush(client)
             subscriber.next(EImportingClient.IMPORTED_EXTENSION)
           }

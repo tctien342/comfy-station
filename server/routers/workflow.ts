@@ -11,6 +11,7 @@ import AttachmentService, { EAttachmentType } from '@/services/attachment'
 import { EValueType } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
+import { ImageUtil } from '../utils/ImageUtil'
 
 const ee = new EventEmitter()
 
@@ -101,15 +102,19 @@ export const workflowRouter = router({
                 data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
               })
             })
-            .onPreview((e) => {
-              subscriber.next({ key: 'preview', data: { blob: e } })
+            .onPreview(async (e) => {
+              const arrayBuffer = await e.arrayBuffer()
+              const base64String = Buffer.from(arrayBuffer).toString('base64')
+              subscriber.next({ key: 'preview', data: { blob64: base64String } })
             })
             .onStart(() => {
               subscriber.next({ key: 'start' })
             })
             .onFinished(async (outData) => {
+              subscriber.next({ key: 'downloading_output' })
               const attachment = AttachmentService.getInstance()
               const output = await Workflow.parseOutput(api, data.workflow, outData)
+              subscriber.next({ key: 'uploading_output' })
               const tmpOutput = cloneDeep(output) as Record<string, any>
               // If key is array of Blob, convert it to base64
               for (const key in tmpOutput) {
@@ -117,9 +122,10 @@ export const workflowRouter = router({
                   tmpOutput[key] = (await Promise.all(
                     tmpOutput[key].map(async (v, idx) => {
                       if (v instanceof Blob) {
-                        console.log('Uploading blob', v)
-                        const tmpName = `${uniqueId()}_${key}_${idx}.png`
-                        const uploaded = await attachment.uploadBlob(v, `${tmpName}`)
+                        const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
+                        const jpg = await imgUtil.intoJPG()
+                        const tmpName = `${uniqueId()}_${key}_${idx}.jpg`
+                        const uploaded = await attachment.uploadFile(jpg, `${tmpName}`)
                         if (uploaded) {
                           return await attachment.getFileURL(tmpName)
                         }

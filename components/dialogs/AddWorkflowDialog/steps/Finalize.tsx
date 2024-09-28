@@ -29,6 +29,7 @@ const SelectionSchema = z.nativeEnum(EValueSelectionType)
 export const FinalizeStep: IComponent = () => {
   const [loading, setLoading] = useState(false)
   const [progressEv, setProgressEv] = useState<TWorkflowProgressMessage>()
+  const [previewBlob, setPreviewBlob] = useState<Blob>()
   const inputWorkflowTest = useRef<Record<string, any>>({})
   const [testMode, setTestMode] = useState(false)
   const { setStep, workflow, setWorkflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
@@ -40,6 +41,13 @@ export const FinalizeStep: IComponent = () => {
 
   trpc.workflow.testWorkflow.useSubscription(undefined, {
     onData: (ev) => {
+      if (ev.key === 'preview') {
+        const base64 = ev.data.blob64
+        const blob = base64 ? new Blob([Buffer.from(base64, 'base64')]) : undefined
+        setPreviewBlob(blob)
+        return
+      }
+
       setProgressEv(ev)
       if (ev.key === 'failed' || ev.key === 'finished') {
         setLoading(false)
@@ -131,7 +139,7 @@ export const FinalizeStep: IComponent = () => {
                 <SelectContent>
                   {input.selections!.map((selection) => (
                     <SelectItem key={selection.value} value={selection.value}>
-                      <div className='w-[300px] whitespace-normal break-words'>{selection.value}</div>
+                      <div className='w-[300px] whitespace-normal break-words text-left'>{selection.value}</div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -158,6 +166,11 @@ export const FinalizeStep: IComponent = () => {
     if (!progressEv) return null
     return (
       <div className='flex flex-col gap-2'>
+        {!!previewBlob && (
+          <div className='w-full flex gap-2'>
+            <img src={URL.createObjectURL(previewBlob)} alt='preview' className='w-20 h-20 object-cover rounded-xl' />
+          </div>
+        )}
         <Label>Status</Label>
         {!isEnd && (
           <div className='flex flex-row gap-2 items-center animate-pulse'>
@@ -169,6 +182,8 @@ export const FinalizeStep: IComponent = () => {
                 Running at node {progressEv.data.node}, {progressEv.data.value}/{progressEv.data.max}...
               </Label>
             )}
+            {progressEv.key === 'downloading_output' && <Label>Finished, downloading outputs...</Label>}
+            {progressEv.key === 'uploading_output' && <Label>Finished, uploading attachments...</Label>}
           </div>
         )}
         {progressEv.key === 'failed' && (
@@ -216,7 +231,7 @@ export const FinalizeStep: IComponent = () => {
         )}
       </div>
     )
-  }, [isEnd, progressEv])
+  }, [isEnd, previewBlob, progressEv])
 
   return (
     <div className='absolute top-0 left-0 flex flex-col w-full h-full'>
