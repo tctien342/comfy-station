@@ -8,12 +8,60 @@ import { ComfyPoolInstance } from '@/services/comfyui'
 import { CallWrapper } from '@saintno/comfyui-sdk'
 import { cloneDeep, uniqueId } from 'lodash'
 import AttachmentService, { EAttachmentType } from '@/services/attachment'
-import { EValueType } from '@/entities/enum'
+import { EValueSelectionType, EValueType, EWorkflowActiveStatus } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
 
 const ee = new EventEmitter()
+
+const BaseSchema = z.object({
+  key: z.string(),
+  type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType)]),
+  iconName: z.string().optional(),
+  description: z.string().optional()
+})
+
+const TargetSchema = z.object({
+  nodeName: z.string(),
+  keyName: z.string(),
+  mapVal: z.string()
+})
+
+const InputSchema = z.union([
+  z.record(
+    z.string(),
+    z.object({
+      target: z.array(TargetSchema),
+      min: z.number().optional(),
+      max: z.number().optional(),
+      cost: z
+        .object({
+          related: z.boolean(),
+          costPerUnit: z.number()
+        })
+        .optional(),
+      selections: z
+        .array(
+          z.object({
+            id: z.string().optional(),
+            value: z.string()
+          })
+        )
+        .optional(),
+      default: z.any().optional()
+    })
+  ),
+  BaseSchema
+])
+
+const OutputSchema = z.union([
+  z.object({
+    target: TargetSchema,
+    joinArray: z.boolean().optional()
+  }),
+  BaseSchema
+])
 
 export const workflowRouter = router({
   list: privateProcedure
@@ -180,5 +228,22 @@ export const workflowRouter = router({
       ee.emit('start', input)
       return true
     }),
-  importWorkflow: adminProcedure.input(z.object({})).mutation(async ({ input, ctx }) => {})
+  importWorkflow: adminProcedure
+    .input(
+      z.object({
+        name: z.string().optional(),
+        description: z.string().optional(),
+        rawWorkflow: z.string(),
+        hideWorkflow: z.boolean().default(false).optional(),
+        allowLocalhost: z.boolean().default(false).optional(),
+        mapInput: InputSchema.optional(),
+        mapOutput: OutputSchema.optional(),
+        cost: z.number().default(0).optional(),
+        baseWeight: z.number().default(0).optional(),
+        status: z.nativeEnum(EWorkflowActiveStatus).default(EWorkflowActiveStatus.Activated).optional()
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      console.log(input)
+    })
 })

@@ -61,6 +61,7 @@ export const FinalizeStep: IComponent = () => {
     }
   })
   const { mutateAsync } = trpc.workflow.startTestWorkflow.useMutation()
+  const sumbiter = trpc.workflow.importWorkflow.useMutation()
 
   const handlePressTest = async () => {
     if (!workflow) return
@@ -277,7 +278,15 @@ export const FinalizeStep: IComponent = () => {
             <Button onClick={() => setTestMode(true)} variant='ghost'>
               Test workflow <Play className='w-4 h-4 ml-1' />
             </Button>
-            <LoadableButton onClick={() => console.log(workflow)}>
+            <LoadableButton
+              onClick={() => {
+                if (rawWorkflow)
+                  sumbiter.mutateAsync({
+                    ...workflow,
+                    rawWorkflow: JSON.stringify(rawWorkflow)
+                  })
+              }}
+            >
               Submit <Save className='w-4 h-4 ml-1' />
             </LoadableButton>
           </>
