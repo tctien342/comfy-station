@@ -10,6 +10,7 @@ import { LoadableButton } from '@/components/LoadableButton'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
+import { useActionDebounce } from '@/hooks/useAction'
 
 export const ConnectionPicker: IComponent<{
   workflow: IWorkflow
@@ -19,7 +20,7 @@ export const ConnectionPicker: IComponent<{
   onChange?: (connection: IMapTarget) => void
   onPicked?: (connection: IMapTarget) => void
 }> = ({ workflow, isOutput, connection, onChange, onCanceled, onPicked }) => {
-  const { hightlightArr, updateHightlightArr } = useWorkflowVisStore()
+  const { hightlightArr, updateHightlightArr, recenter } = useWorkflowVisStore()
   const formSchema = z.object({
     nodeName: z.string(),
     keyName: z.string().optional(),
@@ -30,6 +31,8 @@ export const ConnectionPicker: IComponent<{
     defaultValues: connection
   })
   const handleSubmit = form.handleSubmit(async (data) => {})
+
+  const debounce = useActionDebounce(500, true)
 
   const pickedNode = form.watch('nodeName')
   const pickedInput = form.watch('keyName')
@@ -42,24 +45,27 @@ export const ConnectionPicker: IComponent<{
   }, [pickedInput, pickedNode, workflow])
 
   const handlePicking = (node: string) => {
-    const oldData = hightlightArr.find((hl) => hl.type === EHightlightType.SELECTING)
-    if (!oldData) {
-      updateHightlightArr([...hightlightArr, { id: node, type: EHightlightType.SELECTING }])
-    } else {
-      updateHightlightArr(
-        hightlightArr.map((hl) => {
-          if (hl.type === EHightlightType.SELECTING) {
-            return { id: node, type: EHightlightType.SELECTING }
-          }
-          return hl
-        })
-      )
-    }
+    debounce(() => {
+      const oldData = hightlightArr.find((hl) => hl.type === EHightlightType.SELECTING)
+      if (!oldData) {
+        updateHightlightArr([...hightlightArr, { id: node, type: EHightlightType.SELECTING }])
+      } else {
+        updateHightlightArr(
+          hightlightArr.map((hl) => {
+            if (hl.type === EHightlightType.SELECTING) {
+              return { id: node, type: EHightlightType.SELECTING }
+            }
+            return hl
+          })
+        )
+      }
+    })
   }
 
   const handlePressCheck = () => {
     if (!pickedNode || !pickedInput) return
     onPicked?.({ nodeName: pickedNode, keyName: pickedInput, mapVal: `${pickedNode}.inputs.${pickedInput}` })
+    recenter?.()
   }
 
   useEffect(() => {

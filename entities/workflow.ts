@@ -184,6 +184,9 @@ export class Workflow {
           tmp = Number(tmp)
           break
         case EValueType.String:
+          if (!tmp && 'text' in output) {
+            tmp = output.text
+          }
           if (Array.isArray(tmp)) {
             tmp = tmp.join('')
           } else {

@@ -38,7 +38,7 @@ export const CreateOutputNode: IComponent<{
   onHide: () => void
 }> = ({ onHide, config }) => {
   const isUpdating = !!config
-  const { hightlightArr, updateHightlightArr } = useWorkflowVisStore()
+  const { hightlightArr, updateHightlightArr, recenter } = useWorkflowVisStore()
   const { workflow, setWorkflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
   const [connection, setConnection] = useState<IMapTarget | undefined>(config?.target)
   const formSchema = z.object({
@@ -126,6 +126,7 @@ export const CreateOutputNode: IComponent<{
         return hl
       })
     )
+    recenter?.()
     onHide()
   })
 

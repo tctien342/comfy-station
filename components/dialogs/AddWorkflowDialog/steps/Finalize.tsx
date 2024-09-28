@@ -5,7 +5,7 @@ import { ViewInputNode } from './ViewInputNode'
 import { ViewOutputNode } from './ViewOutputNode'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { LoadableButton } from '@/components/LoadableButton'
-import { Check, ChevronLeft, Play, Save, X } from 'lucide-react'
+import { Check, ChevronLeft, Download, Play, Save, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { trpc } from '@/utils/trpc'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
@@ -23,6 +23,7 @@ import { useWorkflowVisStore } from '@/components/WorkflowVisualize/state'
 import { z } from 'zod'
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cloneDeep } from 'lodash'
+import { Switch } from '@/components/ui/switch'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -35,7 +36,7 @@ export const FinalizeStep: IComponent = () => {
   const { setStep, workflow, setWorkflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
 
   const { uploadAttachment } = useAttachmentUploader()
-  const { updateProcessing } = useWorkflowVisStore()
+  const { updateProcessing, recenter } = useWorkflowVisStore()
 
   const isEnd = progressEv?.key === 'finished' || progressEv?.key === 'failed'
 
@@ -52,6 +53,7 @@ export const FinalizeStep: IComponent = () => {
       if (ev.key === 'failed' || ev.key === 'finished') {
         setLoading(false)
         updateProcessing()
+        recenter?.()
       }
       if (ev.key === 'progress') {
         updateProcessing(`${ev.data.node}`)
@@ -216,8 +218,26 @@ export const FinalizeStep: IComponent = () => {
                       ))
                     )
                     break
-                  default:
-                    items = []
+                  case EValueType.File:
+                    const filesURLs = data.data as { url: string }[]
+                    items.push(
+                      ...filesURLs.map((url, idx) => (
+                        <a key={idx} href={url.url} target='_blank' rel='noreferrer'>
+                          <Download className='w-4 h-4' />
+                        </a>
+                      ))
+                    )
+                    break
+                  case EValueType.Boolean: {
+                    const rItem = Boolean(data.data)
+                    items = [<Switch key='Boolean' checked={rItem} disabled />]
+                    break
+                  }
+                  default: {
+                    const rItem = String(data.data)
+                    items = [<p key='String'>{rItem}</p>]
+                    break
+                  }
                 }
                 return (
                   <div key={key} className='w-full flex gap-2 flex-col'>

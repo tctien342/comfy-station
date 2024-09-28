@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Toaster } from '@/components/ui/toaster'
 import useDarkMode from '@/hooks/useDarkmode'
 import { useRouter } from '@/routing'
+import { ReactFlowProvider } from '@xyflow/react'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
@@ -48,7 +49,9 @@ export const ClientLayout: IComponent = ({ children }) => {
           </Card>
         </div>
       )}
-      <PhotoProvider>{children}</PhotoProvider>
+      <ReactFlowProvider>
+        <PhotoProvider>{children}</PhotoProvider>
+      </ReactFlowProvider>
       <Toaster />
     </>
   )

@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { ReactFlow, Background, Controls, ReactFlowProvider, useNodesState, useEdgesState } from '@xyflow/react'
+import React, { useEffect, useMemo } from 'react'
+import { ReactFlow, Background, Controls, useNodesState, useEdgesState, useReactFlow } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
 import { applyLayout, transformEdges, transformNodes } from './tools'
@@ -9,11 +9,28 @@ import { EHightlightType, useWorkflowVisStore } from './state'
 export const WorkflowVisualize: IComponent<{
   workflow: IWorkflow
 }> = ({ workflow }) => {
-  const { hightlightArr } = useWorkflowVisStore()
+  const { hightlightArr, setRecenterFn } = useWorkflowVisStore()
   const isDark = useDarkMode()
+  const reactFlowInstance = useReactFlow()
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(transformEdges(workflow))
   const [nodes, setNodes, onNodesChange] = useNodesState(applyLayout(transformNodes(workflow), edges))
+
+  const zoomToNode = (nodeId: string) => {
+    const node = nodes.find((n) => n.id === nodeId)
+    if (node) {
+      const { x, y } = node.position
+      reactFlowInstance.setCenter(x, y, { zoom: 1.5, duration: 800 })
+    }
+  }
+
+  useEffect(() => {
+    setRecenterFn(() => {
+      reactFlowInstance.fitView({
+        duration: 800
+      })
+    })
+  }, [reactFlowInstance, setRecenterFn])
 
   useEffect(() => {
     setNodes((nds) =>
@@ -21,27 +38,30 @@ export const WorkflowVisualize: IComponent<{
         const hlData = hightlightArr
           ?.sort((a, b) => {
             // PROCESSING have highest order
-            if (a.type === EHightlightType.PROCESSING) return 1
+            if (a.processing) return 1
             return 0
           })
           .find((hl) => hl.id === node.id)
         let borderColor = undefined
-        switch (hlData?.type) {
-          case EHightlightType.PROCESSING:
-            borderColor = '#F87171'
-            break
-          case EHightlightType.INPUT:
-            borderColor = '#10B981'
-            break
-          case EHightlightType.OUTPUT:
-            // Blue
-            borderColor = '#3B82F6'
-            break
-          case EHightlightType.SELECTING:
-            borderColor = '#F59E0B'
-            break
-          default:
-            break
+        if (hlData?.processing) {
+          borderColor = '#F87171'
+          zoomToNode(node.id)
+        } else {
+          switch (hlData?.type) {
+            case EHightlightType.INPUT:
+              borderColor = '#10B981'
+              break
+            case EHightlightType.OUTPUT:
+              // Blue
+              borderColor = '#3B82F6'
+              break
+            case EHightlightType.SELECTING:
+              borderColor = '#F59E0B'
+              zoomToNode(node.id)
+              break
+            default:
+              break
+          }
         }
         return {
           ...node,
