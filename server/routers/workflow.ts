@@ -12,6 +12,7 @@ import { EValueSelectionType, EValueType, EWorkflowActiveStatus } from '@/entiti
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
+import { WorkflowEditEvent } from '@/entities/workflow_edit_event'
 
 const ee = new EventEmitter()
 
@@ -28,9 +29,9 @@ const TargetSchema = z.object({
   mapVal: z.string()
 })
 
-const InputSchema = z.union([
-  z.record(
-    z.string(),
+const InputSchema = z.record(
+  z.string(),
+  z.union([
     z.object({
       target: z.array(TargetSchema),
       min: z.number().optional(),
@@ -50,18 +51,21 @@ const InputSchema = z.union([
         )
         .optional(),
       default: z.any().optional()
-    })
-  ),
-  BaseSchema
-])
+    }),
+    BaseSchema
+  ])
+)
 
-const OutputSchema = z.union([
-  z.object({
-    target: TargetSchema,
-    joinArray: z.boolean().optional()
-  }),
-  BaseSchema
-])
+const OutputSchema = z.record(
+  z.string(),
+  z.union([
+    z.object({
+      target: TargetSchema,
+      joinArray: z.boolean().optional()
+    }),
+    BaseSchema
+  ])
+)
 
 export const workflowRouter = router({
   list: privateProcedure
@@ -83,11 +87,15 @@ export const workflowRouter = router({
         direction === 'forward'
           ? {
               first: limit,
-              after: { endCursor: cursor || null }
+              after: { endCursor: cursor || null },
+              orderBy: { createdAt: 'DESC' },
+              populate: ['author']
             }
           : {
               last: limit,
-              before: { startCursor: cursor || null }
+              before: { startCursor: cursor || null },
+              orderBy: { createdAt: 'DESC' },
+              populate: ['author']
             }
       )
       let nextCursor: typeof cursor | undefined = undefined
@@ -244,6 +252,17 @@ export const workflowRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      console.log(input)
+      const workflow = ctx.em.create(
+        Workflow,
+        {
+          ...input
+        },
+        { partial: true }
+      )
+      const action = ctx.em.create(WorkflowEditEvent, { workflow, user: ctx.session.user! }, { partial: true })
+      workflow.author = ctx.session.user!
+      workflow.editedActions.add(action)
+      await ctx.em.persist(action).persist(workflow).flush()
+      return workflow
     })
 })

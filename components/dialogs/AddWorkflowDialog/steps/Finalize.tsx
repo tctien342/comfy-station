@@ -1,5 +1,5 @@
 import { ReactNode, useContext, useMemo, useRef, useState } from 'react'
-import { AddWorkflowDialogContext } from '..'
+import { AddWorkflowDialogContext, EImportStep } from '..'
 import { WorkflowInformation } from './WorkflowInformation'
 import { ViewInputNode } from './ViewInputNode'
 import { ViewOutputNode } from './ViewOutputNode'
@@ -24,6 +24,8 @@ import { z } from 'zod'
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cloneDeep } from 'lodash'
 import { Switch } from '@/components/ui/switch'
+import { useToast } from '@/hooks/useToast'
+import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -33,10 +35,12 @@ export const FinalizeStep: IComponent = () => {
   const [previewBlob, setPreviewBlob] = useState<Blob>()
   const inputWorkflowTest = useRef<Record<string, any>>({})
   const [testMode, setTestMode] = useState(false)
-  const { setStep, workflow, setWorkflow, rawWorkflow } = useContext(AddWorkflowDialogContext)
+  const { setStep, workflow, setWorkflow, rawWorkflow, setDialog, setRawWorkflow } =
+    useContext(AddWorkflowDialogContext)
 
   const { uploadAttachment } = useAttachmentUploader()
-  const { updateProcessing, recenter } = useWorkflowVisStore()
+  const { toast } = useToast()
+  const { updateProcessing, recenter, updateHightlightArr } = useWorkflowVisStore()
 
   const isEnd = progressEv?.key === 'finished' || progressEv?.key === 'failed'
 
@@ -88,7 +92,34 @@ export const FinalizeStep: IComponent = () => {
     })
   }
 
-  const handlePressTestWorkflow = async () => {}
+  const handlePressSubmitWorkflow = async () => {
+    if (rawWorkflow) {
+      try {
+        setLoading(true)
+        await sumbiter.mutateAsync({
+          ...workflow,
+          rawWorkflow: JSON.stringify(rawWorkflow)
+        })
+        toast({
+          title: 'Workflow submitted successfully'
+        })
+        setRawWorkflow?.(undefined)
+        setWorkflow?.(undefined)
+        updateHightlightArr([])
+        setStep?.(EImportStep.S0_UPLOAD_WORKFLOW)
+        setDialog?.(false)
+        dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
+      } catch (e) {
+        toast({
+          title: 'Failed to submit workflow',
+          variant: 'destructive'
+        })
+        console.warn(e)
+      } finally {
+        setLoading(true)
+      }
+    }
+  }
 
   const renderContent = useMemo(() => {
     if (testMode) {
@@ -278,15 +309,7 @@ export const FinalizeStep: IComponent = () => {
             <Button onClick={() => setTestMode(true)} variant='ghost'>
               Test workflow <Play className='w-4 h-4 ml-1' />
             </Button>
-            <LoadableButton
-              onClick={() => {
-                if (rawWorkflow)
-                  sumbiter.mutateAsync({
-                    ...workflow,
-                    rawWorkflow: JSON.stringify(rawWorkflow)
-                  })
-              }}
-            >
+            <LoadableButton onClick={handlePressSubmitWorkflow}>
               Submit <Save className='w-4 h-4 ml-1' />
             </LoadableButton>
           </>

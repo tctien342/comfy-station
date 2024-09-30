@@ -38,10 +38,11 @@ export const WorkflowVisualize: IComponent<{
         const hlData = hightlightArr
           ?.sort((a, b) => {
             // PROCESSING have highest order
-            if (a.processing) return 1
-            return 0
+            if (a.processing) return -1
+            return b.type - a.type
           })
           .find((hl) => hl.id === node.id)
+        console.log(hightlightArr)
         let borderColor = undefined
         if (hlData?.processing) {
           borderColor = '#F87171'

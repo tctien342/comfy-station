@@ -26,7 +26,7 @@ interface IAddWorkflowContext {
   currentStep: EImportStep
   rawWorkflow?: IWorkflow
   workflow?: Partial<Workflow>
-  setRawWorkflow?: (workflow: IWorkflow) => void
+  setRawWorkflow?: (workflow?: IWorkflow) => void
   setWorkflow?: Dispatch<SetStateAction<Partial<Workflow> | undefined>>
   setDialog?: (show: boolean) => void
   setStep?: (step: EImportStep) => void

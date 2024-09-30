@@ -12,13 +12,13 @@ import { EHightlightType, useWorkflowVisStore } from '@/components/WorkflowVisua
 
 export const ConnectionList: IComponent<{
   connections: Array<IMapTarget>
-  onUpdate: (connections: Array<IMapTarget>) => void
+  onUpdate: (connections: Array<IMapTarget>, nodeCrrVal?: string | number | boolean) => void
 }> = ({ connections, onUpdate }) => {
   const [openInput, setOpenInput] = useState(false)
   const { hightlightArr, updateHightlightArr } = useWorkflowVisStore()
   const { rawWorkflow } = useContext(AddWorkflowDialogContext)
   const { gen } = useKeygen()
-  const handleAddConnection = (connection: IMapTarget) => {
+  const handleAddConnection = (connection: IMapTarget, nodeCrrVal?: string | number | boolean) => {
     const oldData = hightlightArr.find((hl) => hl.id === connection.nodeName)
     if (!oldData) {
       updateHightlightArr([...hightlightArr, { id: connection.nodeName, type: EHightlightType.INPUT }])
@@ -32,7 +32,7 @@ export const ConnectionList: IComponent<{
         })
       )
     }
-    onUpdate([...connections, connection])
+    onUpdate([...connections, connection], nodeCrrVal)
     setOpenInput(false)
   }
 

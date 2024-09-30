@@ -186,6 +186,14 @@ export const CreateInputNode: IComponent<{
     onHide()
   }
 
+  const handleUpdateConnections = (connections: IMapTarget[], defaultVal?: string | number | boolean) => {
+    setConnections(connections)
+    const crrDefault = form.getValues('default')?.toString() ?? ''
+    if (!!defaultVal && crrDefault.trim() === '') {
+      form.setValue('default', defaultVal)
+    }
+  }
+
   return (
     <Form {...form}>
       <form className='w-full h-full flex flex-col' onSubmit={handleSubmit}>
@@ -413,7 +421,7 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
-          <ConnectionList connections={connections} onUpdate={setConnections} />
+          <ConnectionList connections={connections} onUpdate={handleUpdateConnections} />
         </div>
         <div className='flex gap-2 pt-2 w-full items-center'>
           {isUpdating && (
