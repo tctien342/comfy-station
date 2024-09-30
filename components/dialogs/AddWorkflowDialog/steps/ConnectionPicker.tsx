@@ -18,7 +18,7 @@ export const ConnectionPicker: IComponent<{
   connection?: IMapTarget
   onCanceled?: () => void
   onChange?: (connection: IMapTarget) => void
-  onPicked?: (connection: IMapTarget) => void
+  onPicked?: (connection: IMapTarget, defaultVal?: string | number | boolean) => void
 }> = ({ workflow, isOutput, connection, onChange, onCanceled, onPicked }) => {
   const { hightlightArr, updateHightlightArr, recenter } = useWorkflowVisStore()
   const formSchema = z.object({
@@ -32,7 +32,7 @@ export const ConnectionPicker: IComponent<{
   })
   const handleSubmit = form.handleSubmit(async (data) => {})
 
-  const debounce = useActionDebounce(500, true)
+  const debounce = useActionDebounce(340, true)
 
   const pickedNode = form.watch('nodeName')
   const pickedInput = form.watch('keyName')
@@ -64,7 +64,11 @@ export const ConnectionPicker: IComponent<{
 
   const handlePressCheck = () => {
     if (!pickedNode || !pickedInput) return
-    onPicked?.({ nodeName: pickedNode, keyName: pickedInput, mapVal: `${pickedNode}.inputs.${pickedInput}` })
+    let nodeVal: string | number | boolean = ''
+    if (currentNodeValue && z.union([z.string(), z.number(), z.boolean()]).safeParse(currentNodeValue).success) {
+      nodeVal = currentNodeValue as string | number | boolean
+    }
+    onPicked?.({ nodeName: pickedNode, keyName: pickedInput, mapVal: `${pickedNode}.inputs.${pickedInput}` }, nodeVal)
     recenter?.()
   }
 

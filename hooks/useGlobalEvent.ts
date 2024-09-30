@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 
 export enum EGlobalEvent {
-  RLOAD_CLIENTS = 'RLOAD_CLIENTS'
+  RLOAD_CLIENTS = 'RLOAD_CLIENTS',
+  RLOAD_WORKFLOW = 'RLOAD_WORKFLOW'
 }
 
 export const useGlobalEvent = (eventKey: EGlobalEvent, onEvent?: () => void) => {

@@ -6,6 +6,7 @@ import { resourceRouter } from './resource'
 import { tagRouter } from './tag'
 import { taskRouter } from './task'
 import { workflowRouter } from './workflow'
+import { workflowTaskRouter } from './workflow_task'
 
 export const appRouter = router({
   task: taskRouter,
@@ -13,8 +14,9 @@ export const appRouter = router({
   attachment: attachmentRouter,
   resource: resourceRouter,
   tag: tagRouter,
+  extension: extensionRouter,
   workflow: workflowRouter,
-  extension: extensionRouter
+  workflowTask: workflowTaskRouter
 })
 
 // Export only the type of a router!
