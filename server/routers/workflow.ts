@@ -1,4 +1,4 @@
-import { adminProcedure, privateProcedure } from '../procedure'
+import { adminProcedure, editorProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { z } from 'zod'
 import { IMapperOutput, Workflow } from '@/entities/workflow'
@@ -31,8 +31,8 @@ const TargetSchema = z.object({
 
 const InputSchema = z.record(
   z.string(),
-  z.union([
-    z.object({
+  z
+    .object({
       target: z.array(TargetSchema),
       min: z.number().optional(),
       max: z.number().optional(),
@@ -51,20 +51,18 @@ const InputSchema = z.record(
         )
         .optional(),
       default: z.any().optional()
-    }),
-    BaseSchema
-  ])
+    })
+    .and(BaseSchema)
 )
 
 const OutputSchema = z.record(
   z.string(),
-  z.union([
-    z.object({
+  z
+    .object({
       target: TargetSchema,
       joinArray: z.boolean().optional()
-    }),
-    BaseSchema
-  ])
+    })
+    .and(BaseSchema)
 )
 
 export const workflowRouter = router({
@@ -108,7 +106,25 @@ export const workflowRouter = router({
         nextCursor
       }
     }),
-  testWorkflow: adminProcedure.subscription(async ({ input, ctx }) => {
+  listWorkflowSelections: privateProcedure.query(async ({ ctx }) => {
+    const data = await ctx.em.find(
+      Workflow,
+      {},
+      {
+        fields: ['id', 'name', 'description']
+      }
+    )
+    return data
+  }),
+  get: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    return ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['author.email'] })
+  }),
+  delete: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    const workflow = await ctx.em.findOneOrFail(Workflow, { id: input })
+    await ctx.em.removeAndFlush(workflow)
+    return true
+  }),
+  testWorkflow: editorProcedure.subscription(async ({ input, ctx }) => {
     return observable<TWorkflowProgressMessage>((subscriber) => {
       const handle = (data: { input: Record<string, any>; workflow: Workflow }) => {
         subscriber.next({ key: 'init' })
@@ -225,7 +241,7 @@ export const workflowRouter = router({
       }
     })
   }),
-  startTestWorkflow: adminProcedure
+  startTestWorkflow: editorProcedure
     .input(
       z.object({
         input: z.record(z.string(), z.any()),
@@ -236,7 +252,7 @@ export const workflowRouter = router({
       ee.emit('start', input)
       return true
     }),
-  importWorkflow: adminProcedure
+  importWorkflow: editorProcedure
     .input(
       z.object({
         name: z.string().optional(),

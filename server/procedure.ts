@@ -1,4 +1,4 @@
-import { adminChecker, authChecker } from './middlewares/user'
+import { adminChecker, authChecker, editorChecker } from './middlewares/user'
 import { procedure } from './trpc'
 
 /**
@@ -10,6 +10,11 @@ export const publicProcedure = procedure
  * Protected base procedure
  */
 export const privateProcedure = procedure.use(authChecker)
+
+/**
+ * Protected editor procedure
+ */
+export const editorProcedure = procedure.use(editorChecker)
 
 /**
  * Protected admin procedure

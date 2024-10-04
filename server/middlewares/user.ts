@@ -12,6 +12,20 @@ export const authChecker = middleware(({ next, ctx }) => {
   return next()
 })
 
+export const editorChecker = middleware(({ next, ctx }) => {
+  const user = ctx.session
+
+  if (!user?.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
+  }
+
+  if (!user?.user?.role || user.user.role < EUserRole.Editor) {
+    throw new TRPCError({ code: 'FORBIDDEN' })
+  }
+
+  return next()
+})
+
 export const adminChecker = middleware(({ next, ctx }) => {
   const user = ctx.session
 

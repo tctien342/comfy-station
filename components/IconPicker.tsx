@@ -5,8 +5,9 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 
 export const IconPicker: IComponent<{
   value?: string
+  readonly?: boolean
   onSelect?: (iconName: string) => void
-}> = ({ value, onSelect }) => {
+}> = ({ value, readonly, onSelect }) => {
   const [showIconPicker, setShowIconPicker] = useState(false)
   const [selectedIconName, setSelectedIconName] = useState<string>(value ?? 'ArrowDownIcon')
 
@@ -26,6 +27,10 @@ export const IconPicker: IComponent<{
     onSelect?.(iconName)
     setSelectedIconName(iconName)
     setShowIconPicker(false)
+  }
+
+  if (readonly) {
+    return <IconComponent className='h-4 w-4' />
   }
 
   return (

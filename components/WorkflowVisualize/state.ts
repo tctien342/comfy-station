@@ -14,11 +14,29 @@ interface IWorkflowVisState {
   updateHightlightArr: (arr: { id: string; type: EHightlightType; processing?: boolean }[]) => void
   clearSelecting: () => void
   updateProcessing: (id?: string) => void
+  updateSelecting: (id?: string) => void
 }
 
 export const useWorkflowVisStore = create<IWorkflowVisState, any>((set, get) => ({
   hightlightArr: [],
   setRecenterFn: (fn) => set({ recenter: fn }),
+  updateSelecting: (id) => {
+    if (!id) {
+      if (get().hightlightArr.some((item) => item.type === EHightlightType.SELECTING)) {
+        set({ hightlightArr: get().hightlightArr.filter((item) => item.type !== EHightlightType.SELECTING) })
+      }
+    } else {
+      if (get().hightlightArr.some((item) => item.type === EHightlightType.SELECTING)) {
+        set({
+          hightlightArr: get().hightlightArr.map((item) =>
+            item.type === EHightlightType.SELECTING ? { ...item, id } : item
+          )
+        })
+      } else {
+        set({ hightlightArr: [...get().hightlightArr, { id, type: EHightlightType.SELECTING }] })
+      }
+    }
+  },
   updateHightlightArr: (arr) => set({ hightlightArr: arr }),
   clearSelecting: () =>
     set({ hightlightArr: get().hightlightArr.filter((item) => item.type !== EHightlightType.SELECTING) }),

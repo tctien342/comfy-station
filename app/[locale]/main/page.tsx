@@ -1,22 +1,31 @@
 'use client'
 
-import { AdminSideInfo } from './AdminSideInfo'
-import { Content } from './content'
-import { TopBar } from './TopBar'
+import { trpc } from '@/utils/trpc'
+import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
+import { WorkflowCard } from '@/components/WorkflowCard'
+import { useMemo } from 'react'
 
 /**
  * Current redirect to /auth/basic
  */
 export default function Home() {
-  return (
-    <>
-      <div className='flex-auto flex flex-col h-full bg-background border rounded-lg'>
-        <TopBar />
-        <Content />
-      </div>
-      <div className='w-1/4 min-w-[290px] max-w-[360px] h-full bg-background border rounded-lg'>
-        <AdminSideInfo />
-      </div>
-    </>
+  const query = trpc.workflow.list.useInfiniteQuery(
+    {
+      limit: 10
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor
+    }
   )
+
+  useGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW, () => {
+    query.refetch()
+  })
+
+  const renderCards = useMemo(() => {
+    const items = query.data?.pages.map((v) => v.items).flat()
+    return items?.map((item, i) => <WorkflowCard data={item} key={item.id} />)
+  }, [query.data])
+
+  return <div className='w-full flex h-fit flex-wrap p-2 gap-2'>{renderCards}</div>
 }

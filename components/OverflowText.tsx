@@ -68,7 +68,7 @@ export const OverflowText: IComponent<
       ref={parentRef}
     >
       <Tooltip>
-        <TooltipTrigger disabled={!isOverflow}>
+        <TooltipTrigger disabled={!isOverflow} className='w-full'>
           <div className='w-full'>
             <div
               {...passthroughProps}
@@ -79,7 +79,7 @@ export const OverflowText: IComponent<
             </div>
           </div>
         </TooltipTrigger>
-        <TooltipContent>{renderTooltip || props.children}</TooltipContent>
+        <TooltipContent className='max-w-sm bg-background text-foreground border'>{renderTooltip || props.children}</TooltipContent>
       </Tooltip>
       {showCopy && (
         <div className='px-1 md:hidden group-hover:flex'>
