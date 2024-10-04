@@ -13,6 +13,7 @@ import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
 import { WorkflowEditEvent } from '@/entities/workflow_edit_event'
+import { getBuilder, parseOutput } from '@/utils/workflow'
 
 const ee = new EventEmitter()
 
@@ -128,7 +129,7 @@ export const workflowRouter = router({
     return observable<TWorkflowProgressMessage>((subscriber) => {
       const handle = (data: { input: Record<string, any>; workflow: Workflow }) => {
         subscriber.next({ key: 'init' })
-        const builder = Workflow.getBuilder(data.workflow)
+        const builder = getBuilder(data.workflow)
         const pool = ComfyPoolInstance.getInstance().pool
         pool.run(async (api) => {
           for (const key in data.input) {
@@ -185,7 +186,7 @@ export const workflowRouter = router({
             .onFinished(async (outData) => {
               subscriber.next({ key: 'downloading_output' })
               const attachment = AttachmentService.getInstance()
-              const output = await Workflow.parseOutput(api, data.workflow, outData)
+              const output = await parseOutput(api, data.workflow, outData)
               subscriber.next({ key: 'uploading_output' })
               const tmpOutput = cloneDeep(output) as Record<string, any>
               // If key is array of Blob, convert it to base64

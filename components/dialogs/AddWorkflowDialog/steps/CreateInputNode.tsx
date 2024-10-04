@@ -323,20 +323,22 @@ export const CreateInputNode: IComponent<{
                   </FormItem>
                 )}
               />
-              <FormField
-                name='costPerUnit'
-                disabled={!form.watch('costRelated')}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cost per value</FormLabel>
-                    <FormControl>
-                      <Input placeholder='0' type='number' {...field} />
-                    </FormControl>
-                    <FormDescription>New cost = base + costPerUnit * value</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {form.watch('costRelated') && (
+                <FormField
+                  name='costPerUnit'
+                  disabled={!form.watch('costRelated')}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cost per value</FormLabel>
+                      <FormControl>
+                        <Input placeholder='0' type='number' {...field} />
+                      </FormControl>
+                      <FormDescription>New cost = base + costPerUnit * value</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 name='min'
                 render={({ field }) => (
@@ -363,6 +365,9 @@ export const CreateInputNode: IComponent<{
               />
             </>
           )}
+          <div className='w-full flex flex-col gap-2 mt-2'>
+            <ConnectionList connections={connections} onUpdate={handleUpdateConnections} />
+          </div>
           {allowDefaultType.success && (
             <FormField
               name='default'
@@ -421,7 +426,6 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
-          <ConnectionList connections={connections} onUpdate={handleUpdateConnections} />
         </div>
         <div className='flex gap-2 pt-2 w-full items-center'>
           {isUpdating && (

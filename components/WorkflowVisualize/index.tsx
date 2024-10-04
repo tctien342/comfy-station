@@ -82,7 +82,7 @@ export const WorkflowVisualize: IComponent<{
 
   return (
     <div className='w-full h-full relative'>
-      <div className='absolute z-10 top-4 left-4 border p-2 rounded-full flex gap-4 bg-white/80'>
+      <div className='absolute z-10 top-4 left-4 border p-2 rounded-full flex gap-4 bg-background/80'>
         <div className='flex gap-1 items-center text-xs'>
           <div className='w-2 h-min aspect-square bg-[#10B981] rounded-full' />
           <span>INPUT</span>
