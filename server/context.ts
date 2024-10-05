@@ -3,6 +3,7 @@ import { verify } from 'jsonwebtoken'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import { User } from '@/entities/user'
 import { BackendENV } from '@/env'
+import { SharedStorage } from '@/services/shared'
 
 /**
  * Creates context for an incoming request
@@ -17,7 +18,8 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   try {
     let user: User | null = null
     if (accessToken) {
-      const tokenInfo = verify(accessToken, BackendENV.NEXTAUTH_SECRET ?? 'secret') as { email: string }
+      const secret = SharedStorage.getInstance().getSecret()
+      const tokenInfo = verify(accessToken, secret) as { email: string }
       user = await orm.em.fork().findOne(User, { email: tokenInfo.email })
     }
     return {
