@@ -8,6 +8,8 @@ const REDIS_CONF = process.env.REDIS
 export type TCachingKeyMap = {
   CLIENT_STATUS: CustomEvent<EClientStatus>
   SYSTEM_MONITOR: CustomEvent<TMonitorEvent>
+  LAST_TASK_CLIENT: CustomEvent<number>
+  PREVIEW: CustomEvent<{ blob64: string }>
 }
 
 class CachingService extends EventTarget {

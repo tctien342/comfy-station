@@ -6,12 +6,56 @@ import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { trpc } from '@/utils/trpc'
 
 interface ITaskBarProps {
   className?: string
   tasks: WorkflowTask[]
   total?: number
   loading?: boolean
+}
+
+export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: number }> = ({
+  task,
+  animationDelay = 0
+}) => {
+  const detailer = trpc.workflowTask.get.useQuery(task?.id, {
+    enabled: !!task?.id
+  })
+  const latestEv = detailer.data?.events.length ? detailer.data.events?.[detailer.data.events.length - 1] : undefined
+  return (
+    <Tooltip>
+      <TooltipTrigger className='w-full transition-all hover:scale-110'>
+        <div
+          style={{
+            animationDelay: `${animationDelay}ms`
+          }}
+          className={cn(
+            'aspect-[1/5] flex-1 rounded group-hover:scale-90 hover:!scale-100 animate-fade animate-once animate-ease-in-out duration-500',
+            {
+              'bg-zinc-300/50': !task,
+              'bg-zinc-300/80': task?.status === ETaskStatus.Pending,
+              'bg-zinc-300': task?.status === ETaskStatus.Queuing,
+              'bg-orange-400': task?.status === ETaskStatus.Running,
+              'bg-green-400': task?.status === ETaskStatus.Success,
+              'bg-destructive': task?.status === ETaskStatus.Failed
+            }
+          )}
+        />
+      </TooltipTrigger>
+      <TooltipContent>
+        {!task && <p>Task is empty</p>}
+        {!!task && (
+          <div className='flex flex-col gap-1'>
+            <p className='font-bold'>TaskID #{task.id}</p>
+            <p className='text-xs'>Last updated at {task.updateAt.toLocaleString()}</p>
+            <p className='text-xs uppercase font-bold mt-2'>STATUS {task.status}</p>
+            {!!latestEv?.details && <p className='text-xs'>Detail: {latestEv.details}</p>}
+          </div>
+        )}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 30, loading = false }) => {
@@ -38,37 +82,7 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 3
           )
         }
 
-        return (
-          <Tooltip key={i}>
-            <TooltipTrigger className='w-full transition-all hover:scale-110'>
-              <div
-                style={{
-                  animationDelay: `${animtionRef.current * 10}ms`
-                }}
-                className={cn(
-                  'aspect-[1/5] flex-1 rounded group-hover:scale-90 hover:!scale-100 animate-fade animate-once animate-ease-in-out duration-500',
-                  {
-                    'bg-zinc-300/50': !task,
-                    'bg-zinc-300/80': task?.status === ETaskStatus.Pending,
-                    'bg-zinc-300': task?.status === ETaskStatus.Queuing,
-                    'bg-orange-400': task?.status === ETaskStatus.Running,
-                    'bg-green-400': task?.status === ETaskStatus.Success,
-                    'bg-destructive': task?.status === ETaskStatus.Failed
-                  }
-                )}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              {!task && <p>Task is empty</p>}
-              {!!task && (
-                <div className='flex flex-col gap-1'>
-                  <p className='font-bold'>TaskID #{task.id}</p>
-                  <p className='text-xs'>Last updated at {task.updateAt.toLocaleString()}</p>
-                </div>
-              )}
-            </TooltipContent>
-          </Tooltip>
-        )
+        return <TaskBarItem key={i} task={task} animationDelay={animtionRef.current * 10} />
       })
   }, [total, tasks, loading])
 

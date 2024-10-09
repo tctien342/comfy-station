@@ -6,24 +6,33 @@ import { TaskBigStat } from '@/components/TaskBigStat'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { WorkflowTask } from '@/entities/workflow_task'
 import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useAppStore } from '@/states/app'
 import { trpc } from '@/utils/trpc'
-import { MoonIcon, PlusIcon, SunIcon } from '@heroicons/react/24/outline'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/outline'
 import { BellIcon, ExitIcon } from '@radix-ui/react-icons'
 import { signOut, useSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 export const AdminSideInfo: IComponent = () => {
   const session = useSession()
   const { theme, setTheme } = useAppStore()
+  const [tasks, setTasks] = useState<WorkflowTask[]>()
   const [taskStats, setTaskStats] = useState<{ pending: number; executed: number }>()
   const [clientStats, setClientStats] = useState<{ online: number; offline: number; error: number }>()
 
-  const { data: tasks, isLoading: isTaskLoading, refetch: reloadTasks } = trpc.task.lastTasks.useQuery({ limit: 30 })
   const { data: clients, refetch: reloadClients } = trpc.client.list.useQuery()
   const { data: avatarInfo } = trpc.attachment.get.useQuery({ id: session.data?.user?.avatar?.id || '' })
 
+  trpc.task.lastTasks.useSubscription(
+    { limit: 30 },
+    {
+      onData: (data) => {
+        setTasks(data)
+      }
+    }
+  )
   trpc.client.overview.useSubscription(undefined, {
     onData: (data) => {
       setClientStats(data)
@@ -50,10 +59,6 @@ export const AdminSideInfo: IComponent = () => {
     const next = (crr + 1) % 3
     setTheme(choice[next] as any)
   }
-
-  useEffect(() => {
-    reloadTasks()
-  }, [reloadTasks, taskStats])
 
   return (
     <div className='w-full h-full flex flex-col items-start'>
@@ -95,7 +100,7 @@ export const AdminSideInfo: IComponent = () => {
           />
           <TaskBigStat loading={!taskStats} title='TASK EXECUTED' count={taskStats?.executed || 0} />
         </div>
-        <TaskBar loading={isTaskLoading} tasks={tasks || []} />
+        <TaskBar loading={tasks === undefined} tasks={tasks || []} />
       </div>
       <div className='flex-auto w-full shadow-inner border-t border-b flex flex-col divide-y-[1px]'>
         {clients?.map((client) => <ClientInfoMonitoring key={client.id} client={client} />)}

@@ -1,20 +1,27 @@
-import { ComfyApi, ComfyPool, PromptBuilder, TMonitorEvent } from '@saintno/comfyui-sdk'
+import { CallWrapper, ComfyApi, ComfyPool, PromptBuilder, TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
 import { MikroORMInstance } from './mikro-orm'
 import { Client } from '@/entities/client'
-import { EAuthMode, EClientStatus } from '@/entities/enum'
+import { EAttachmentStatus, EAuthMode, EClientStatus, EStorageType, ETaskStatus, EValueType } from '@/entities/enum'
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientMonitorEvent } from '@/entities/client_monitor_event'
 import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
 import CachingService from './caching'
 
-import { throttle } from 'lodash'
+import { cloneDeep, throttle, uniqueId } from 'lodash'
+import { WorkflowTask } from '@/entities/workflow_task'
+import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
+import { getBuilder, parseOutput } from '@/utils/workflow'
+import { Attachment } from '@/entities/attachment'
+import AttachmentService, { EAttachmentType } from './attachment'
+import { ImageUtil } from '@/server/utils/ImageUtil'
+import { delay } from '@/utils/tools'
 
 const MONITOR_INTERVAL = 5000
-const cacher = CachingService.getInstance()
 
 export class ComfyPoolInstance {
   public pool: ComfyPool
+  private cachingService: CachingService
   private logger: Logger
 
   static getInstance() {
@@ -25,6 +32,7 @@ export class ComfyPoolInstance {
   }
 
   private constructor() {
+    this.cachingService = CachingService.getInstance()
     this.logger = new Logger('ComfyPoolInstance')
     this.pool = new ComfyPool([])
     this.bindEvents()
@@ -48,6 +56,7 @@ export class ComfyPoolInstance {
       })
       this.pool.addClient(client)
     }
+    this.cleanAllPending().then(() => delay(1000).then(() => this.pickingJob()))
   }
 
   private addClientMonitoring = throttle(async (clientId: string, data: TMonitorEvent) => {
@@ -72,6 +81,216 @@ export class ComfyPoolInstance {
     }
   }, MONITOR_INTERVAL)
 
+  updateTaskEventFn = async (
+    task: WorkflowTask,
+    status: ETaskStatus,
+    extra?: {
+      clientId?: string
+      details?: string
+    }
+  ) => {
+    const em = await MikroORMInstance.getInstance().getEM()
+    const taskEvent = new WorkflowTaskEvent(task)
+    taskEvent.status = status
+    if (extra?.details) {
+      taskEvent.details = extra.details
+    }
+    task.events.add(taskEvent)
+    task.status = status
+    await em.persist(taskEvent).flush()
+    await this.cachingService.set('LAST_TASK_CLIENT', extra?.clientId || -1, Date.now())
+  }
+
+  private async cleanAllPending() {
+    const em = await MikroORMInstance.getInstance().getEM()
+    const pendingTasks = await em.find(WorkflowTask, { status: ETaskStatus.Pending })
+    for (const task of pendingTasks) {
+      em.remove(task)
+    }
+    await em.flush()
+  }
+
+  private async pickingJob() {
+    const pool = this.pool
+    const em = await MikroORMInstance.getInstance().getEM()
+    const queuingTasks = await em.find(WorkflowTask, { status: ETaskStatus.Queuing }, { populate: ['workflow'] })
+    if (queuingTasks.length > 0) {
+      for (const task of queuingTasks) {
+        await this.updateTaskEventFn(task, ETaskStatus.Pending)
+        const workflow = task.workflow
+        const input = task.inputValues
+        const builder = getBuilder(workflow)
+        pool.run(async (api) => {
+          const client = await em.findOne(Client, { id: api.id })
+          if (client) {
+            task.client = client
+            await em.persist(task).flush()
+            await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+          }
+          for (const key in input) {
+            const inputData = input[key] || workflow.mapInput?.[key].default
+            console.log({
+              key,
+              inputData,
+              type: workflow.mapInput?.[key].type
+            })
+            if (!inputData) {
+              continue
+            }
+            switch (workflow.mapInput?.[key].type) {
+              case EValueType.Number:
+              case EValueType.Seed:
+                console.log('inputData', inputData)
+                break
+              case EValueType.String:
+                builder.input(key, String(inputData))
+                break
+              case EValueType.File:
+              case EValueType.Image:
+                const attachmentId = inputData as string
+                const file = await em.findOneOrFail(Attachment, { id: attachmentId })
+                const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
+                if (!fileBlob) {
+                  await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                    details: `Can not load attachments ${file.fileName}`,
+                    clientId: api.id
+                  })
+                  await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+                  return
+                }
+                const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
+                if (!uploadedImg) {
+                  await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                    details: `Failed to upload attachment into comfy server, ${file.fileName}`,
+                    clientId: api.id
+                  })
+                  await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+                  return
+                }
+                builder.input(key, uploadedImg.info.filename)
+                break
+              default:
+                builder.input(key, inputData)
+                break
+            }
+          }
+          console.log(builder.workflow)
+          return new CallWrapper(api, builder)
+            .onPending(async () => {
+              await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                details: 'LOADING RESOURCES',
+                clientId: api.id
+              })
+            })
+            .onProgress(async (e) => {
+              await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                details: JSON.stringify({
+                  key: 'progress',
+                  data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
+                }),
+                clientId: api.id
+              })
+            })
+            .onPreview(async (e) => {
+              const arrayBuffer = await e.arrayBuffer()
+              const base64String = Buffer.from(arrayBuffer).toString('base64')
+              await this.cachingService.set('PREVIEW', task.id, base64String)
+            })
+            .onStart(async () => {
+              await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                details: 'START RENDERING',
+                clientId: api.id
+              })
+            })
+            .onFinished(async (outData) => {
+              await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                details: 'DOWNLOADING OUTPUT',
+                clientId: api.id
+              })
+              const attachment = AttachmentService.getInstance()
+              const output = await parseOutput(api, workflow, outData)
+              await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                details: 'UPLOADING OUTPUT',
+                clientId: api.id
+              })
+              const tmpOutput = cloneDeep(output) as Record<string, any>
+              // If key is array of Blob, convert it to base64
+              for (const key in tmpOutput) {
+                if (Array.isArray(tmpOutput[key])) {
+                  tmpOutput[key] = (await Promise.all(
+                    tmpOutput[key].map(async (v, idx) => {
+                      if (v instanceof Blob) {
+                        const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
+                        const png = await imgUtil.intoPNG()
+                        const tmpName = `${task.id}_${key}_${idx}.png`
+                        const uploaded = await attachment.uploadFile(png, `${tmpName}`)
+                        if (uploaded) {
+                          const fileInfo = await attachment.getFileURL(tmpName)
+                          const outputAttachment = em.create(
+                            Attachment,
+                            {
+                              fileName: tmpName,
+                              size: png.byteLength,
+                              storageType:
+                                fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
+                              status: EAttachmentStatus.UPLOADED,
+                              task,
+                              workflow
+                            },
+                            { partial: true }
+                          )
+                          em.persist(outputAttachment)
+                          return outputAttachment.id
+                        }
+                      }
+                      return v
+                    })
+                  )) as string[]
+                }
+              }
+              const outputConfig = workflow.mapOutput
+              const outputData = Object.keys(outputConfig || {}).reduce(
+                (acc, val) => {
+                  if (tmpOutput[val] && outputConfig?.[val]) {
+                    acc[val] = {
+                      type: outputConfig[val].type as EValueType,
+                      value: tmpOutput[val] as any
+                    }
+                  }
+                  return acc
+                },
+                {} as Record<
+                  string,
+                  {
+                    type: EValueType
+                    value: any
+                  }
+                >
+              )
+              const taskEvent = new WorkflowTaskEvent(task)
+              taskEvent.status = ETaskStatus.Success
+              taskEvent.details = 'FINISHED'
+              taskEvent.data = outputData
+              task.events.add(taskEvent)
+              task.status = ETaskStatus.Success
+              await em.persist(taskEvent).flush()
+            })
+            .onFailed(async (e) => {
+              await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                details: (e.cause as any)?.error?.message || e.message,
+                clientId: api.id
+              })
+              console.error(e)
+            })
+            .run()
+        })
+      }
+      await this.cachingService.set('LAST_TASK_CLIENT', -1, Date.now())
+      await em.flush()
+    }
+    delay(2000).then(() => this.pickingJob())
+  }
+
   async setClientStatus(clientId: string, status: EClientStatus, msg?: string) {
     const em = await MikroORMInstance.getInstance().getEM()
     const client = await em.findOne(Client, { id: clientId })
@@ -81,7 +300,7 @@ export class ComfyPoolInstance {
         statusEvent.message = msg
       }
       client.statusEvents.add(statusEvent)
-      await cacher.set('CLIENT_STATUS', client.id, status)
+      await this.cachingService.set('CLIENT_STATUS', client.id, status)
       await em.persist(statusEvent).flush()
     }
   }
@@ -146,7 +365,7 @@ export class ComfyPoolInstance {
       .on('system_monitor', async (ev) => {
         const data = ev.detail.data
         const clientId = ev.detail.client.id
-        await cacher.set('SYSTEM_MONITOR', clientId, data)
+        await this.cachingService.set('SYSTEM_MONITOR', clientId, data)
         this.addClientMonitoring(clientId, data)
       })
       .on('execution_error', (error) => {})

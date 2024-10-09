@@ -77,10 +77,10 @@ class AttachmentService {
     return this.getFileURL(item.fileName)
   }
 
-  async getFileURL(fileName: string) {
+  async getFileURL(fileName: string, expiresIn?: number) {
     if (this.s3 && BackendENV.S3_BUCKET_NAME) {
       // Generate a file URL for the file in the S3 bucket
-      const s3Url = await this.getSignedUrl(fileName)
+      const s3Url = await this.getSignedUrl(fileName, expiresIn)
       if (s3Url) {
         return {
           type: EAttachmentType.S3,
@@ -96,7 +96,7 @@ class AttachmentService {
     }
     return null
   }
-  async getSignedUrl(fileName: string): Promise<string | undefined> {
+  async getSignedUrl(fileName: string, expiresIn?: number): Promise<string | undefined> {
     if (await this.existObject(fileName)) {
       if (this.s3 && BackendENV.S3_BUCKET_NAME) {
         // Generate a signed URL for the file in the S3 bucket
@@ -105,7 +105,7 @@ class AttachmentService {
           Key: fileName
         }
         const command = new GetObjectCommand(params)
-        return getSignedUrl(this.s3, command, { expiresIn: 3600 })
+        return getSignedUrl(this.s3, command, { expiresIn })
       }
     }
     return undefined

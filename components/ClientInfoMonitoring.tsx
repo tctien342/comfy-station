@@ -22,6 +22,7 @@ import { SimpleTransitionLayout } from './SimpleTranslation'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { TriangleAlertIcon } from 'lucide-react'
+import { WorkflowTask } from '@/entities/workflow_task'
 
 export const ClientInfoMonitoring: IComponent<{
   client: Client
@@ -29,15 +30,20 @@ export const ClientInfoMonitoring: IComponent<{
   const { toast } = useToast()
   const [actioning, setActioning] = useState(false)
   const [status, setStatus] = useState<EClientStatus>()
+  const [clientTasks, setClientTasks] = useState<WorkflowTask[]>()
   const [monitoring, setMonitoring] = useState<TMonitorEvent>()
-  const {
-    data: clientTasks,
-    isLoading: taskLoading,
-    refetch: reloadTask
-  } = trpc.task.lastTasks.useQuery({
-    clientId: client.id,
-    limit: 20
-  })
+
+  trpc.task.lastTasks.useSubscription(
+    {
+      clientId: client.id,
+      limit: 20
+    },
+    {
+      onData: (data) => {
+        setClientTasks(data)
+      }
+    }
+  )
 
   trpc.client.monitorSystem.useSubscription(client.id, {
     onData: (data) => {
@@ -83,10 +89,6 @@ export const ClientInfoMonitoring: IComponent<{
         setActioning(false)
       })
   }
-
-  useEffect(() => {
-    reloadTask()
-  }, [reloadTask, status])
 
   const renderStats = useMemo(() => {
     if (status === EClientStatus.Offline)
@@ -182,7 +184,7 @@ export const ClientInfoMonitoring: IComponent<{
               </div>
             </div>
           </div>
-          <TaskBar className='max-w-[200px]' tasks={clientTasks || []} loading={taskLoading} total={20} />
+          <TaskBar className='max-w-[200px]' tasks={clientTasks || []} loading={clientTasks === undefined} total={20} />
         </div>
         <SimpleTransitionLayout
           deps={[String(status === EClientStatus.Offline)]}

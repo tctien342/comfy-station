@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { privateProcedure } from '../procedure'
+import { adminProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { EClientStatus, ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
@@ -9,32 +9,51 @@ import CachingService from '@/services/caching'
 const cacher = CachingService.getInstance()
 
 export const taskRouter = router({
-  lastTasks: privateProcedure
+  lastTasks: adminProcedure
     .input(
       z.object({
         limit: z.number().default(30),
         clientId: z.string().optional()
       })
     )
-    .query(async ({ ctx, input }) => {
-      if (!ctx.session?.user) {
-        return []
-      }
+    .subscription(async ({ ctx, input }) => {
       let trigger: any = {}
-      if (ctx.session.user.role !== EUserRole.Admin) {
-        trigger = {
-          type: ETriggerBy.User,
-          user: { id: ctx.session.user.id }
+      const fn = async () => {
+        if (ctx.session.user!.role !== EUserRole.Admin) {
+          trigger = {
+            type: ETriggerBy.User,
+            user: { id: ctx.session.user!.id }
+          }
         }
+        if (!input.clientId) {
+          return await ctx.em.find(
+            WorkflowTask,
+            {
+              trigger
+            },
+            { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
+          )
+        }
+        return await ctx.em.find(
+          WorkflowTask,
+          {
+            trigger,
+            client: { id: input.clientId }
+          },
+          { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
+        )
       }
-      return await ctx.em.find(
-        WorkflowTask,
-        {
-          trigger,
-          client: { id: input.clientId }
-        },
-        { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
-      )
+      return observable<Awaited<ReturnType<typeof fn>>>((subscriber) => {
+        fn().then((data) => subscriber.next(data))
+        const off = !input.clientId
+          ? cacher.onCategory('LAST_TASK_CLIENT', (ev) => {
+              fn().then((data) => subscriber.next(data))
+            })
+          : cacher.on('LAST_TASK_CLIENT', input.clientId, (ev) => {
+              fn().then((data) => subscriber.next(data))
+            })
+        return off
+      })
     }),
   countStats: privateProcedure.subscription(async ({ ctx }) => {
     if (!ctx.session?.user) {
