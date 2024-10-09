@@ -97,14 +97,9 @@ export const workflowRouter = router({
               populate: ['author']
             }
       )
-      let nextCursor: typeof cursor | undefined = undefined
-      if (data.items.length > limit) {
-        const nextItem = data.items.pop()
-        nextCursor = nextItem!.id
-      }
       return {
         items: data.items,
-        nextCursor
+        nextCursor: data.endCursor
       }
     }),
   listWorkflowSelections: privateProcedure.query(async ({ ctx }) => {

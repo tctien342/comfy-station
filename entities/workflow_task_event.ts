@@ -9,7 +9,7 @@ export interface ITaskEventData {
   /**
    * Will be ID if type is File or Image
    */
-  value: string | number | boolean
+  value: (string | number | boolean)[]
 }
 
 @Entity()

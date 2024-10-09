@@ -6,7 +6,7 @@ export const MiniBadge: IComponent<{
   dotClassName?: string
   className?: string
   title?: string
-  count?: number
+  count?: number | string
   Icon?:
     | ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGElement>>
     | ForwardRefExoticComponent<

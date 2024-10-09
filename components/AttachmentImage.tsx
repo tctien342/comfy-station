@@ -5,9 +5,10 @@ import { Attachment } from '@/entities/attachment'
 
 export const AttachmentImage: IComponent<{
   shortName: string
-  data?: Attachment
+  data?: Attachment | { id: string }
   onClick?: () => void
-}> = ({ data, shortName, onClick }) => {
+  className?: string
+}> = ({ data, shortName, onClick, className = 'm-2 w-16 h-16 !rounded-md cursor-pointer btn' }) => {
   const enabled = !!data?.id
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
@@ -20,7 +21,7 @@ export const AttachmentImage: IComponent<{
   const imageLoaded = !isLoading || !enabled
 
   return (
-    <Avatar onClick={onClick} className='m-2 w-16 h-16 !rounded-md cursor-pointer btn'>
+    <Avatar onClick={onClick} className={className}>
       <AvatarImage src={!image ? undefined : image?.url || undefined} alt={shortName} />
       <AvatarFallback className='rounded-md uppercase'>
         {!imageLoaded && <LoadingSVG width={16} height={16} className='repeat-infinite' />}

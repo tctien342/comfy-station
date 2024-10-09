@@ -10,6 +10,54 @@ import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 
 export const workflowTaskRouter = router({
+  list: privateProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.string().nullish(),
+        direction: z.enum(['forward', 'backward'])
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const limit = input.limit ?? 50
+      const { cursor, direction } = input
+
+      const data = await ctx.em.findByCursor(
+        WorkflowTask,
+        {},
+        direction === 'forward'
+          ? {
+              first: limit,
+              after: { endCursor: cursor || null },
+              orderBy: { createdAt: 'DESC' }
+            }
+          : {
+              last: limit,
+              before: { startCursor: cursor || null },
+              orderBy: { createdAt: 'DESC' }
+            }
+      )
+      return {
+        items: data.items,
+        nextCursor: data.endCursor
+      }
+    }),
+
+  detail: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    const task = await ctx.em.findOneOrFail(
+      WorkflowTask,
+      { id: input },
+      { populate: ['workflow', 'trigger.user', 'events'] }
+    )
+    if (ctx.session.user?.role && ctx.session.user?.role >= EUserRole.Editor) {
+      return task
+    }
+    if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
+      return task
+    }
+    throw new Error('Unauthorized')
+  }),
   get: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger', 'events'] })
     if (ctx.session.user?.role && ctx.session.user?.role >= EUserRole.Editor) {

@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useStorageState } from '@/hooks/useStorageState'
+import { TaskHistory } from './TaskHistory'
 
 const Layout: IComponent = ({ children }) => {
   const [viewMode, setViewMode] = useStorageState('workflow_view_mode', 'history')
@@ -15,7 +16,9 @@ const Layout: IComponent = ({ children }) => {
         <TabsTrigger value='history'>History</TabsTrigger>
         <TabsTrigger value='visualize'>Visualize</TabsTrigger>
       </TabsList>
-      <TabsContent value='history' className='mt-0'>Make changes to your account here.</TabsContent>
+      <TabsContent value='history' className='mt-0 w-full h-full relative'>
+        <TaskHistory />
+      </TabsContent>
       <TabsContent value='visualize' className='w-full h-full mt-0'>
         {children}
       </TabsContent>

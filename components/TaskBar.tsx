@@ -22,7 +22,7 @@ export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: numb
   const detailer = trpc.workflowTask.get.useQuery(task?.id, {
     enabled: !!task?.id
   })
-  const latestEv = detailer.data?.events.length ? detailer.data.events?.[detailer.data.events.length - 1] : undefined
+  const latestEv = detailer.data?.events.length ? detailer.data.events?.[0] : undefined
   return (
     <Tooltip>
       <TooltipTrigger className='w-full transition-all hover:scale-110'>

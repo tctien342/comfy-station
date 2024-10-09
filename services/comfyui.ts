@@ -1,4 +1,4 @@
-import { CallWrapper, ComfyApi, ComfyPool, PromptBuilder, TMonitorEvent } from '@saintno/comfyui-sdk'
+import { CallWrapper, ComfyApi, ComfyPool, EQueueMode, PromptBuilder, TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
 import { MikroORMInstance } from './mikro-orm'
 import { Client } from '@/entities/client'
@@ -56,7 +56,7 @@ export class ComfyPoolInstance {
       })
       this.pool.addClient(client)
     }
-    this.cleanAllPending().then(() => delay(1000).then(() => this.pickingJob()))
+    this.cleanAllRunningTasks().then(() => delay(1000).then(() => this.pickingJob()))
   }
 
   private addClientMonitoring = throttle(async (clientId: string, data: TMonitorEvent) => {
@@ -101,11 +101,15 @@ export class ComfyPoolInstance {
     await this.cachingService.set('LAST_TASK_CLIENT', extra?.clientId || -1, Date.now())
   }
 
-  private async cleanAllPending() {
+  private async cleanAllRunningTasks() {
     const em = await MikroORMInstance.getInstance().getEM()
-    const pendingTasks = await em.find(WorkflowTask, { status: ETaskStatus.Pending })
-    for (const task of pendingTasks) {
-      em.remove(task)
+    const processingTasks = await em.find(WorkflowTask, {
+      status: {
+        $in: [ETaskStatus.Pending, ETaskStatus.Running]
+      }
+    })
+    for (const task of processingTasks) {
+      task.status = ETaskStatus.Queuing
     }
     await em.flush()
   }
@@ -129,18 +133,13 @@ export class ComfyPoolInstance {
           }
           for (const key in input) {
             const inputData = input[key] || workflow.mapInput?.[key].default
-            console.log({
-              key,
-              inputData,
-              type: workflow.mapInput?.[key].type
-            })
             if (!inputData) {
               continue
             }
             switch (workflow.mapInput?.[key].type) {
               case EValueType.Number:
               case EValueType.Seed:
-                console.log('inputData', inputData)
+                builder.input(key, Number(inputData))
                 break
               case EValueType.String:
                 builder.input(key, String(inputData))
