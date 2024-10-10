@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { IconPicker } from './IconPicker'
 import { OverflowText } from './OverflowText'
 import { Button } from './ui/button'
-import { Dice5 } from 'lucide-react'
+import { Dice5, Repeat } from 'lucide-react'
 import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
 
@@ -20,9 +20,11 @@ const SelectionSchema = z.nativeEnum(EValueSelectionType)
 export const WorkflowInputArea: IComponent<{
   workflow: Partial<Workflow>
   disabled?: boolean
+  repeat?: number
+  onChangeRepeat?: (repeat: number) => void
   data?: Record<string, any>
   onChange?: (data: Record<string, any>) => void
-}> = ({ data, workflow, disabled, onChange }) => {
+}> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange }) => {
   const [inputData, setInputData] = useState<Record<string, any>>(data || {})
   const { updateSelecting, recenter } = useWorkflowVisStore()
 
@@ -125,7 +127,7 @@ export const WorkflowInputArea: IComponent<{
 
   useEffect(() => {
     onChange?.(inputData)
-  }, [inputData])
+  }, [inputData, onChange])
 
   return (
     <div className='absolute top-0 left-0 w-full h-full flex flex-col'>
@@ -136,6 +138,25 @@ export const WorkflowInputArea: IComponent<{
         }}
       >
         {renderInput}
+        {!!onChangeRepeat && (
+          <div className='w-full px-2 flex flex-col gap-2 mb-2'>
+            <div className='flex items-center gap-1'>
+              <Repeat className='w-4 h-4' />
+              <Label>Repeat</Label>
+            </div>
+            <CardDescription>Repeat this job many times by creating sub jobs</CardDescription>
+            <div className='w-full gap-2 flex'>
+              <Input
+                disabled={disabled}
+                value={repeat}
+                onChange={(e) => {
+                  onChangeRepeat?.(Number(e.target.value))
+                }}
+                type='number'
+              />
+            </div>
+          </div>
+        )}
       </div>
       <div className='flex flex-col border-t pb-2 px-2'>
         <div>

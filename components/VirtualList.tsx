@@ -29,10 +29,12 @@ export function VirtualList<T>({
   overscan,
   onFetchMore
 }: VirtualListProps<T>) {
-  const isAtBottom = useRef(true)
+  const isAtBottom = useRef(false)
   const firstLoaded = useRef(false)
+
   const scrollableRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollPosRef = useRef(0)
 
   const getItemKeyCallback = useCallback((index: number) => getItemKey(items[index]!, index), [getItemKey, items])
   const virtualizer = useVirtualizer({
@@ -44,25 +46,21 @@ export function VirtualList<T>({
     debug: true
   })
 
-  const checkIfAtBottom = () => {
-    if (scrollableRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollableRef.current
-      return scrollTop + clientHeight >= scrollHeight - 10 // Allow a small buffer
-    }
-    return false
-  }
-
   useEffect(
     () => {
       if (items.length > 0 && !firstLoaded.current) {
+        // delay(340).then(() => {
+        virtualizer.scrollToOffset(virtualizer.getTotalSize())
         firstLoaded.current = true
-        delay(100).then(() => {
-          virtualizer.scrollToIndex(items.length)
-        })
+        // })
         return
       }
       if (isAtBottom.current) {
-        virtualizer.scrollToIndex(items.length)
+        virtualizer.scrollToOffset(virtualizer.getTotalSize())
+      } else if (scrollableRef.current) {
+        virtualizer.scrollToOffset(
+          virtualizer.getTotalSize() - scrollPosRef.current - scrollableRef.current!.clientHeight
+        )
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,22 +68,17 @@ export function VirtualList<T>({
   )
 
   useEffect(() => {
-    const handleScroll = () => {
-      isAtBottom.current = checkIfAtBottom()
-    }
+    if (virtualizer.isScrolling) {
+      const scrollOffset = virtualizer.scrollOffset ?? 0
+      const scrollHeight = virtualizer.getTotalSize()
 
-    const listElement = scrollableRef.current
-    if (listElement) {
-      listElement.addEventListener('scroll', handleScroll)
-      return () => {
-        listElement.removeEventListener('scroll', handleScroll)
-      }
+      scrollPosRef.current = scrollHeight - (scrollOffset ?? 0) - scrollableRef.current!.clientHeight
+      isAtBottom.current = scrollPosRef.current < 30
     }
-  }, [])
+  }, [virtualizer, virtualizer.isScrolling, virtualizer.scrollOffset])
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
-      console.log(entries)
       entries.forEach((entry) => {
         if (firstLoaded.current) {
           if (entry.isIntersecting) {

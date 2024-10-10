@@ -12,6 +12,7 @@ export type TCachingKeyMap = {
   PREVIEW: CustomEvent<{ blob64: string }>
   HISTORY_LIST: CustomEvent<number>
   HISTORY_ITEM: CustomEvent<number>
+  HISTORY_ITEM_PREVIEW: CustomEvent<Blob>
 }
 
 class CachingService extends EventTarget {

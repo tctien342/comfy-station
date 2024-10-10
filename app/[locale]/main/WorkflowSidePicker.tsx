@@ -7,6 +7,7 @@ import { WorkflowInputArea } from '@/components/WorkflowInputArea'
 import { EValueType } from '@/entities/enum'
 import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
+import { EKeyboardKey, ESpecialKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { useToast } from '@/hooks/useToast'
 import { trpc } from '@/utils/trpc'
 import { ChevronLeft, Play } from 'lucide-react'
@@ -15,6 +16,7 @@ import { useMemo, useState } from 'react'
 export const WorkflowSidePicker: IComponent = () => {
   const { router, slug } = useCurrentRoute()
   const [loading, setLoading] = useState(false)
+  const [repeat, setRepeat] = useState(1)
   const { toast } = useToast()
   const [inputData, setInputData] = useState<Record<string, any>>({})
   const crrWorkflowInfo = trpc.workflow.get.useQuery(slug!, {
@@ -27,6 +29,11 @@ export const WorkflowSidePicker: IComponent = () => {
 
   const workflowListLoader = trpc.workflow.listWorkflowSelections.useQuery()
   const runner = trpc.workflowTask.executeTask.useMutation()
+
+  const hasSeedInput = useMemo(() => {
+    return Object.values(crrWorkflowInfo.data?.mapInput || {}).some((input) => input.type === EValueType.Seed)
+  }, [crrWorkflowInfo.data?.mapInput])
+
   const { uploadAttachment } = useAttachmentUploader()
 
   const handlePressRun = async () => {
@@ -56,6 +63,7 @@ export const WorkflowSidePicker: IComponent = () => {
     runner
       .mutateAsync({
         input: inputRecord,
+        repeat,
         workflowId: crrWorkflowInfo.data.id
       })
       .then(() => {
@@ -73,6 +81,8 @@ export const WorkflowSidePicker: IComponent = () => {
         setLoading(false)
       })
   }
+
+  useShortcutKeyEvent(EKeyboardKey.Enter, () => handlePressRun(), ESpecialKey.Ctrl)
 
   const cost = useMemo(() => {
     let val = crrWorkflowInfo.data?.cost || 0
@@ -108,7 +118,14 @@ export const WorkflowSidePicker: IComponent = () => {
         </Select>
       </div>
       <SimpleTransitionLayout deps={[crrWorkflowInfo.data?.id || '']} className='flex-1 w-full flex flex-col relative'>
-        {!!crrWorkflowInfo.data && <WorkflowInputArea workflow={crrWorkflowInfo.data} onChange={setInputData} />}
+        {!!crrWorkflowInfo.data && (
+          <WorkflowInputArea
+            workflow={crrWorkflowInfo.data}
+            onChange={setInputData}
+            repeat={repeat}
+            onChangeRepeat={hasSeedInput ? setRepeat : undefined}
+          />
+        )}
       </SimpleTransitionLayout>
       <div className='w-full flex gap-2 justify-end items-center border-t px-2 pt-2'>
         {!!cost && <span className='text-xs text-gray-600'>Cost {cost} credits</span>}
@@ -121,7 +138,7 @@ export const WorkflowSidePicker: IComponent = () => {
           Back
           <ChevronLeft className='w-4 h-4 ml-1' />
         </Button>
-        <LoadableButton onClick={handlePressRun}>
+        <LoadableButton loading={loading} onClick={handlePressRun}>
           Run
           <Play className='w-4 h-4 ml-1' />
         </LoadableButton>

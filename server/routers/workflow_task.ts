@@ -2,12 +2,13 @@ import { z } from 'zod'
 import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
-import { ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
+import { ETaskStatus, ETriggerBy, EUserRole, EValueType } from '@/entities/enum'
 import { Workflow } from '@/entities/workflow'
 import { Trigger } from '@/entities/trigger'
 import CachingService from '@/services/caching'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
+import { seed } from '@/utils/tools'
 
 export const workflowTaskRouter = router({
   list: privateProcedure
@@ -25,7 +26,9 @@ export const workflowTaskRouter = router({
 
       const data = await ctx.em.findByCursor(
         WorkflowTask,
-        {},
+        {
+          parent: null
+        },
         direction === 'forward'
           ? {
               first: limit,
@@ -48,7 +51,7 @@ export const workflowTaskRouter = router({
     const task = await ctx.em.findOneOrFail(
       WorkflowTask,
       { id: input },
-      { populate: ['workflow', 'trigger.user', 'events'] }
+      { populate: ['workflow', 'trigger.user', 'events', 'subTasks.events'] }
     )
     if (ctx.session.user?.role && ctx.session.user?.role >= EUserRole.Editor) {
       return task
@@ -104,45 +107,64 @@ export const workflowTaskRouter = router({
     .input(
       z.object({
         input: z.record(z.string(), z.union([z.string(), z.number()])),
-        workflowId: z.string()
+        workflowId: z.string(),
+        repeat: z.number().optional()
       })
     )
     .mutation(async ({ input, ctx }) => {
       const workflow = await ctx.em.findOneOrFail(Workflow, {
         id: input.workflowId
       })
-      const trigger = ctx.em.create(
-        Trigger,
-        {
-          type: ETriggerBy.User,
-          user: ctx.session.user
-        },
-        { partial: true }
-      )
-
-      const task = ctx.em.create(
-        WorkflowTask,
-        {
-          id: v4(),
-          workflow,
-          inputValues: input.input,
-          trigger,
-          computedWeight: 1
-        },
-        {
-          partial: true
+      const createTask = (inputValues = input.input, sub?: WorkflowTask, repeat = input.repeat ?? 1) => {
+        const trigger = ctx.em.create(
+          Trigger,
+          {
+            type: ETriggerBy.User,
+            user: ctx.session.user
+          },
+          { partial: true }
+        )
+        const task = ctx.em.create(
+          WorkflowTask,
+          {
+            id: v4(),
+            workflow,
+            repeatCount: repeat,
+            inputValues,
+            trigger,
+            parent: sub,
+            computedWeight: 1
+          },
+          {
+            partial: true
+          }
+        )
+        const taskEvent = ctx.em.create(
+          WorkflowTaskEvent,
+          {
+            task
+          },
+          { partial: true }
+        )
+        task.events.add(taskEvent)
+        ctx.em.persist(trigger).persist(task).persist(taskEvent)
+        return task
+      }
+      // Main task
+      const task = createTask()
+      // Subtask handler
+      if (input.repeat && input.repeat > 1) {
+        for (let i = 1; i < input.repeat; i++) {
+          const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueType.Seed)
+          const newInput = {
+            ...input.input,
+            [seedConf?.key!]: seed()
+          }
+          createTask(newInput, task, 1)
         }
-      )
-      const taskEvent = ctx.em.create(
-        WorkflowTaskEvent,
-        {
-          task
-        },
-        { partial: true }
-      )
-      task.events.add(taskEvent)
+      }
       await Promise.all([
-        ctx.em.persist(trigger).persist(task).persist(taskEvent).flush(),
+        ctx.em.flush(),
         CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),
         CachingService.getInstance().set('HISTORY_LIST', ctx.session.user!.id, Date.now())
       ])

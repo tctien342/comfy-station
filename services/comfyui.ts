@@ -106,6 +106,9 @@ export class ComfyPoolInstance {
       this.cachingService.set('LAST_TASK_CLIENT', extra?.clientId || -1, Date.now()),
       this.cachingService.set('HISTORY_ITEM', task.id || -1, Date.now())
     ])
+    if (task.parent?.id) {
+      this.cachingService.set('HISTORY_ITEM', task.parent.id, Date.now())
+    }
   }
 
   private async cleanAllRunningTasks() {
@@ -124,7 +127,11 @@ export class ComfyPoolInstance {
   private async pickingJob() {
     const pool = this.pool
     const em = await MikroORMInstance.getInstance().getEM()
-    const queuingTasks = await em.find(WorkflowTask, { status: ETaskStatus.Queuing }, { populate: ['workflow'] })
+    const queuingTasks = await em.find(
+      WorkflowTask,
+      { status: ETaskStatus.Queuing },
+      { populate: ['workflow', 'parent'] }
+    )
     if (queuingTasks.length > 0) {
       for (const task of queuingTasks) {
         await this.updateTaskEventFn(task, ETaskStatus.Pending)
@@ -227,13 +234,19 @@ export class ComfyPoolInstance {
                       if (v instanceof Blob) {
                         const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
                         const [preview, png] = await Promise.all([
-                          imgUtil.resizeMax(1024).intoPreviewJPG(),
+                          imgUtil
+                            .resizeMax(1024)
+                            .intoPreviewJPG()
+                            .catch((e) => {
+                              this.logger.w('Error while converting to preview', e)
+                              return null
+                            }),
                           imgUtil.intoPNG()
                         ])
                         const tmpName = `${task.id}_${key}_${idx}.png`
                         const [uploaded] = await Promise.all([
                           attachment.uploadFile(png, `${tmpName}`),
-                          attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
+                          preview ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`) : Promise.resolve(false)
                         ])
                         if (uploaded) {
                           const fileInfo = await attachment.getFileURL(tmpName)
@@ -295,6 +308,14 @@ export class ComfyPoolInstance {
               console.error(e)
             })
             .run()
+            .catch(async (e) => {
+              await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                details: (e.cause as any)?.error?.message || e.message,
+                clientId: api.id
+              })
+              console.error(e)
+              throw e
+            })
         })
       }
       await this.cachingService.set('LAST_TASK_CLIENT', -1, Date.now())

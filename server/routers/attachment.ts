@@ -24,10 +24,10 @@ export const attachmentRouter = router({
         const prevName = `${attachment.fileName}_preview.jpg`
         const isExist = await AttachmentService.getInstance().existObject(prevName)
         if (isExist) {
-          return AttachmentService.getInstance().getFileURL(prevName, 3600)
+          return AttachmentService.getInstance().getFileURL(prevName)
         }
       }
-      return AttachmentService.getInstance().getFileURL(attachment.fileName, 3600)
+      return AttachmentService.getInstance().getFileURL(attachment.fileName)
     }),
   upload: privateProcedure.input(z.instanceof(FormData)).mutation(async ({ input, ctx }) => {
     const schema = z.object({

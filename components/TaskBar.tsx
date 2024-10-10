@@ -91,7 +91,9 @@ export const TaskBar: IComponent<ITaskBarProps> = ({ className, tasks, total = 3
       <span className='text-xs font-bold text-secondary-foreground'>LAST {total} TASK</span>
       <div className='flex gap-1 flex-row-reverse group'>{renderTick}</div>
       {!!lastItem && (
-        <span className='ml-auto text-xs font-light'>Last executed at {lastItem.updateAt.toLocaleString()}</span>
+        <span className='ml-auto text-xs font-light'>
+          Last executed at {new Date(lastItem.updateAt).toLocaleString()}
+        </span>
       )}
       {!lastItem && <span className='ml-auto text-xs font-light opacity-50'>Nothing executed yet</span>}
     </div>
