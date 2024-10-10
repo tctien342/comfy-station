@@ -10,6 +10,8 @@ export type TCachingKeyMap = {
   SYSTEM_MONITOR: CustomEvent<TMonitorEvent>
   LAST_TASK_CLIENT: CustomEvent<number>
   PREVIEW: CustomEvent<{ blob64: string }>
+  HISTORY_LIST: CustomEvent<number>
+  HISTORY_ITEM: CustomEvent<number>
 }
 
 class CachingService extends EventTarget {

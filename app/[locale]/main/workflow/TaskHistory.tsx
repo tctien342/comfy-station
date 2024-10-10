@@ -11,8 +11,11 @@ import { useMemo } from 'react'
 const TaskItem: IComponent<{
   data: WorkflowTask
 }> = ({ data }) => {
-  const { data: task } = trpc.workflowTask.detail.useQuery(data.id, {
+  const { data: task, refetch } = trpc.workflowTask.detail.useQuery(data.id, {
     enabled: !!data.id
+  })
+  trpc.watch.historyItem.useSubscription(data.id, {
+    onData: () => refetch()
   })
   const runningTime = useMemo(() => {
     if (!!task?.events.length) {
@@ -40,14 +43,16 @@ const TaskItem: IComponent<{
     if (!finishedEv) {
       return null
     }
+
     const attachment = Object.values(finishedEv.data!).find((d) => d.type === EValueType.Image)
     if (!attachment) {
       return null
     }
     return (
       <AttachmentImage
-        className='h-32 rounded-none w-fit !aspect-square object-cover'
+        className='h-32 !rounded-none w-fit !aspect-square object-cover p-0 m-0'
         shortName='NA'
+        tryPreivew
         data={{ id: attachment.value[0] as string }}
       />
     )
@@ -85,6 +90,10 @@ export const TaskHistory: IComponent = () => {
       getNextPageParam: (lastPage) => lastPage.nextCursor
     }
   )
+
+  trpc.watch.historyList.useSubscription(undefined, {
+    onData: () => tasker.refetch()
+  })
 
   const allRows = tasker.data ? tasker.data.pages.flatMap((d) => d.items).reverse() : []
 

@@ -29,6 +29,7 @@ export function VirtualList<T>({
   overscan,
   onFetchMore
 }: VirtualListProps<T>) {
+  const isAtBottom = useRef(true)
   const firstLoaded = useRef(false)
   const scrollableRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -43,6 +44,14 @@ export function VirtualList<T>({
     debug: true
   })
 
+  const checkIfAtBottom = () => {
+    if (scrollableRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollableRef.current
+      return scrollTop + clientHeight >= scrollHeight - 10 // Allow a small buffer
+    }
+    return false
+  }
+
   useEffect(
     () => {
       if (items.length > 0 && !firstLoaded.current) {
@@ -50,6 +59,10 @@ export function VirtualList<T>({
         delay(100).then(() => {
           virtualizer.scrollToIndex(items.length)
         })
+        return
+      }
+      if (isAtBottom.current) {
+        virtualizer.scrollToIndex(items.length)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,12 +70,28 @@ export function VirtualList<T>({
   )
 
   useEffect(() => {
+    const handleScroll = () => {
+      isAtBottom.current = checkIfAtBottom()
+    }
+
+    const listElement = scrollableRef.current
+    if (listElement) {
+      listElement.addEventListener('scroll', handleScroll)
+      return () => {
+        listElement.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       console.log(entries)
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (entry.target.id === 'bottom' && hasNextPage && !isFetchingNextPage) {
-            onFetchMore?.()
+        if (firstLoaded.current) {
+          if (entry.isIntersecting) {
+            if (entry.target.id === 'bottom' && hasNextPage && !isFetchingNextPage) {
+              onFetchMore?.()
+            }
           }
         }
       })

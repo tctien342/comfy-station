@@ -141,8 +141,11 @@ export const workflowTaskRouter = router({
         { partial: true }
       )
       task.events.add(taskEvent)
-      await ctx.em.persist(trigger).persist(task).persist(taskEvent).flush()
-      await CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now())
+      await Promise.all([
+        ctx.em.persist(trigger).persist(task).persist(taskEvent).flush(),
+        CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),
+        CachingService.getInstance().set('HISTORY_LIST', ctx.session.user!.id, Date.now())
+      ])
       return true
     })
 })

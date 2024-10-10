@@ -87,6 +87,7 @@ export class ComfyPoolInstance {
     extra?: {
       clientId?: string
       details?: string
+      data?: any
     }
   ) => {
     const em = await MikroORMInstance.getInstance().getEM()
@@ -95,10 +96,16 @@ export class ComfyPoolInstance {
     if (extra?.details) {
       taskEvent.details = extra.details
     }
+    if (extra?.data) {
+      taskEvent.data = extra.data
+    }
     task.events.add(taskEvent)
     task.status = status
-    await em.persist(taskEvent).flush()
-    await this.cachingService.set('LAST_TASK_CLIENT', extra?.clientId || -1, Date.now())
+    await Promise.all([
+      em.persist(taskEvent).flush(),
+      this.cachingService.set('LAST_TASK_CLIENT', extra?.clientId || -1, Date.now()),
+      this.cachingService.set('HISTORY_ITEM', task.id || -1, Date.now())
+    ])
   }
 
   private async cleanAllRunningTasks() {
@@ -173,7 +180,6 @@ export class ComfyPoolInstance {
                 break
             }
           }
-          console.log(builder.workflow)
           return new CallWrapper(api, builder)
             .onPending(async () => {
               await this.updateTaskEventFn(task, ETaskStatus.Running, {
@@ -220,9 +226,15 @@ export class ComfyPoolInstance {
                     tmpOutput[key].map(async (v, idx) => {
                       if (v instanceof Blob) {
                         const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
-                        const png = await imgUtil.intoPNG()
+                        const [preview, png] = await Promise.all([
+                          imgUtil.resizeMax(1024).intoPreviewJPG(),
+                          imgUtil.intoPNG()
+                        ])
                         const tmpName = `${task.id}_${key}_${idx}.png`
-                        const uploaded = await attachment.uploadFile(png, `${tmpName}`)
+                        const [uploaded] = await Promise.all([
+                          attachment.uploadFile(png, `${tmpName}`),
+                          attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
+                        ])
                         if (uploaded) {
                           const fileInfo = await attachment.getFileURL(tmpName)
                           const outputAttachment = em.create(
@@ -266,13 +278,14 @@ export class ComfyPoolInstance {
                   }
                 >
               )
-              const taskEvent = new WorkflowTaskEvent(task)
-              taskEvent.status = ETaskStatus.Success
-              taskEvent.details = 'FINISHED'
-              taskEvent.data = outputData
-              task.events.add(taskEvent)
-              task.status = ETaskStatus.Success
-              await em.persist(taskEvent).flush()
+              await Promise.all([
+                em.flush(),
+                this.updateTaskEventFn(task, ETaskStatus.Success, {
+                  details: 'FINISHED',
+                  clientId: api.id,
+                  data: outputData
+                })
+              ])
             })
             .onFailed(async (e) => {
               await this.updateTaskEventFn(task, ETaskStatus.Failed, {
