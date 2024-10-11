@@ -8,11 +8,11 @@ export type VirtualListProps<T> = {
   itemClassName?: string
   itemStyle?: CSSProperties
   items: T[]
-  onFetchMore?: () => void
   getItemKey: (item: T, index: number) => string | number
   renderItem: (item: T, virtualItem: VirtualItem) => React.ReactNode
   estimateSize: (index: number) => number
   overscan?: number
+  onFetchMore?: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
 }
@@ -79,15 +79,15 @@ export function VirtualList<T>({
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (firstLoaded.current) {
+      if (firstLoaded.current) {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             if (entry.target.id === 'bottom' && hasNextPage && !isFetchingNextPage) {
               onFetchMore?.()
             }
           }
-        }
-      })
+        })
+      }
     })
     if (bottomRef.current) {
       observer.observe(bottomRef.current)

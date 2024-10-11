@@ -8,7 +8,7 @@ import { Trigger } from '@/entities/trigger'
 import CachingService from '@/services/caching'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
-import { seed } from '@/utils/tools'
+import { delay, seed } from '@/utils/tools'
 
 export const workflowTaskRouter = router({
   list: privateProcedure
@@ -154,20 +154,40 @@ export const workflowTaskRouter = router({
       const task = createTask()
       // Subtask handler
       if (input.repeat && input.repeat > 1) {
+        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueType.Seed)
+        if (!seedConf) throw new Error('Seed input not found')
         for (let i = 1; i < input.repeat; i++) {
-          const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueType.Seed)
+          const newSeed = Math.floor((Number(input.input[seedConf.key!] ?? 0) + seed()) / 2) + i
           const newInput = {
             ...input.input,
-            [seedConf?.key!]: seed()
+            [seedConf?.key!]: newSeed
           }
+          await delay(5)
           createTask(newInput, task, 1)
         }
       }
       await Promise.all([
         ctx.em.flush(),
         CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),
+        CachingService.getInstance().set('WORKFLOW', workflow.id, Date.now()),
         CachingService.getInstance().set('HISTORY_LIST', ctx.session.user!.id, Date.now())
       ])
       return true
+    }),
+  getRunning: privateProcedure
+    .input(
+      z.object({
+        workflowId: z.string()
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return ctx.em.find(WorkflowTask, {
+        workflow: {
+          id: input.workflowId
+        },
+        status: {
+          $in: [ETaskStatus.Pending, ETaskStatus.Queuing, ETaskStatus.Running]
+        }
+      })
     })
 })

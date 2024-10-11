@@ -10,7 +10,7 @@ import {
   ListBucketsCommand
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { Logger } from '@saintno/needed-tools'
+import { CacheManager, Logger, StorageManager } from '@saintno/needed-tools'
 import fs from 'fs'
 import mime from 'mime'
 
@@ -23,6 +23,7 @@ class AttachmentService {
   private static instance: AttachmentService
   private s3?: S3Client
   private logger: Logger
+  private cacheStorage: CacheManager
   private localPath = process.cwd() + '/public/attachments/'
 
   static getInstance(): AttachmentService {
@@ -34,6 +35,7 @@ class AttachmentService {
 
   private constructor() {
     this.logger = new Logger('AttachmentService')
+    this.cacheStorage = new CacheManager('AttachmentService')
     // Check if S3 config is set in environment variables
     if (!!BackendENV.S3_ENDPOINT && !!BackendENV.S3_ACCESS_KEY && !!BackendENV.S3_SECRET_KEY) {
       // Initialize S3 client with the provided config
@@ -80,7 +82,12 @@ class AttachmentService {
   async getFileURL(fileName: string, expiresIn?: number) {
     if (this.s3 && BackendENV.S3_BUCKET_NAME) {
       // Generate a file URL for the file in the S3 bucket
-      const s3Url = await this.getSignedUrl(fileName, expiresIn)
+      const s3Url = await this.cacheStorage.get({
+        key: `s3Url:${fileName}`,
+        generator: () => this.getSignedUrl(fileName, expiresIn),
+        tl: '1day',
+        onStorage: true
+      })
       if (s3Url) {
         return {
           type: EAttachmentType.S3,

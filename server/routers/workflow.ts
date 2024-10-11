@@ -8,7 +8,7 @@ import { ComfyPoolInstance } from '@/services/comfyui'
 import { CallWrapper } from '@saintno/comfyui-sdk'
 import { cloneDeep, uniqueId } from 'lodash'
 import AttachmentService, { EAttachmentType } from '@/services/attachment'
-import { EValueSelectionType, EValueType, EWorkflowActiveStatus } from '@/entities/enum'
+import { EUserRole, EValueSelectionType, EValueType, EWorkflowActiveStatus } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
@@ -95,6 +95,55 @@ export const workflowRouter = router({
               before: { startCursor: cursor || null },
               orderBy: { createdAt: 'DESC' },
               populate: ['author']
+            }
+      )
+      return {
+        items: data.items,
+        nextCursor: data.endCursor
+      }
+    }),
+  attachments: privateProcedure
+    .input(
+      z.object({
+        workflowId: z.string(),
+        search: z.string().optional(),
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.string().nullish(),
+        direction: z.enum(['forward', 'backward'])
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.workflowId })
+      const limit = input.limit ?? 50
+      const { cursor, direction } = input
+
+      const filter =
+        ctx.session.user!.role === EUserRole.Admin
+          ? {}
+          : {
+              task: {
+                trigger: {
+                  user: ctx.session.user
+                }
+              }
+            }
+
+      const data = await ctx.em.findByCursor(
+        Attachment,
+        {
+          workflow,
+          ...filter
+        },
+        direction === 'forward'
+          ? {
+              first: limit,
+              after: { endCursor: cursor || null },
+              orderBy: { createdAt: 'DESC' }
+            }
+          : {
+              last: limit,
+              before: { startCursor: cursor || null },
+              orderBy: { createdAt: 'DESC' }
             }
       )
       return {

@@ -89,8 +89,8 @@ const TaskItem: IComponent<{
     }
     return (
       <AttachmentImage
+        mode='avatar'
         className='h-32 !rounded-none w-fit !aspect-square object-cover p-0 m-0'
-        shortName='NA'
         tryPreivew
         data={{ id: attachment.value[0] as string }}
       />

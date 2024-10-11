@@ -101,6 +101,12 @@ export class ImageUtil {
     return ImageUtil.toJPG(await this.getBuffer())
   }
 
+  async getRatio() {
+    const metaData = await this.image.metadata()
+    if (!metaData.width || !metaData.height) return 1
+    return metaData.width / metaData.height
+  }
+
   /**
    * Converts the image into a high-quality JPEG format.
    *
@@ -158,6 +164,10 @@ export class ImageUtil {
    */
   async intoPNG() {
     return this.image.png({ quality: 100 }).toBuffer()
+  }
+
+  async clone() {
+    return new ImageUtil(await this.getBuffer())
   }
 
   /**

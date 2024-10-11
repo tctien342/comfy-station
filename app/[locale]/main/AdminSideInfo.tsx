@@ -66,7 +66,7 @@ export const AdminSideInfo: IComponent = () => {
         <DropdownMenu>
           <DropdownMenuTrigger className='flex items-center'>
             <Avatar>
-              <AvatarImage src={avatarInfo?.url || undefined} alt={session.data?.user?.email || '@user'} />
+              <AvatarImage src={avatarInfo?.raw?.url || undefined} alt={session.data?.user?.email || '@user'} />
               <AvatarFallback>{shortUsername}</AvatarFallback>
             </Avatar>
             <span className='px-2'>{session.data?.user?.email}</span>

@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { EAttachmentStatus, EStorageType } from './enum'
+import { EAttachmentStatus, EStorageType, EValueType } from './enum'
 import type { WorkflowTask } from './workflow_task'
 import type { WorkflowTaskEvent } from './workflow_task_event'
 import type { Workflow } from './workflow'
@@ -19,6 +19,12 @@ export class Attachment {
 
   @Property({ type: 'bigint' })
   size: number // In bytes
+
+  @Property({ type: 'float', nullable: true })
+  ratio?: number //  width / height, only for image
+
+  @Property({ type: 'varchar', default: EValueType.Image, nullable: true })
+  type?: EValueType.Image | EValueType.File
 
   @Property({ type: 'varchar', default: EAttachmentStatus.PENDING, index: true })
   status!: EAttachmentStatus

@@ -39,5 +39,13 @@ export const watchRouter = router({
         if (ev.detail.id === input) subscriber.next(ev.detail.value)
       })
     })
+  }),
+  workflow: privateProcedure.input(z.string()).subscription(async ({ input, ctx }) => {
+    const cacher = CachingService.getInstance()
+    return observable<number>((subscriber) => {
+      return cacher.on('WORKFLOW', input, (ev) => {
+        subscriber.next(ev.detail)
+      })
+    })
   })
 })

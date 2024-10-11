@@ -11,8 +11,7 @@ export const attachmentRouter = router({
   get: privateProcedure
     .input(
       z.object({
-        id: z.string(),
-        tryPreview: z.boolean().optional()
+        id: z.string()
       })
     )
     .query(async ({ ctx, input }) => {
@@ -20,14 +19,15 @@ export const attachmentRouter = router({
       if (!attachment) {
         return null
       }
-      if (input.tryPreview) {
-        const prevName = `${attachment.fileName}_preview.jpg`
-        const isExist = await AttachmentService.getInstance().existObject(prevName)
-        if (isExist) {
-          return AttachmentService.getInstance().getFileURL(prevName)
-        }
+      const prevName = `${attachment.fileName}_preview.jpg`
+      const [imageInfo, imagePreviewInfo] = await Promise.all([
+        AttachmentService.getInstance().getFileURL(attachment.fileName),
+        AttachmentService.getInstance().getFileURL(prevName)
+      ])
+      return {
+        raw: imageInfo,
+        preview: imagePreviewInfo || imageInfo
       }
-      return AttachmentService.getInstance().getFileURL(attachment.fileName)
     }),
   upload: privateProcedure.input(z.instanceof(FormData)).mutation(async ({ input, ctx }) => {
     const schema = z.object({

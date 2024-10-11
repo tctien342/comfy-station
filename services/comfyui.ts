@@ -109,6 +109,10 @@ export class ComfyPoolInstance {
     if (task.parent?.id) {
       this.cachingService.set('HISTORY_ITEM', task.parent.id, Date.now())
     }
+    if ([ETaskStatus.Failed, ETaskStatus.Success, ETaskStatus.Pending].includes(status)) {
+      if (status === ETaskStatus.Success && extra?.details !== 'FINISHED') return
+      await CachingService.getInstance().set('WORKFLOW', task.workflow.id, Date.now())
+    }
   }
 
   private async cleanAllRunningTasks() {
@@ -130,10 +134,11 @@ export class ComfyPoolInstance {
     const queuingTasks = await em.find(
       WorkflowTask,
       { status: ETaskStatus.Queuing },
-      { populate: ['workflow', 'parent'] }
+      { populate: ['workflow', 'parent'], orderBy: { createdAt: 'ASC' } }
     )
     if (queuingTasks.length > 0) {
-      for (const task of queuingTasks) {
+      for (let i = 0; i < queuingTasks.length; i++) {
+        const task = queuingTasks[i]
         await this.updateTaskEventFn(task, ETaskStatus.Pending)
         const workflow = task.workflow
         const input = task.inputValues
@@ -234,7 +239,7 @@ export class ComfyPoolInstance {
                       if (v instanceof Blob) {
                         const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
                         const [preview, png] = await Promise.all([
-                          imgUtil
+                          (await imgUtil.clone())
                             .resizeMax(1024)
                             .intoPreviewJPG()
                             .catch((e) => {
@@ -250,6 +255,7 @@ export class ComfyPoolInstance {
                         ])
                         if (uploaded) {
                           const fileInfo = await attachment.getFileURL(tmpName)
+                          const ratio = await imgUtil.getRatio()
                           const outputAttachment = em.create(
                             Attachment,
                             {
@@ -258,6 +264,7 @@ export class ComfyPoolInstance {
                               storageType:
                                 fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
                               status: EAttachmentStatus.UPLOADED,
+                              ratio,
                               task,
                               workflow
                             },
