@@ -163,7 +163,13 @@ export class ImageUtil {
    * @returns A promise that resolves to a buffer containing the PNG image data.
    */
   async intoPNG() {
-    return this.image.png({ quality: 100 }).toBuffer()
+    return this.image
+      .png({
+        force: true,
+        palette: false,
+        compressionLevel: 0
+      })
+      .toBuffer()
   }
 
   async clone() {
