@@ -127,6 +127,19 @@ export const workflowTaskRouter = router({
       const workflow = await ctx.em.findOneOrFail(Workflow, {
         id: input.workflowId
       })
+
+      // Weight calculation
+      const computedWeight = workflow.baseWeight + ctx.session.user!.weightOffset
+
+      // Cost calculation
+      let computedCost = workflow.cost
+      for (const [key, value] of Object.entries(input.input)) {
+        if (workflow.mapInput?.[key]?.cost?.related) {
+          computedCost += workflow.mapInput[key].cost.costPerUnit * Number(value)
+        }
+      }
+      computedCost *= input.repeat ?? 1
+
       const createTask = (inputValues = input.input, sub?: WorkflowTask, repeat = input.repeat ?? 1) => {
         const trigger = ctx.em.create(
           Trigger,
@@ -145,7 +158,8 @@ export const workflowTaskRouter = router({
             inputValues,
             trigger,
             parent: sub,
-            computedWeight: 1
+            computedWeight,
+            computedCost
           },
           {
             partial: true

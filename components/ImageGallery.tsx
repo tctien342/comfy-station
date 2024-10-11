@@ -19,7 +19,7 @@ export const ImageGallery: IComponent<{
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (i) => 200,
+    estimateSize: (i) => 100,
     overscan: 5,
     lanes: 3
   })
@@ -81,21 +81,24 @@ export const ImageGallery: IComponent<{
             const item = rows[virtualRow.index]!
             return (
               <div
-                key={'loading' in item ? virtualRow.index : item.id}
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={rowVirtualizer.measureElement}
                 className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
                 style={{
                   position: 'absolute',
                   top: 0,
-                  left: `${virtualRow.lane * 33}%`,
-                  width: '33%',
-                  height: `${virtualRow.size}px`,
+                  left: `${(virtualRow.lane * 100) / 3}%`,
+                  width: 'calc(100%/3)',
+                  height: 'fit-content',
+                  aspectRatio: 'loading' in item ? 1 : item.ratio,
                   transform: `translateY(${virtualRow.start}px)`
                 }}
               >
                 {!('loading' in item) && (
-                  <AttachmentImage className='w-full h-[200px] object-cover' tryPreivew data={item} shortName='NA' />
+                  <AttachmentImage className='w-full h-full object-cover' tryPreivew data={item} shortName='NA' />
                 )}
-                {'loading' in item && <AttachmentImage loading className='w-full h-[200px] object-cover' />}
+                {'loading' in item && <AttachmentImage loading className='w-full h-full object-cover' />}
               </div>
             )
           })}

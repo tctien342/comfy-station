@@ -134,7 +134,7 @@ export class ComfyPoolInstance {
     const queuingTasks = await em.find(
       WorkflowTask,
       { status: ETaskStatus.Queuing },
-      { populate: ['workflow', 'parent'], orderBy: { createdAt: 'ASC' } }
+      { populate: ['workflow', 'parent', 'trigger.user.weightOffset'], orderBy: { createdAt: 'ASC' } }
     )
     if (queuingTasks.length > 0) {
       for (let i = 0; i < queuingTasks.length; i++) {
@@ -323,7 +323,7 @@ export class ComfyPoolInstance {
               console.error(e)
               throw e
             })
-        })
+        }, task.computedWeight)
       }
       await this.cachingService.set('LAST_TASK_CLIENT', -1, Date.now())
       await em.flush()

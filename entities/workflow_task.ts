@@ -24,6 +24,9 @@ export class WorkflowTask {
   @Property({ type: 'int', default: 1 })
   repeatCount!: number
 
+  @Property({ type: 'float', default: 0 })
+  computedCost!: number
+
   @Property({ type: 'float', default: 1 })
   computedWeight!: number // More weight, lower priority
 
