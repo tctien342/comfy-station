@@ -21,8 +21,8 @@ export const attachmentRouter = router({
       }
       const prevName = `${attachment.fileName}_preview.jpg`
       const [imageInfo, imagePreviewInfo] = await Promise.all([
-        AttachmentService.getInstance().getFileURL(attachment.fileName),
-        AttachmentService.getInstance().getFileURL(prevName)
+        AttachmentService.getInstance().getFileURL(attachment.fileName, 3600 * 24),
+        AttachmentService.getInstance().getFileURL(prevName, 3600 * 24)
       ])
       return {
         raw: imageInfo,

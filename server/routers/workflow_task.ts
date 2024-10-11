@@ -24,10 +24,22 @@ export const workflowTaskRouter = router({
       const limit = input.limit ?? 50
       const { cursor, direction } = input
 
+      const extra =
+        ctx.session.user!.role === EUserRole.User
+          ? {
+              trigger: {
+                user: {
+                  id: ctx.session.user?.id
+                }
+              }
+            }
+          : {}
+
       const data = await ctx.em.findByCursor(
         WorkflowTask,
         {
-          parent: null
+          parent: null,
+          ...extra
         },
         direction === 'forward'
           ? {
@@ -166,6 +178,7 @@ export const workflowTaskRouter = router({
           createTask(newInput, task, 1)
         }
       }
+      console.log('WTF')
       await Promise.all([
         ctx.em.flush(),
         CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),

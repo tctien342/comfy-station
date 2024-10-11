@@ -34,7 +34,8 @@ const DropFileInput: IComponent<{
       setFiles(files.filter((f) => f !== file))
       onChanges?.(files.filter((f) => f !== file))
     },
-    [disabled, files, onChanges]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [disabled, files]
   )
 
   const onDrop = useCallback(
@@ -90,9 +91,10 @@ const DropFileInput: IComponent<{
           </div>
         )
       }
-      return null
     })
   }, [files, removeFile])
+
+  console.log(files, removeFile)
 
   return (
     <div

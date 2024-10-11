@@ -6,7 +6,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import DropFileInput from './DropFileInput'
 import { CardDescription } from './ui/card'
 import { Input } from './ui/input'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { IconPicker } from './IconPicker'
 import { OverflowText } from './OverflowText'
@@ -28,102 +28,107 @@ export const WorkflowInputArea: IComponent<{
   const [inputData, setInputData] = useState<Record<string, any>>(data || {})
   const { updateSelecting, recenter } = useWorkflowVisStore()
 
-  const inputKeys: Array<keyof typeof workflow.mapInput> = Object.keys(workflow?.mapInput || {}) as any
+  const inputKeys: Array<keyof typeof workflow.mapInput> = useMemo(() => {
+    return Object.keys(workflow?.mapInput || {}) as any
+  }, [workflow?.mapInput])
 
-  const renderInput = inputKeys.map((val) => {
-    const input = workflow?.mapInput?.[val]
-    const target = input?.target || []
-    const mainItem = target[0]
-    if (!input) return null
+  const renderInput = useCallback(
+    (val: keyof typeof workflow.mapInput, data: any) => {
+      const input = workflow?.mapInput?.[val]
+      const target = input?.target || []
+      const mainItem = target[0]
+      if (!input) return null
 
-    return (
-      <div
-        key={val}
-        onFocus={() => {
-          if (mainItem) {
-            updateSelecting(mainItem.mapVal.split('.')[0])
-          }
-        }}
-        onBlur={() => {
-          updateSelecting()
-        }}
-        className='w-full px-2 flex flex-col gap-2 mb-2'
-      >
-        <div className='flex items-center gap-1'>
-          <IconPicker readonly value={input.iconName} />
-          <Label>{input.key}</Label>
-        </div>
-        {!!input.description && <CardDescription>{input.description}</CardDescription>}
-        {input.type === EValueType.String && (
-          <Textarea
-            disabled={disabled}
-            className='min-h-[240px] max-w-full'
-            onChange={(e) => {
-              setInputData((prev) => ({ ...prev, [val]: e.target.value }))
-            }}
-            value={inputData[val]}
-            defaultValue={String(input.default ?? '')}
-          />
-        )}
-        {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
-          <DropFileInput
-            disabled={disabled}
-            maxFiles={1}
-            onChanges={(files) => {
-              setInputData((prev) => ({ ...prev, [val]: files }))
-            }}
-            defaultFiles={inputData[val]}
-          />
-        )}
-        {[EValueType.Number, EValueType.Seed].includes(input.type as EValueType) && (
-          <div className='w-full gap-2 flex'>
-            <Input
+      return (
+        <div
+          key={val}
+          onFocus={() => {
+            if (mainItem) {
+              updateSelecting(mainItem.mapVal.split('.')[0])
+            }
+          }}
+          onBlur={() => {
+            updateSelecting()
+          }}
+          className='w-full px-2 flex flex-col gap-2 mb-2'
+        >
+          <div className='flex items-center gap-1'>
+            <IconPicker readonly value={input.iconName} />
+            <Label>{input.key}</Label>
+          </div>
+          {!!input.description && <CardDescription>{input.description}</CardDescription>}
+          {input.type === EValueType.String && (
+            <Textarea
               disabled={disabled}
-              defaultValue={String(input.default ?? '')}
-              value={inputData[val]}
+              className='min-h-[240px] max-w-full'
               onChange={(e) => {
                 setInputData((prev) => ({ ...prev, [val]: e.target.value }))
               }}
-              min={input.min}
-              max={input.max}
-              type='number'
+              value={data}
+              defaultValue={String(input.default ?? '')}
             />
-            {input.type === EValueType.Seed && (
-              <Button
-                onClick={() => {
-                  setInputData((prev) => ({ ...prev, [val]: seed() }))
+          )}
+          {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
+            <DropFileInput
+              disabled={disabled}
+              maxFiles={1}
+              onChanges={(files) => {
+                setInputData((prev) => ({ ...prev, [val]: files }))
+              }}
+              defaultFiles={data}
+            />
+          )}
+          {[EValueType.Number, EValueType.Seed].includes(input.type as EValueType) && (
+            <div className='w-full gap-2 flex'>
+              <Input
+                disabled={disabled}
+                defaultValue={String(input.default ?? '')}
+                value={data}
+                onChange={(e) => {
+                  setInputData((prev) => ({ ...prev, [val]: e.target.value }))
                 }}
-                variant='outline'
-                size='icon'
-              >
-                <Dice5 className='w-4 h-4' />
-              </Button>
-            )}
-          </div>
-        )}
-        {SelectionSchema.safeParse(input.type).success && (
-          <Select
-            defaultValue={String(input.default ?? '')}
-            value={inputData[val]}
-            onValueChange={(value) => {
-              setInputData((prev) => ({ ...prev, [val]: value }))
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder='Select...' />
-            </SelectTrigger>
-            <SelectContent>
-              {input.selections!.map((selection) => (
-                <SelectItem key={selection.value} value={selection.value}>
-                  <div className='w-[300px] whitespace-normal break-words text-left'>{selection.value}</div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
-    )
-  })
+                min={input.min}
+                max={input.max}
+                type='number'
+              />
+              {input.type === EValueType.Seed && (
+                <Button
+                  onClick={() => {
+                    setInputData((prev) => ({ ...prev, [val]: seed() }))
+                  }}
+                  variant='outline'
+                  size='icon'
+                >
+                  <Dice5 className='w-4 h-4' />
+                </Button>
+              )}
+            </div>
+          )}
+          {SelectionSchema.safeParse(input.type).success && (
+            <Select
+              defaultValue={String(input.default ?? '')}
+              value={data}
+              onValueChange={(value) => {
+                setInputData((prev) => ({ ...prev, [val]: value }))
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='Select...' />
+              </SelectTrigger>
+              <SelectContent>
+                {input.selections!.map((selection) => (
+                  <SelectItem key={selection.value} value={selection.value}>
+                    <div className='w-[300px] whitespace-normal break-words text-left'>{selection.value}</div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      )
+    },
+    [disabled, updateSelecting, workflow]
+  )
 
   useEffect(() => {
     onChange?.(inputData)
@@ -137,7 +142,7 @@ export const WorkflowInputArea: IComponent<{
           recenter?.()
         }}
       >
-        {renderInput}
+        {inputKeys.map((v) => renderInput(v, inputData[v]))}
         {!!onChangeRepeat && (
           <div className='w-full px-2 flex flex-col gap-2 mb-2'>
             <div className='flex items-center gap-1'>

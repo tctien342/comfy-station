@@ -186,7 +186,7 @@ export const CheckpointLoraItem: IComponent<{
         }}
       />
       <Avatar onClick={() => fileRef.current?.click()} className='m-2 w-16 h-16 !rounded-md cursor-pointer btn'>
-        <AvatarImage src={uploader.isPending ? undefined : image?.url || undefined} alt={ckptName || `@${type}`} />
+        <AvatarImage src={uploader.isPending ? undefined : image?.raw?.url || undefined} alt={ckptName || `@${type}`} />
         <AvatarFallback className='rounded-md uppercase'>
           {uploader.isPending && <LoadingSVG width={16} height={16} className='repeat-infinite' />}
           {!uploader.isPending && shortName}
