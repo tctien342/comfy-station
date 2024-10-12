@@ -134,6 +134,24 @@ export const WorkflowInputArea: IComponent<{
     onChange?.(inputData)
   }, [inputData, onChange])
 
+  useEffect(() => {
+    if (JSON.stringify(data) !== JSON.stringify(inputData)) setInputData(data || {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
+  useEffect(() => {
+    if (workflow.mapInput) {
+      const seedInputKey = Object.keys(workflow.mapInput).find(
+        (key) => workflow.mapInput?.[key].type === EValueType.Seed
+      )
+
+      if (seedInputKey && !inputData[seedInputKey]) {
+        setInputData((prev) => ({ ...prev, [seedInputKey]: seed() }))
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workflow.mapInput])
+
   return (
     <div className='absolute top-0 left-0 w-full h-full flex flex-col'>
       <div
@@ -154,6 +172,8 @@ export const WorkflowInputArea: IComponent<{
               <Input
                 disabled={disabled}
                 value={repeat}
+                min={1}
+                step={1}
                 onChange={(e) => {
                   onChangeRepeat?.(Number(e.target.value))
                 }}

@@ -10,7 +10,9 @@ import {
   ListBucketsCommand
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { CacheManager, Logger, StorageManager } from '@saintno/needed-tools'
+import { CacheManager, Logger } from '@saintno/needed-tools'
+import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
+import { Agent } from 'https'
 import fs from 'fs'
 import mime from 'mime'
 
@@ -18,6 +20,10 @@ export enum EAttachmentType {
   S3 = 's3',
   LOCAL = 'local'
 }
+
+const sslAgent = new Agent({
+  rejectUnauthorized: false // Not recommended for production environments
+})
 
 class AttachmentService {
   private static instance: AttachmentService
@@ -46,7 +52,10 @@ class AttachmentService {
           accessKeyId: BackendENV.S3_ACCESS_KEY,
           secretAccessKey: BackendENV.S3_SECRET_KEY
         },
-        region: BackendENV.S3_REGION
+        region: BackendENV.S3_REGION,
+        requestHandler: new NodeHttpHandler({
+          httpsAgent: sslAgent
+        })
       })
       this.logger.i('init', 'Using S3 for file storage', {
         endpoint: BackendENV.S3_ENDPOINT,

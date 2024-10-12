@@ -29,11 +29,17 @@ export const isValidWorkflow = (workflow: unknown): workflow is IWorkflow => {
 export const getBuilder = (workflow: Workflow) => {
   const inputKeys = Object.keys(workflow.mapInput ?? {})
   const outputKeys = Object.keys(workflow.mapOutput ?? {})
-  const builder = new PromptBuilder(JSON.parse(workflow.rawWorkflow), inputKeys, outputKeys)
+  const rawWorkflow = JSON.parse(workflow.rawWorkflow)
+  // Clean info data
+  for (const key in rawWorkflow) {
+    delete rawWorkflow[key].info
+  }
+
+  // Create PromptBuilder
+  const builder = new PromptBuilder(rawWorkflow, inputKeys, outputKeys)
   for (const inputKey of inputKeys) {
     const input = workflow.mapInput?.[inputKey]
     if (!input) continue
-    console.log('input', input)
     builder.setInputNode(
       inputKey,
       input.target.map((t) => t.mapVal)

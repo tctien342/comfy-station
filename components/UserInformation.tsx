@@ -38,7 +38,8 @@ export const UserInfomation: IComponent = () => {
           </Avatar>
           <span
             className={cn('px-2', {
-              'order-0': notAdmin
+              'order-0': notAdmin,
+              'order-2': !notAdmin
             })}
           >
             {session.data?.user?.email}
@@ -61,7 +62,8 @@ export const UserInfomation: IComponent = () => {
         size='icon'
         variant='secondary'
         className={cn('rounded-full ml-auto', {
-          'order-0': notAdmin
+          'order-0': notAdmin,
+          'order-2': !notAdmin
         })}
       >
         <BellIcon className='rounded-full' width={16} height={16} />

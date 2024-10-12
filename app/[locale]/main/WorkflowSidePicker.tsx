@@ -9,9 +9,10 @@ import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { EKeyboardKey, ESpecialKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { useToast } from '@/hooks/useToast'
+import { seed } from '@/utils/tools'
 import { trpc } from '@/utils/trpc'
 import { ChevronLeft, Play } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export const WorkflowSidePicker: IComponent = () => {
   const { router, slug } = useCurrentRoute()
@@ -30,11 +31,20 @@ export const WorkflowSidePicker: IComponent = () => {
   const workflowListLoader = trpc.workflow.listWorkflowSelections.useQuery()
   const runner = trpc.workflowTask.executeTask.useMutation()
 
-  const hasSeedInput = useMemo(() => {
-    return Object.values(crrWorkflowInfo.data?.mapInput || {}).some((input) => input.type === EValueType.Seed)
+  const seedInput = useMemo(() => {
+    return Object.values(crrWorkflowInfo.data?.mapInput || {}).find((input) => input.type === EValueType.Seed)
   }, [crrWorkflowInfo.data?.mapInput])
 
   const { uploadAttachment } = useAttachmentUploader()
+
+  const updateSeed = useCallback(() => {
+    if (seedInput) {
+      setInputData((prev) => ({
+        ...prev,
+        [seedInput.key]: seed()
+      }))
+    }
+  }, [seedInput])
 
   const handlePressRun = async () => {
     if (!crrWorkflowInfo.data) {
@@ -79,6 +89,7 @@ export const WorkflowSidePicker: IComponent = () => {
       })
       .finally(() => {
         setLoading(false)
+        updateSeed()
       })
   }
 
@@ -97,8 +108,8 @@ export const WorkflowSidePicker: IComponent = () => {
         }
       }
     }
-    return val
-  }, [inputData, crrWorkflowInfo.data])
+    return val * repeat
+  }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])
 
   return (
     <div className='w-full h-full flex flex-col items-start py-2'>
@@ -123,7 +134,8 @@ export const WorkflowSidePicker: IComponent = () => {
             workflow={crrWorkflowInfo.data}
             onChange={setInputData}
             repeat={repeat}
-            onChangeRepeat={hasSeedInput ? setRepeat : undefined}
+            data={inputData}
+            onChangeRepeat={!!seedInput ? setRepeat : undefined}
           />
         )}
       </SimpleTransitionLayout>

@@ -188,11 +188,10 @@ export const workflowTaskRouter = router({
             ...input.input,
             [seedConf?.key!]: newSeed
           }
-          await delay(5)
+          await delay(10)
           createTask(newInput, task, 1)
         }
       }
-      console.log('WTF')
       await Promise.all([
         ctx.em.flush(),
         CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),

@@ -108,7 +108,7 @@ export const SelectResourceList: IComponent<{
                   />
                 </TableCell>
                 <TableCell>
-                  <AttachmentImage shortName={shortName} data={item.image} />
+                  <AttachmentImage mode='avatar' shortName={shortName} data={item.image} />
                 </TableCell>
                 <TableCell>{item.type}</TableCell>
                 <TableCell className='truncate max-w-[128px]'>{item.displayName?.trim() || '-'}</TableCell>

@@ -12,14 +12,16 @@ const Layout: IComponent = ({ children }) => {
       onValueChange={setViewMode}
       className='w-full h-full flex relative items-center justify-center'
     >
-      <TabsList className='absolute bottom-4 z-10 shadow'>
-        <TabsTrigger value='history'>History</TabsTrigger>
-        <TabsTrigger value='visualize'>Gallery</TabsTrigger>
-      </TabsList>
+      <div className='absolute bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg'>
+        <TabsList>
+          <TabsTrigger value='history'>History</TabsTrigger>
+          <TabsTrigger value='visualize'>Gallery</TabsTrigger>
+        </TabsList>
+      </div>
       <TabsContent value='history' className='mt-0 w-full h-full relative'>
         <TaskHistory />
       </TabsContent>
-      <TabsContent value='visualize' className='w-full h-full mt-0 z-0 relative'>
+      <TabsContent value='visualize' className='w-full h-full mt-0 z-0 relative !ring-0'>
         {children}
       </TabsContent>
     </Tabs>

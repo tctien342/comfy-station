@@ -134,15 +134,15 @@ export class ComfyPoolInstance {
     const queuingTasks = await em.find(
       WorkflowTask,
       { status: ETaskStatus.Queuing },
-      { populate: ['workflow', 'parent', 'trigger.user.weightOffset'], orderBy: { createdAt: 'ASC' } }
+      { limit: 10, populate: ['workflow', 'parent', 'trigger.user.weightOffset'], orderBy: { createdAt: 'ASC' } }
     )
     if (queuingTasks.length > 0) {
       for (let i = 0; i < queuingTasks.length; i++) {
         const task = queuingTasks[i]
-        await this.updateTaskEventFn(task, ETaskStatus.Pending)
         const workflow = task.workflow
         const input = task.inputValues
         const builder = getBuilder(workflow)
+        await this.updateTaskEventFn(task, ETaskStatus.Pending)
         pool.run(async (api) => {
           const client = await em.findOne(Client, { id: api.id })
           if (client) {
@@ -239,7 +239,8 @@ export class ComfyPoolInstance {
                       if (v instanceof Blob) {
                         const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
                         const [preview, png] = await Promise.all([
-                          (await imgUtil.clone())
+                          imgUtil
+                            .clone()
                             .resizeMax(1024)
                             .intoPreviewJPG()
                             .catch((e) => {
@@ -328,7 +329,7 @@ export class ComfyPoolInstance {
       await this.cachingService.set('LAST_TASK_CLIENT', -1, Date.now())
       await em.flush()
     }
-    delay(2000).then(() => this.pickingJob())
+    delay(100).then(() => this.pickingJob())
   }
 
   async setClientStatus(clientId: string, status: EClientStatus, msg?: string) {

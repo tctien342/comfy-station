@@ -172,8 +172,8 @@ export class ImageUtil {
       .toBuffer()
   }
 
-  async clone() {
-    return new ImageUtil(await this.getBuffer())
+  clone() {
+    return new ImageUtil(this.raw)
   }
 
   /**
