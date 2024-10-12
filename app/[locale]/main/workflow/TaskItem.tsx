@@ -16,7 +16,8 @@ export const TaskItem: IComponent<{
   data: WorkflowTask
 }> = ({ data }) => {
   const { data: task, refetch } = trpc.workflowTask.detail.useQuery(data.id, {
-    enabled: !!data.id
+    enabled: !!data.id,
+    refetchOnWindowFocus: false
   })
   trpc.watch.historyItem.useSubscription(data.id, {
     onData: () => refetch()

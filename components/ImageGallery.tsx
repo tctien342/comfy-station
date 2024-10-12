@@ -84,8 +84,9 @@ export const ImageGallery: IComponent<{
                 key={virtualRow.key}
                 data-index={virtualRow.index}
                 ref={rowVirtualizer.measureElement}
-                className={virtualRow.index % 2 ? 'ListItemOdd' : 'ListItemEven'}
+                className={'animate-fade duration-200'}
                 style={{
+                  animationDelay: `${virtualRow.index * 34}ms`,
                   position: 'absolute',
                   top: 0,
                   left: `${(virtualRow.lane * 100) / 3}%`,

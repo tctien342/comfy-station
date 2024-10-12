@@ -138,9 +138,13 @@ export function VirtualList<T>({
               return (
                 <div
                   key={virtualItem.key}
+                  className='animate-fade'
                   ref={virtualizer.measureElement}
                   data-index={virtualItem.index}
-                  style={itemStyle}
+                  style={{
+                    ...itemStyle,
+                    animationDelay: `${(items.length - virtualItem.index) * 34}ms`
+                  }}
                 >
                   {renderItem(item, virtualItem)}
                 </div>
