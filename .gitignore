@@ -45,3 +45,5 @@ playground
 .env
 
 public/attachments/*
+
+test.ts

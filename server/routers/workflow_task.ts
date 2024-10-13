@@ -8,7 +8,7 @@ import { Trigger } from '@/entities/trigger'
 import CachingService from '@/services/caching'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
-import { delay, seed } from '@/utils/tools'
+import { convertObjectToArrayOfObjects, delay, seed } from '@/utils/tools'
 
 export const workflowTaskRouter = router({
   list: privateProcedure
@@ -118,7 +118,7 @@ export const workflowTaskRouter = router({
   executeTask: privateProcedure
     .input(
       z.object({
-        input: z.record(z.string(), z.union([z.string(), z.number()])),
+        input: z.record(z.string(), z.union([z.string(), z.number(), z.array(z.string())])),
         workflowId: z.string(),
         repeat: z.number().optional()
       })
@@ -127,6 +127,7 @@ export const workflowTaskRouter = router({
       const workflow = await ctx.em.findOneOrFail(Workflow, {
         id: input.workflowId
       })
+      const tasks = convertObjectToArrayOfObjects(input.input)
 
       // Weight calculation
       const computedWeight = workflow.baseWeight + ctx.session.user!.weightOffset
@@ -139,6 +140,7 @@ export const workflowTaskRouter = router({
         }
       }
       computedCost *= input.repeat ?? 1
+      computedCost *= tasks.length
 
       const createTask = (inputValues = input.input, sub?: WorkflowTask, repeat = input.repeat ?? 1) => {
         const trigger = ctx.em.create(
