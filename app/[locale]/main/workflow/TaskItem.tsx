@@ -11,6 +11,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { Check, Copy, Hourglass, Repeat } from 'lucide-react'
 import { useMemo } from 'react'
 import { Label } from '@/components/ui/label'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
@@ -140,7 +141,21 @@ export const TaskItem: IComponent<{
 
   const shortName = task?.trigger.user?.email?.split('@')[0] ?? '-'
 
-  if (!task) return null
+  if (!task)
+    return (
+      <div className='w-full flex h-full justify-center items-center'>
+        <div className='flex flex-col gap-2 px-2'>
+          <Skeleton className='w-24 h-6' />
+          <Skeleton className='w-64 h-3' />
+          <Skeleton className='w-64 h-3' />
+          <div className='flex gap-2 mt-2'>
+            <Skeleton className='w-24 h-4' />
+            <Skeleton className='w-24 h-4' />
+          </div>
+        </div>
+        <Skeleton className='h-32 aspect-square rounded-none w-fit ml-auto' />
+      </div>
+    )
 
   return (
     <div className='w-full flex'>

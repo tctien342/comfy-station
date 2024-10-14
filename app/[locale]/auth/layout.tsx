@@ -17,9 +17,9 @@ const Layout: IComponent = ({ children }) => {
   const currentTab = pathName.includes('token') ? 'token' : 'account'
 
   return (
-    <Card className='bg-background flex overflow-hidden relative'>
-      <Image alt='Login background' className='object-cover' height={400} width={400} src={AuthBackground} />
-      <div className='flex justify-start flex-col p-8 w-[460px] gap-4'>
+    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative h-full md:h-fit rounded-none md:rounded-xl'>
+      <Image alt='Login background' className='object-cover w-full md:w-[400px]' height={400} src={AuthBackground} />
+      <div className='flex justify-start flex-col p-8 w-full md:w-[460px] gap-4'>
         <Tabs value={currentTab}>
           <TabsList className='grid w-full grid-cols-2'>
             <TabsTrigger onClick={() => route.push('/auth/basic')} value='account'>

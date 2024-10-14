@@ -81,10 +81,10 @@ export const ImageGallery: IComponent<{
             const item = rows[virtualRow.index]!
             return (
               <div
-                key={virtualRow.key}
+                key={'id' in item ? item.id : virtualRow.key}
                 data-index={virtualRow.index}
                 ref={rowVirtualizer.measureElement}
-                className={'animate-fade duration-200'}
+                className={'animate-fade duration-200 p-1'}
                 style={{
                   animationDelay: `${virtualRow.index * 34}ms`,
                   position: 'absolute',

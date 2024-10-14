@@ -32,7 +32,7 @@ export const AttachmentImage: IComponent<{
       <PhotoView src={image?.raw?.url}>
         <div
           className={cn(
-            'w-16 h-16 rounded-none cursor-pointer btn flex items-center justify-center bg-secondary',
+            'w-16 h-16 rounded-xl cursor-pointer btn flex items-center justify-center bg-secondary overflow-hidden',
             className
           )}
         >

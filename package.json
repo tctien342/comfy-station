@@ -71,6 +71,7 @@
     "jszip": "^3.10.1",
     "libsql": "^0.4.5",
     "lightgallery": "^2.7.2",
+    "lru-cache": "^11.0.1",
     "lucide-react": "^0.439.0",
     "mime": "^4.0.4",
     "next": "^14.2.13",

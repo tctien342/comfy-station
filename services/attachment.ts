@@ -10,7 +10,8 @@ import {
   ListBucketsCommand
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { CacheManager, Logger } from '@saintno/needed-tools'
+import { Logger } from '@saintno/needed-tools'
+import { LRUCache } from 'lru-cache'
 import { NodeHttpHandler } from '@aws-sdk/node-http-handler'
 import { Agent } from 'https'
 import fs from 'fs'
@@ -29,7 +30,7 @@ class AttachmentService {
   private static instance: AttachmentService
   private s3?: S3Client
   private logger: Logger
-  private cacheStorage: CacheManager
+  private cacheStorage: LRUCache<string, string>
   private localPath = process.cwd() + '/public/attachments/'
 
   static getInstance(): AttachmentService {
@@ -41,7 +42,10 @@ class AttachmentService {
 
   private constructor() {
     this.logger = new Logger('AttachmentService')
-    this.cacheStorage = new CacheManager('AttachmentService')
+    this.cacheStorage = new LRUCache({
+      ttl: 1000 * 60 * 60,
+      ttlAutopurge: false
+    })
     // Check if S3 config is set in environment variables
     if (!!BackendENV.S3_ENDPOINT && !!BackendENV.S3_ACCESS_KEY && !!BackendENV.S3_SECRET_KEY) {
       // Initialize S3 client with the provided config
@@ -91,16 +95,20 @@ class AttachmentService {
   async getFileURL(fileName: string, expiresIn?: number) {
     if (this.s3 && BackendENV.S3_BUCKET_NAME) {
       // Generate a file URL for the file in the S3 bucket
-      const s3Url = await this.cacheStorage.get({
-        key: `s3Url:${fileName}`,
-        generator: () => this.getSignedUrl(fileName, expiresIn),
-        tl: '1hr',
-        onStorage: true
-      })
+      const s3Url = this.cacheStorage.get(`s3Url:${fileName}`)
       if (s3Url) {
         return {
           type: EAttachmentType.S3,
           url: s3Url
+        }
+      } else {
+        const signedUrl = await this.getSignedUrl(fileName, expiresIn)
+        if (signedUrl) {
+          this.cacheStorage.set(`s3Url:${fileName}`, signedUrl)
+          return {
+            type: EAttachmentType.S3,
+            url: signedUrl
+          }
         }
       }
     }

@@ -27,6 +27,8 @@ export const UserInfomation: IComponent = () => {
   }
 
   const notAdmin = session.data?.user?.role !== EUserRole.Admin
+  const email = session.data?.user?.email
+  const shortEmail = email?.split('@')[0]
 
   return (
     <div className='w-full flex gap-2 items-center p-2'>
@@ -37,12 +39,20 @@ export const UserInfomation: IComponent = () => {
             <AvatarFallback>{shortUsername}</AvatarFallback>
           </Avatar>
           <span
-            className={cn('px-2', {
+            className={cn('px-2 hidden md:block', {
               'order-0': notAdmin,
               'order-2': !notAdmin
             })}
           >
             {session.data?.user?.email}
+          </span>
+          <span
+            className={cn('px-2 md:hidden block', {
+              'order-0': notAdmin,
+              'order-2': !notAdmin
+            })}
+          >
+            @{shortEmail}
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='start' sideOffset={10}>

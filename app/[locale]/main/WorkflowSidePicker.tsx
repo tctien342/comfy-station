@@ -108,19 +108,22 @@ export const WorkflowSidePicker: IComponent = () => {
         }
       }
     }
-    return val * repeat * tasks.length
+    return {
+      value: val * repeat * tasks.length,
+      subTasks: tasks.length
+    }
   }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])
 
   return (
     <div className='w-full h-full flex flex-col items-start py-2'>
-      <div className='px-2'>
+      <div className='px-2 w-full'>
         <Select defaultValue={slug} onValueChange={handlePickWorkflow}>
           <SelectTrigger>
-            <SelectValue placeholder='Select...' />
+            <SelectValue placeholder='Select...' className='w-full' />
           </SelectTrigger>
           <SelectContent>
             {workflowListLoader.data?.map((selection) => (
-              <SelectItem key={selection.id} value={selection.id} className='flex flex-col'>
+              <SelectItem key={selection.id} value={selection.id} className='flex flex-col w-full'>
                 <div className='w-[300px] font-semibold whitespace-normal break-words text-left'>{selection.name}</div>
                 <p className='text-xs'>{selection.description}</p>
               </SelectItem>
@@ -140,11 +143,12 @@ export const WorkflowSidePicker: IComponent = () => {
         )}
       </SimpleTransitionLayout>
       <div className='w-full flex gap-2 justify-end items-center border-t px-2 pt-2'>
-        {!!cost && <span className='text-xs text-gray-600'>Cost {cost} credits</span>}
+        {!!cost && <span className='text-xs text-gray-600'>Cost {cost.value} credits</span>}
         <Button
           onClick={() => {
             router.push('/main')
           }}
+          className='hidden md:block'
           variant='ghost'
         >
           Back

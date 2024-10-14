@@ -57,7 +57,7 @@ export const TopBar: IComponent = () => {
             <Icon width={16} height={16} />
           </Button>
         )}
-        <h1 className='text-xl font-black uppercase'>{routeConf?.title}</h1>
+        <h1 className='text-sm md:text-xl font-black uppercase'>{routeConf?.title}</h1>
       </SimpleTransitionLayout>
       <div className='flex-auto items-center justify-end flex gap-2'>{renderToolBox}</div>
       {role < EUserRole.Admin && (

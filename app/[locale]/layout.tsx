@@ -32,7 +32,7 @@ export default async function RootLayout({
               className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
             />
             <TRPCLayout>
-              <div className='w-screen h-screen p-2 lg:p-4 flex justify-center items-center'>
+              <div className='w-screen h-screen md:p-2 lg:p-4 flex justify-center items-center'>
                 <ClientLayout>{children}</ClientLayout>
               </div>
             </TRPCLayout>
