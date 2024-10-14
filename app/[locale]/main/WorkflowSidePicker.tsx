@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WorkflowInputArea } from '@/components/WorkflowInputArea'
-import { EValueType } from '@/entities/enum'
+import { EValueType, EValueUltilityType } from '@/entities/enum'
 import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { EKeyboardKey, ESpecialKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
+import { useStorageState } from '@/hooks/useStorageState'
 import { useToast } from '@/hooks/useToast'
 import { convertObjectToArrayOfObjects, seed } from '@/utils/tools'
 import { trpc } from '@/utils/trpc'
@@ -19,7 +20,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const [loading, setLoading] = useState(false)
   const [repeat, setRepeat] = useState(1)
   const { toast } = useToast()
-  const [inputData, setInputData] = useState<Record<string, any>>({})
+  const [inputData, setInputData, reload] = useStorageState<Record<string, any>>(`input-wf-${slug}`, {})
   const crrWorkflowInfo = trpc.workflow.get.useQuery(slug!, {
     enabled: !!slug
   })
@@ -32,7 +33,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const runner = trpc.workflowTask.executeTask.useMutation()
 
   const seedInput = useMemo(() => {
-    return Object.values(crrWorkflowInfo.data?.mapInput || {}).find((input) => input.type === EValueType.Seed)
+    return Object.values(crrWorkflowInfo.data?.mapInput || {}).find((input) => input.type === EValueUltilityType.Seed)
   }, [crrWorkflowInfo.data?.mapInput])
 
   const { uploadAttachment } = useAttachmentUploader()
@@ -44,6 +45,7 @@ export const WorkflowSidePicker: IComponent = () => {
         [seedInput.key]: seed()
       }))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedInput])
 
   const handlePressRun = async () => {
@@ -114,6 +116,11 @@ export const WorkflowSidePicker: IComponent = () => {
     }
   }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])
 
+  useEffect(() => {
+    reload()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug])
+
   return (
     <div className='w-full h-full flex flex-col items-start py-2'>
       <div className='px-2 w-full'>
@@ -123,8 +130,10 @@ export const WorkflowSidePicker: IComponent = () => {
           </SelectTrigger>
           <SelectContent>
             {workflowListLoader.data?.map((selection) => (
-              <SelectItem key={selection.id} value={selection.id} className='flex flex-col w-full'>
-                <div className='w-[300px] font-semibold whitespace-normal break-words text-left'>{selection.name}</div>
+              <SelectItem key={selection.id} value={selection.id} className='flex flex-col w-full items-start'>
+                <div className='md:w-[300px] font-semibold whitespace-normal break-words text-left'>
+                  {selection.name}
+                </div>
                 <p className='text-xs'>{selection.description}</p>
               </SelectItem>
             ))}
@@ -135,29 +144,45 @@ export const WorkflowSidePicker: IComponent = () => {
         {!!crrWorkflowInfo.data && (
           <WorkflowInputArea
             workflow={crrWorkflowInfo.data}
-            onChange={setInputData}
+            onChange={(data) =>
+              setInputData(data, (obj) => {
+                for (const key in obj) {
+                  if (!['string', 'number', 'boolean'].includes(typeof obj[key])) {
+                    delete obj[key]
+                  }
+                }
+                return obj
+              })
+            }
             repeat={repeat}
             data={inputData}
             onChangeRepeat={!!seedInput ? setRepeat : undefined}
           />
         )}
       </SimpleTransitionLayout>
-      <div className='w-full flex gap-2 justify-end items-center border-t px-2 pt-2'>
-        {!!cost && <span className='text-xs text-gray-600'>Cost {cost.value} credits</span>}
-        <Button
-          onClick={() => {
-            router.push('/main')
-          }}
-          className='hidden md:block'
-          variant='ghost'
-        >
-          Back
-          <ChevronLeft className='w-4 h-4 ml-1' />
-        </Button>
-        <LoadableButton loading={loading} onClick={handlePressRun}>
-          Run
-          <Play className='w-4 h-4 ml-1' />
-        </LoadableButton>
+      <div className='w-full flex flex-col gap-2 justify-end items-center border-t px-2 pt-2'>
+        {cost.subTasks > 1 && (
+          <span className='text-xs text-center px-4'>
+            Multiple image inputs detected, will splitted into many sub tasks for handling
+          </span>
+        )}
+        <div className='w-full flex gap-2 justify-end items-center '>
+          {!!cost && <span className='text-xs text-gray-600'>Cost {cost.value} credits</span>}
+          <Button
+            onClick={() => {
+              router.push('/main')
+            }}
+            className='hidden md:flex'
+            variant='ghost'
+          >
+            Back
+            <ChevronLeft className='w-4 h-4 ml-1' />
+          </Button>
+          <LoadableButton loading={loading} onClick={handlePressRun}>
+            Run
+            <Play className='w-4 h-4 ml-1' />
+          </LoadableButton>
+        </div>
       </div>
     </div>
   )

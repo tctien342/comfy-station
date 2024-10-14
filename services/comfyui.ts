@@ -2,7 +2,15 @@ import { CallWrapper, ComfyApi, ComfyPool, EQueueMode, PromptBuilder, TMonitorEv
 import { Logger } from '@saintno/needed-tools'
 import { MikroORMInstance } from './mikro-orm'
 import { Client } from '@/entities/client'
-import { EAttachmentStatus, EAuthMode, EClientStatus, EStorageType, ETaskStatus, EValueType } from '@/entities/enum'
+import {
+  EAttachmentStatus,
+  EAuthMode,
+  EClientStatus,
+  EStorageType,
+  ETaskStatus,
+  EValueType,
+  EValueUltilityType
+} from '@/entities/enum'
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientMonitorEvent } from '@/entities/client_monitor_event'
 import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
@@ -162,8 +170,11 @@ export class ComfyPoolInstance {
               }
               switch (workflow.mapInput?.[key].type) {
                 case EValueType.Number:
-                case EValueType.Seed:
+                case EValueUltilityType.Seed:
                   builder.input(key, Number(inputData))
+                  break
+                case EValueUltilityType.Prefixer:
+                  builder.input(key, task.id)
                   break
                 case EValueType.String:
                   builder.input(key, String(inputData))

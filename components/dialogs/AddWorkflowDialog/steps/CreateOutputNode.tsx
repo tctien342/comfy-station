@@ -80,9 +80,6 @@ export const CreateOutputNode: IComponent<{
       case EValueType.Boolean:
         form.setValue('icon', 'CheckIcon')
         break
-      case EValueType.Seed:
-        form.setValue('icon', 'SparklesIcon')
-        break
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mappingType])
@@ -184,12 +181,6 @@ export const CreateOutputNode: IComponent<{
                           <div className='flex items-center'>
                             <CheckIcon className='mr-2 h-4 w-4' />
                             Boolean
-                          </div>
-                        </SelectItem>
-                        <SelectItem value={EValueType.Seed}>
-                          <div className='flex items-center'>
-                            <SparklesIcon className='mr-2 h-4 w-4' />
-                            Seed
                           </div>
                         </SelectItem>
                         <SelectSeparator />

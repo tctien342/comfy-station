@@ -17,6 +17,8 @@ export type VirtualListProps<T> = {
   isFetchingNextPage: boolean
 }
 
+const PADDING_BOTTOM = 64
+
 export function VirtualList<T>({
   style,
   itemStyle,
@@ -49,14 +51,12 @@ export function VirtualList<T>({
   useEffect(
     () => {
       if (items.length > 0 && !firstLoaded.current) {
-        // delay(340).then(() => {
-        virtualizer.scrollToOffset(virtualizer.getTotalSize())
+        virtualizer.scrollToOffset(virtualizer.getTotalSize() + PADDING_BOTTOM)
         firstLoaded.current = true
-        // })
         return
       }
       if (isAtBottom.current) {
-        virtualizer.scrollToOffset(virtualizer.getTotalSize())
+        virtualizer.scrollToOffset(virtualizer.getTotalSize() + PADDING_BOTTOM)
       } else if (scrollableRef.current) {
         virtualizer.scrollToOffset(
           virtualizer.getTotalSize() - scrollPosRef.current - scrollableRef.current!.clientHeight
@@ -73,7 +73,7 @@ export function VirtualList<T>({
       const scrollHeight = virtualizer.getTotalSize()
 
       scrollPosRef.current = scrollHeight - (scrollOffset ?? 0) - scrollableRef.current!.clientHeight
-      isAtBottom.current = scrollPosRef.current < 30
+      isAtBottom.current = scrollPosRef.current < 60
     }
   }, [virtualizer, virtualizer.isScrolling, virtualizer.scrollOffset])
 
@@ -118,7 +118,7 @@ export function VirtualList<T>({
           style={{
             width: '100%',
             position: 'relative',
-            height: virtualizer.getTotalSize()
+            height: virtualizer.getTotalSize() + PADDING_BOTTOM
           }}
         >
           <div id='bottom' ref={bottomRef} />

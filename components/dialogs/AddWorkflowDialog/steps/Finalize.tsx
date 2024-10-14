@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { trpc } from '@/utils/trpc'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Label } from '@/components/ui/label'
-import { EValueSelectionType, EValueType } from '@/entities/enum'
+import { EValueSelectionType, EValueType, EValueUltilityType } from '@/entities/enum'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import DropFileInput from '@/components/DropFileInput'
@@ -150,7 +150,7 @@ export const FinalizeStep: IComponent = () => {
                 }}
               />
             )}
-            {[EValueType.Number, EValueType.Seed].includes(input.type as EValueType) && (
+            {[EValueType.Number, EValueUltilityType.Seed].includes(input.type as EValueType) && (
               <Input
                 disabled={loading}
                 defaultValue={String(input.default ?? '')}

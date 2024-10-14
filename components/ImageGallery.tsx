@@ -7,10 +7,12 @@ import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 
 export const ImageGallery: IComponent<{
   rows: Array<{ loading: true } | Attachment>
+  favoriteIds?: string[]
   onFetchMore?: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
-}> = ({ rows, hasNextPage, isFetchingNextPage, onFetchMore }) => {
+  onPressFavorite?: (imageId: string) => void
+}> = ({ rows, hasNextPage, isFetchingNextPage, onPressFavorite, onFetchMore, favoriteIds }) => {
   const parentRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const firstLoaded = useRef(false)
@@ -97,7 +99,14 @@ export const ImageGallery: IComponent<{
                 }}
               >
                 {!('loading' in item) && (
-                  <AttachmentImage className='w-full h-full object-cover' tryPreivew data={item} shortName='NA' />
+                  <AttachmentImage
+                    isFavorited={favoriteIds?.includes(item.id)}
+                    onPressFavorite={onPressFavorite}
+                    className='w-full h-full object-cover'
+                    tryPreivew
+                    data={item}
+                    shortName='NA'
+                  />
                 )}
                 {'loading' in item && <AttachmentImage loading className='w-full h-full object-cover' />}
               </div>

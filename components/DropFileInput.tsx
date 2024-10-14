@@ -1,6 +1,6 @@
 import { useDropzone } from 'react-dropzone'
 
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { X } from 'lucide-react'
@@ -12,6 +12,7 @@ const DropFileInput: IComponent<{
   disabled?: boolean
   onChanges?: (files: File[]) => void
 }> = ({ defaultFiles, disabled, onChanges, maxFiles }) => {
+  const cacheRef = useRef(new Map<File, string>())
   const [files, setFiles] = useState<File[]>(defaultFiles || [])
 
   const addFiles = useCallback(
@@ -45,17 +46,32 @@ const DropFileInput: IComponent<{
     [addFiles]
   )
 
+  const filesURL = useMemo(() => {
+    return files.map((file) => {
+      if (!cacheRef.current.has(file)) {
+        cacheRef.current.set(file, URL.createObjectURL(file))
+      }
+      return cacheRef.current.get(file)!
+    })
+  }, [files])
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, maxFiles, disabled })
 
   const renderFiles = useMemo(() => {
-    return files.map((file) => {
+    return files.map((file, idx) => {
       const isImage = file.type.startsWith('image/')
       if (isImage) {
         return (
-          <div key={file.name} className='flex items-center gap-2 relative group'>
-            <PhotoView src={URL.createObjectURL(file)}>
-              <Avatar className='!rounded-md w-20 h-20'>
-                <AvatarImage src={URL.createObjectURL(file)} />
+          <div
+            key={file.name}
+            style={{
+              animationDelay: `${idx * 30}ms`
+            }}
+            className='flex items-center gap-2 relative group w-full aspect-square animate-fade'
+          >
+            <PhotoView src={filesURL[idx]}>
+              <Avatar className='!rounded-md w-full h-full'>
+                <AvatarImage src={filesURL[idx]} />
                 <AvatarFallback>{file.name}</AvatarFallback>
               </Avatar>
             </PhotoView>
@@ -92,7 +108,7 @@ const DropFileInput: IComponent<{
         )
       }
     })
-  }, [files, removeFile])
+  }, [files, filesURL, removeFile])
 
   return (
     <div
@@ -113,7 +129,7 @@ const DropFileInput: IComponent<{
         <input {...getInputProps()} />
         {isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop some files here, or click to select files</p>}
       </div>
-      <div className='w-full flex gap-1 overflow-auto'>{renderFiles}</div>
+      <div className='w-full grid grid-cols-4 gap-2'>{renderFiles}</div>
     </div>
   )
 }

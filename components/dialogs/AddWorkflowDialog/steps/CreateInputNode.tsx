@@ -12,7 +12,7 @@ import {
   SelectGroup,
   SelectSeparator
 } from '@/components/ui/select'
-import { EValueSelectionType, EValueType } from '@/entities/enum'
+import { EValueSelectionType, EValueType, EValueUltilityType } from '@/entities/enum'
 import { IMapperInput, IMapTarget } from '@/entities/workflow'
 import {
   BeakerIcon,
@@ -30,7 +30,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronLeft, PlusIcon, Trash } from 'lucide-react'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { SelectResourceList } from './SelectResourceList'
@@ -40,7 +40,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ConnectionList } from './ConnectionList'
 import { AddWorkflowDialogContext } from '..'
-import e from 'cors'
 
 export const CreateInputNode: IComponent<{
   config?: IMapperInput
@@ -57,7 +56,7 @@ export const CreateInputNode: IComponent<{
   const [connections, setConnections] = useState<Array<IMapTarget>>(config?.target ?? [])
   const formSchema = z.object({
     // Regex is url host name
-    type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType)]),
+    type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType), z.nativeEnum(EValueUltilityType)]),
     icon: z.string().optional(),
     costRelated: z.boolean().default(false),
     costPerUnit: z.coerce.number().optional(),
@@ -86,10 +85,13 @@ export const CreateInputNode: IComponent<{
 
   const isSelectionType = z.nativeEnum(EValueSelectionType).safeParse(mappingType)
   const allowDefaultType = z
-    .enum([EValueType.Boolean, EValueType.String, EValueType.Number, EValueType.Seed])
+    .enum([EValueType.Boolean, EValueType.String, EValueType.Number])
     .safeParse(mappingType)
 
   useEffect(() => {
+    if (mappingType === EValueUltilityType.Prefixer && !form.getValues('name')) {
+      form.setValue('name', 'Prefixer')
+    }
     if (mappingType === config?.type) return
     switch (mappingType) {
       case EValueType.Number:
@@ -107,8 +109,11 @@ export const CreateInputNode: IComponent<{
       case EValueType.Boolean:
         form.setValue('icon', 'CheckIcon')
         break
-      case EValueType.Seed:
+      case EValueUltilityType.Seed:
         form.setValue('icon', 'SparklesIcon')
+        break
+      case EValueUltilityType.Prefixer:
+        form.setValue('icon', 'BoldIcon')
         break
       case EValueSelectionType.Checkpoint:
         form.setValue('icon', 'CubeIcon')
@@ -128,6 +133,37 @@ export const CreateInputNode: IComponent<{
     }
     setSelections([])
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mappingType])
+
+  const fieldDescriptionText = useMemo(() => {
+    switch (mappingType) {
+      case EValueType.Number:
+        return 'Use for number input like batch_size, width, height, denoise_value...'
+      case EValueType.String:
+        return 'Use for string input like positive, negative, caption,...'
+      case EValueType.Image:
+        return 'Use for image input like load_image, load_mask,...'
+      case EValueType.File:
+        return 'Use for file input like load_audio, load_text,...'
+      case EValueType.Boolean:
+        return 'Use for boolean input like switchs,...'
+      case EValueUltilityType.Seed:
+        return 'Use for seed input. Need for repeat feature!'
+      case EValueUltilityType.Prefixer:
+        return 'Use for adding prefix into output images for preventing duplicated name. This is needed for server that have multiple ComfyUI instance running on same folder. Used for node like SaveImage-FilenamePrefix'
+      case EValueSelectionType.Checkpoint:
+        return 'Use for select checkpoint from list.'
+      case EValueSelectionType.Lora:
+        return 'Use for select lora from list.'
+      case EValueSelectionType.Sampler:
+        return 'Use for select sampler from list.'
+      case EValueSelectionType.Scheduler:
+        return 'Use for select scheduler from list.'
+      case EValueSelectionType.Custom:
+        return 'Use for select custom from list.'
+      default:
+        return null
+    }
   }, [mappingType])
 
   const handleSubmit = form.handleSubmit((data) => {
@@ -232,12 +268,6 @@ export const CreateInputNode: IComponent<{
                             Boolean
                           </div>
                         </SelectItem>
-                        <SelectItem value={EValueType.Seed}>
-                          <div className='flex items-center'>
-                            <SparklesIcon className='mr-2 h-4 w-4' />
-                            Seed
-                          </div>
-                        </SelectItem>
                         <SelectSeparator />
                         <SelectGroup>
                           <SelectLabel>Upload input</SelectLabel>
@@ -254,6 +284,22 @@ export const CreateInputNode: IComponent<{
                             </div>
                           </SelectItem>
                         </SelectGroup>
+                      </SelectGroup>
+                      <SelectSeparator />
+                      <SelectGroup>
+                        <SelectLabel>Ultility</SelectLabel>
+                        <SelectItem value={EValueUltilityType.Seed}>
+                          <div className='flex items-center'>
+                            <SparklesIcon className='mr-2 h-4 w-4' />
+                            Seed
+                          </div>
+                        </SelectItem>
+                        <SelectItem value={EValueUltilityType.Prefixer}>
+                          <div className='flex items-center'>
+                            <BoldIcon className='mr-2 h-4 w-4' />
+                            Prefixer
+                          </div>
+                        </SelectItem>
                       </SelectGroup>
                       <SelectSeparator />
                       <SelectGroup>
@@ -294,6 +340,7 @@ export const CreateInputNode: IComponent<{
                   <IconPicker value={form.watch('icon')} onSelect={(name) => form.setValue('icon', name)} />
                 </div>
                 <FormMessage />
+                <FormDescription>{fieldDescriptionText}</FormDescription>
               </FormItem>
             )}
           />
@@ -391,7 +438,9 @@ export const CreateInputNode: IComponent<{
                       <Input
                         placeholder='...'
                         type={
-                          [EValueType.Number, EValueType.Seed].includes(mappingType as EValueType) ? 'number' : 'text'
+                          [EValueType.Number, EValueUltilityType.Seed].includes(mappingType as EValueType)
+                            ? 'number'
+                            : 'text'
                         }
                         {...field}
                       />
@@ -414,18 +463,20 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
-          <FormField
-            name='description'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea placeholder='Your input description...' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {mappingType !== EValueUltilityType.Prefixer && (
+            <FormField
+              name='description'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder='Your input description...' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
         <div className='flex gap-2 pt-2 w-full items-center'>
           {isUpdating && (

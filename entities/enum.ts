@@ -49,14 +49,21 @@ export enum ETriggerBy {
 
 export enum EValueType {
   File = 'File',
-  /**
-   * Seed is a value that is used to generate, change when re-run a task.
-   */
-  Seed = 'Seed',
   String = 'String',
   Number = 'Number',
   Image = 'Image',
   Boolean = 'Boolean'
+}
+
+export enum EValueUltilityType {
+  /**
+   * Seed is a value that is used to generate, change when re-run a task.
+   */
+  Seed = 'Seed',
+  /**
+   * Prefixer is a value that is used to generate, not change when re-run a task.
+   */
+  Prefixer = 'Prefixer'
 }
 
 export enum EValueSelectionType {

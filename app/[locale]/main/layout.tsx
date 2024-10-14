@@ -72,18 +72,18 @@ const Layout: IComponent = ({ children }) => {
             </TabsContent>
           )}
           <TabsList className='bg-background h-fit'>
-            <TabsTrigger value='history' className='py-2'>
+            <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
               <div className='py-2 flex gap-2 items-center'>
                 <PlaySquare width={16} height={16} /> Execute
               </div>
             </TabsTrigger>
-            <TabsTrigger value='visualize' className='py-2'>
+            <TabsTrigger value='visualize' className='py-2 data-[state=active]:shadow-none'>
               <div className='py-2 flex gap-2 items-center'>
                 <ListIcon width={16} height={16} /> {isExecutePage ? 'History' : 'Workflows'}
               </div>
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value='admin-pannel' className='py-2'>
+              <TabsTrigger value='admin-pannel' className='py-2 data-[state=active]:shadow-none'>
                 <div className='py-2 flex gap-2 items-center'>
                   <ChartBarIcon width={16} height={16} /> Admin
                 </div>

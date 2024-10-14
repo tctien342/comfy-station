@@ -1,7 +1,7 @@
 import { Workflow } from '@/entities/workflow'
 import { Label } from './ui/label'
 import { Textarea } from './ui/textarea'
-import { EValueSelectionType, EValueType } from '@/entities/enum'
+import { EValueSelectionType, EValueType, EValueUltilityType } from '@/entities/enum'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select'
 import DropFileInput from './DropFileInput'
 import { CardDescription } from './ui/card'
@@ -14,6 +14,7 @@ import { Button } from './ui/button'
 import { Dice5, Repeat } from 'lucide-react'
 import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
+import { isEqual } from 'lodash'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -38,6 +39,7 @@ export const WorkflowInputArea: IComponent<{
       const target = input?.target || []
       const mainItem = target[0]
       if (!input) return null
+      if (input.type === EValueUltilityType.Prefixer) return null
 
       return (
         <div
@@ -77,7 +79,7 @@ export const WorkflowInputArea: IComponent<{
               defaultFiles={data}
             />
           )}
-          {[EValueType.Number, EValueType.Seed].includes(input.type as EValueType) && (
+          {[EValueType.Number, EValueUltilityType.Seed].includes(input.type as EValueType) && (
             <div className='w-full gap-2 flex'>
               <Input
                 disabled={disabled}
@@ -90,7 +92,7 @@ export const WorkflowInputArea: IComponent<{
                 max={input.max}
                 type='number'
               />
-              {input.type === EValueType.Seed && (
+              {input.type === EValueUltilityType.Seed && (
                 <Button
                   onClick={() => {
                     setInputData((prev) => ({ ...prev, [val]: seed() }))
@@ -131,17 +133,18 @@ export const WorkflowInputArea: IComponent<{
 
   useEffect(() => {
     onChange?.(inputData)
-  }, [inputData, onChange])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputData])
 
   useEffect(() => {
-    if (JSON.stringify(data) !== JSON.stringify(inputData)) setInputData(data || {})
+    if (!isEqual(data, inputData)) setInputData(data || {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   useEffect(() => {
     if (workflow.mapInput) {
       const seedInputKey = Object.keys(workflow.mapInput).find(
-        (key) => workflow.mapInput?.[key].type === EValueType.Seed
+        (key) => workflow.mapInput?.[key].type === EValueUltilityType.Seed
       )
 
       if (seedInputKey && !inputData[seedInputKey]) {

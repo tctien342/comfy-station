@@ -44,7 +44,7 @@ class AttachmentService {
     this.logger = new Logger('AttachmentService')
     this.cacheStorage = new LRUCache({
       ttl: 1000 * 60 * 60,
-      ttlAutopurge: false
+      ttlAutopurge: true
     })
     // Check if S3 config is set in environment variables
     if (!!BackendENV.S3_ENDPOINT && !!BackendENV.S3_ACCESS_KEY && !!BackendENV.S3_SECRET_KEY) {

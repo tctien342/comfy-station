@@ -7,6 +7,7 @@ import { trpc } from '@/utils/trpc'
 // We will put the workflow map in here
 export default function Map() {
   const { slug } = useCurrentRoute()
+  const taskInfo = trpc.workflow.get.useQuery(slug!, { enabled: !!slug })
   const infoLoader = trpc.workflow.attachments.useInfiniteQuery(
     {
       workflowId: slug!,
@@ -14,6 +15,8 @@ export default function Map() {
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor, enabled: !!slug }
   )
+
+  const avatarSetter = trpc.workflow.setAvatar.useMutation()
 
   const runningTask = trpc.workflowTask.getRunning.useQuery(
     {
@@ -35,15 +38,20 @@ export default function Map() {
   const pending = runningTask.data ? runningTask.data.map(() => ({ loading: true }) as const) : []
   const images = infoLoader.data ? infoLoader.data.pages.flatMap((d) => d.items) : []
 
-  console.log({
-    pending,
-    images
-  })
+  const handlePressFavorite = async (imageId: string) => {
+    await avatarSetter.mutateAsync({
+      workflowId: slug!,
+      attachmentId: imageId
+    })
+    await taskInfo.refetch()
+  }
 
   return (
     <div className='absolute top-0 left-0 w-full h-full flex-1 flex-wrap gap-2 shadow-inner'>
       <ImageGallery
         rows={[...pending, ...images]}
+        favoriteIds={[taskInfo.data?.avatar?.id ?? '']}
+        onPressFavorite={handlePressFavorite}
         hasNextPage={infoLoader.hasNextPage}
         isFetchingNextPage={infoLoader.isFetchingNextPage}
         onFetchMore={infoLoader.fetchNextPage}

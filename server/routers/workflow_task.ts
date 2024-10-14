@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
-import { ETaskStatus, ETriggerBy, EUserRole, EValueType } from '@/entities/enum'
+import { ETaskStatus, ETriggerBy, EUserRole, EValueType, EValueUltilityType } from '@/entities/enum'
 import { Workflow } from '@/entities/workflow'
 import { Trigger } from '@/entities/trigger'
 import CachingService from '@/services/caching'
@@ -222,7 +222,7 @@ export const workflowTaskRouter = router({
 
       if (isBatch) {
         let newSeed = 0
-        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueType.Seed)
+        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueUltilityType.Seed)
         const repeat = input.repeat ?? 1
         for (let i = 0; i < repeat; i++) {
           for (const task of tasks) {

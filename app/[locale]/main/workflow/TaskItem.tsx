@@ -8,7 +8,7 @@ import useCopyAction from '@/hooks/useCopyAction'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Check, Copy, Hourglass, Repeat } from 'lucide-react'
+import { Check, Copy, Hourglass, Image, Repeat } from 'lucide-react'
 import { useMemo } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -65,6 +65,25 @@ export const TaskItem: IComponent<{
       }
     }
     return totalTime
+  }, [task])
+
+  const totalOutputImages = useMemo(() => {
+    const getTaskOutputImages = (wTask: WorkflowTask) => {
+      if (!!wTask?.events.length) {
+        const finishedEv = wTask.events.find((e) => e.status === ETaskStatus.Success && e.details === 'FINISHED')
+        if (!finishedEv) return 0
+        const attachment = Object.values(finishedEv?.data || {}).find((d) => d.type === EValueType.Image)
+        return attachment ? attachment.value.length : 0
+      }
+      return 0
+    }
+    let totalImages = getTaskOutputImages(task!)
+    if (task?.subTasks?.length) {
+      for (const subTask of task.subTasks) {
+        totalImages += getTaskOutputImages(subTask)
+      }
+    }
+    return totalImages
   }, [task])
 
   const currentStatus = useMemo(() => {
@@ -173,6 +192,7 @@ export const TaskItem: IComponent<{
           {currentStatus === ETaskStatus.Success && <MiniBadge dotClassName='bg-green-500' title='Success' />}
           {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
           {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
+          {totalOutputImages > 0 && <MiniBadge Icon={Image} title='Images' count={totalOutputImages} />}  
         </div>
       </div>
       {previewAttachment}

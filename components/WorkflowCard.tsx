@@ -9,6 +9,7 @@ import { LoadableButton } from './LoadableButton'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useRouter } from 'next/navigation'
+import { AttachmentImage } from './AttachmentImage'
 
 export const WorkflowCard: IComponent<{
   data: Workflow
@@ -42,9 +43,7 @@ export const WorkflowCard: IComponent<{
                 title={stator.data?.isExecuting ? 'Executin' : 'Idle'}
               />
             </div>
-            <Avatar className='rounded-none w-full h-full !mt-0'>
-              <AvatarFallback className='rounded-none w-full text-gray-400'>No Image</AvatarFallback>
-            </Avatar>
+            <AttachmentImage className='w-full h-full !mt-0 !p-0' mode='avatar' data={data.avatar} shortName='N/A' />
           </CardHeader>
           <CardContent className='pt-4 pb-2 px-2'>
             <CardTitle>{data.name}</CardTitle>

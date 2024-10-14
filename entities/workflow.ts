@@ -1,6 +1,6 @@
 import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
-import { EValueSelectionType, EValueType, EWorkflowActiveStatus } from './enum'
+import { EValueSelectionType, EValueType, EValueUltilityType, EWorkflowActiveStatus } from './enum'
 
 import type { User } from './user'
 import type { WorkflowEditEvent } from './workflow_edit_event'
@@ -25,7 +25,7 @@ export interface IMapTarget {
 
 export interface IMaperBase {
   key: string
-  type: EValueType | EValueSelectionType
+  type: EValueType | EValueSelectionType | EValueUltilityType
   iconName?: string
   description?: string
 }
@@ -99,6 +99,9 @@ export class Workflow {
 
   @ManyToOne({ entity: 'User', inversedBy: 'workflows', index: true, deleteRule: 'cascade' })
   author: User
+
+  @ManyToOne({ entity: 'Attachment', nullable: true, lazy: true })
+  avatar?: Attachment
 
   @OneToMany({
     entity: 'WorkflowEditEvent',

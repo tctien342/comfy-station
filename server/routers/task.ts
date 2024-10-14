@@ -30,7 +30,9 @@ export const taskRouter = router({
             WorkflowTask,
             {
               trigger,
-              repeatCount: 1 // Not include parent tasks
+              status: {
+                $nin: [ETaskStatus.Parent]
+              }
             },
             { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
           )
@@ -39,7 +41,9 @@ export const taskRouter = router({
           WorkflowTask,
           {
             trigger,
-            repeatCount: 1, // Not include parent tasks
+            status: {
+              $nin: [ETaskStatus.Parent]
+            },
             client: { id: input.clientId }
           },
           { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
@@ -73,7 +77,6 @@ export const taskRouter = router({
         WorkflowTask,
         {
           trigger,
-          repeatCount: 1, // Not include parent tasks
           status: {
             $in: [ETaskStatus.Success, ETaskStatus.Failed]
           }
@@ -84,9 +87,8 @@ export const taskRouter = router({
         WorkflowTask,
         {
           trigger,
-          repeatCount: 1, // Not include parent tasks
           status: {
-            $nin: [ETaskStatus.Success, ETaskStatus.Failed]
+            $nin: [ETaskStatus.Success, ETaskStatus.Failed, ETaskStatus.Parent]
           }
         },
         { populate: ['trigger', 'trigger.user'] }

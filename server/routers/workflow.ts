@@ -8,7 +8,7 @@ import { ComfyPoolInstance } from '@/services/comfyui'
 import { CallWrapper } from '@saintno/comfyui-sdk'
 import { cloneDeep, uniqueId } from 'lodash'
 import AttachmentService, { EAttachmentType } from '@/services/attachment'
-import { EUserRole, EValueSelectionType, EValueType, EWorkflowActiveStatus } from '@/entities/enum'
+import { EUserRole, EValueSelectionType, EValueType, EValueUltilityType, EWorkflowActiveStatus } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
@@ -19,7 +19,7 @@ const ee = new EventEmitter()
 
 const BaseSchema = z.object({
   key: z.string(),
-  type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType)]),
+  type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType), z.nativeEnum(EValueUltilityType)]),
   iconName: z.string().optional(),
   description: z.string().optional()
 })
@@ -88,13 +88,13 @@ export const workflowRouter = router({
               first: limit,
               after: { endCursor: cursor || null },
               orderBy: { createdAt: 'DESC' },
-              populate: ['author']
+              populate: ['author', 'avatar']
             }
           : {
               last: limit,
               before: { startCursor: cursor || null },
               orderBy: { createdAt: 'DESC' },
-              populate: ['author']
+              populate: ['author', 'avatar']
             }
       )
       return {
@@ -162,7 +162,7 @@ export const workflowRouter = router({
     return data
   }),
   get: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    return ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['author.email'] })
+    return ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['author.email', 'avatar'] })
   }),
   delete: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
     const workflow = await ctx.em.findOneOrFail(Workflow, { id: input })
@@ -183,7 +183,7 @@ export const workflowRouter = router({
             }
             switch (data.workflow.mapInput?.[key].type) {
               case EValueType.Number:
-              case EValueType.Seed:
+              case EValueUltilityType.Seed:
                 builder.input(key, Number(inputData))
                 break
               case EValueType.String:
@@ -325,5 +325,13 @@ export const workflowRouter = router({
       workflow.editedActions.add(action)
       await ctx.em.persist(action).persist(workflow).flush()
       return workflow
+    }),
+  setAvatar: editorProcedure
+    .input(z.object({ workflowId: z.string(), attachmentId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.workflowId })
+      const attachment = await ctx.em.findOneOrFail(Attachment, { id: input.attachmentId })
+      workflow.avatar = attachment
+      await ctx.em.persist(workflow).flush()
     })
 })
