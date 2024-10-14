@@ -28,7 +28,10 @@ const Layout: IComponent = ({ children }) => {
               <WorkflowSidePicker />
             </div>
           )}
-          <div className='flex-auto flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'>
+          <div
+            id='main-content'
+            className='flex-auto flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
+          >
             <TopBar />
             <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1'>
               {children}

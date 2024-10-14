@@ -29,7 +29,8 @@ export const taskRouter = router({
           return await ctx.em.find(
             WorkflowTask,
             {
-              trigger
+              trigger,
+              repeatCount: 1 // Not include parent tasks
             },
             { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
           )
@@ -38,6 +39,7 @@ export const taskRouter = router({
           WorkflowTask,
           {
             trigger,
+            repeatCount: 1, // Not include parent tasks
             client: { id: input.clientId }
           },
           { limit: input.limit, orderBy: { createdAt: 'DESC' }, populate: ['trigger', 'trigger.user'] }
@@ -71,6 +73,7 @@ export const taskRouter = router({
         WorkflowTask,
         {
           trigger,
+          repeatCount: 1, // Not include parent tasks
           status: {
             $in: [ETaskStatus.Success, ETaskStatus.Failed]
           }
@@ -81,6 +84,7 @@ export const taskRouter = router({
         WorkflowTask,
         {
           trigger,
+          repeatCount: 1, // Not include parent tasks
           status: {
             $nin: [ETaskStatus.Success, ETaskStatus.Failed]
           }

@@ -35,6 +35,7 @@ export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: numb
             {
               'bg-zinc-300/50': !task,
               'bg-zinc-300/80': task?.status === ETaskStatus.Pending,
+              'bg-zinc-300/90': task?.status === ETaskStatus.Parent,
               'bg-zinc-300': task?.status === ETaskStatus.Queuing,
               'bg-orange-400': task?.status === ETaskStatus.Running,
               'bg-green-400': task?.status === ETaskStatus.Success,
@@ -49,7 +50,10 @@ export const TaskBarItem: IComponent<{ task: WorkflowTask; animationDelay?: numb
           <div className='flex flex-col gap-1'>
             <p className='font-bold'>TaskID #{task.id}</p>
             <p className='text-xs'>Last updated at {task.updateAt.toLocaleString()}</p>
-            <p className='text-xs uppercase font-bold mt-2'>STATUS {task.status}</p>
+            {task.status !== ETaskStatus.Parent && (
+              <p className='text-xs uppercase font-bold mt-2'>STATUS {task.status}</p>
+            )}
+            {task.status === ETaskStatus.Parent && <p className='text-xs uppercase font-bold mt-2'>PARENT TASK</p>}
             {!!latestEv?.details && <p className='text-xs'>Detail: {latestEv.details}</p>}
           </div>
         )}

@@ -71,7 +71,6 @@ export const WorkflowInputArea: IComponent<{
           {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
             <DropFileInput
               disabled={disabled}
-              maxFiles={1}
               onChanges={(files) => {
                 setInputData((prev) => ({ ...prev, [val]: files }))
               }}

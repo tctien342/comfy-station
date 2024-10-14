@@ -32,7 +32,7 @@ export const TaskItem: IComponent<{
         wTask.events.find((e) => e.status === ETaskStatus.Success && e.details === 'FINISHED')
       )
     }
-    return searchLoading(task) || task.subTasks?.find(searchLoading)
+    return task.status !== ETaskStatus.Parent ? searchLoading(task) : task.subTasks?.find(searchLoading)
   }, [task])
 
   const runningTime = useMemo(() => {
@@ -67,7 +67,7 @@ export const TaskItem: IComponent<{
   }, [task])
 
   const currentStatus = useMemo(() => {
-    const statues = [task?.status, ...(task?.subTasks.map((t) => t.status) || [])]
+    const statues = task?.status === ETaskStatus.Parent ? task?.subTasks.map((t) => t.status) : [task?.status]
     if (statues.every((s) => s === ETaskStatus.Success)) return ETaskStatus.Success
     if (statues.some((s) => s === ETaskStatus.Failed)) return ETaskStatus.Failed
     if (statues.some((s) => s === ETaskStatus.Running)) return ETaskStatus.Running
@@ -83,7 +83,10 @@ export const TaskItem: IComponent<{
         </div>
       )
     }
-    const finishedEv = task?.events.find((e) => !!e.data)
+    const finishedEv =
+      task?.status !== ETaskStatus.Parent
+        ? task?.events.find((e) => !!e.data)
+        : task?.subTasks?.find((t) => t.status === ETaskStatus.Success)?.events.find((e) => !!e.data)
     const attachment = Object.values(finishedEv?.data || {}).find((d) => d.type === EValueType.Image)
     if (!attachment) {
       const text = Object.values(finishedEv?.data || {}).find((d) => d.type === EValueType.String)
@@ -133,7 +136,7 @@ export const TaskItem: IComponent<{
         data={{ id: attachment.value[0] as string }}
       />
     )
-  }, [copyToClipboard, isCopied, isLoading, task?.events])
+  }, [copyToClipboard, isCopied, isLoading, task?.events, task?.status, task?.subTasks])
 
   const shortName = task?.trigger.user?.email?.split('@')[0] ?? '-'
 

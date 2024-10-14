@@ -127,8 +127,10 @@ export const workflowTaskRouter = router({
       const workflow = await ctx.em.findOneOrFail(Workflow, {
         id: input.workflowId
       })
+
       const tasks = convertObjectToArrayOfObjects(input.input)
 
+      const isBatch = (input.repeat && input.repeat > 1) || tasks.length > 1
       // Weight calculation
       const computedWeight = workflow.baseWeight + ctx.session.user!.weightOffset
 
@@ -142,7 +144,45 @@ export const workflowTaskRouter = router({
       computedCost *= input.repeat ?? 1
       computedCost *= tasks.length
 
-      const createTask = (inputValues = input.input, sub?: WorkflowTask, repeat = input.repeat ?? 1) => {
+      // Create Parent Task
+      const trigger = ctx.em.create(
+        Trigger,
+        {
+          type: ETriggerBy.User,
+          user: ctx.session.user
+        },
+        { partial: true }
+      )
+      const parentTask = ctx.em.create(
+        WorkflowTask,
+        {
+          id: v4(),
+          workflow,
+          repeatCount: input.repeat ?? 1,
+          inputValues: input.input,
+          trigger,
+          status: isBatch ? ETaskStatus.Parent : ETaskStatus.Queuing,
+          computedWeight,
+          computedCost
+        },
+        {
+          partial: true
+        }
+      )
+      ctx.em.persist(trigger).persist(parentTask)
+      if (!isBatch) {
+        const taskEvent = ctx.em.create(
+          WorkflowTaskEvent,
+          {
+            task: parentTask
+          },
+          { partial: true }
+        )
+        parentTask.events.add(taskEvent)
+        ctx.em.persist(taskEvent)
+      }
+
+      const createTask = (inputValues = input.input, parent?: WorkflowTask) => {
         const trigger = ctx.em.create(
           Trigger,
           {
@@ -156,10 +196,11 @@ export const workflowTaskRouter = router({
           {
             id: v4(),
             workflow,
-            repeatCount: repeat,
+            status: ETaskStatus.Queuing,
+            repeatCount: 1,
             inputValues,
             trigger,
-            parent: sub,
+            parent,
             computedWeight,
             computedCost
           },
@@ -178,20 +219,27 @@ export const workflowTaskRouter = router({
         ctx.em.persist(trigger).persist(task).persist(taskEvent)
         return task
       }
-      // Main task
-      const task = createTask()
-      // Subtask handler
-      if (input.repeat && input.repeat > 1) {
+
+      if (isBatch) {
+        let newSeed = 0
         const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueType.Seed)
-        if (!seedConf) throw new Error('Seed input not found')
-        for (let i = 1; i < input.repeat; i++) {
-          const newSeed = Math.floor((Number(input.input[seedConf.key!] ?? 0) + seed()) / 2) + i
-          const newInput = {
-            ...input.input,
-            [seedConf?.key!]: newSeed
+        const repeat = input.repeat ?? 1
+        for (let i = 0; i < repeat; i++) {
+          for (const task of tasks) {
+            if (!seedConf) {
+              createTask(task, parentTask)
+              continue
+            }
+            if (newSeed === 0) {
+              newSeed = Math.floor(Number(task[seedConf.key!] ?? 1))
+            }
+            const newInput = {
+              ...task,
+              [seedConf?.key!]: ++newSeed
+            }
+            await delay(10)
+            createTask(newInput, parentTask)
           }
-          await delay(10)
-          createTask(newInput, task, 1)
         }
       }
       await Promise.all([

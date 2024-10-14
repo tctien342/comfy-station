@@ -94,8 +94,6 @@ const DropFileInput: IComponent<{
     })
   }, [files, removeFile])
 
-  console.log(files, removeFile)
-
   return (
     <div
       className={cn('flex flex-col gap-2', {
@@ -115,7 +113,7 @@ const DropFileInput: IComponent<{
         <input {...getInputProps()} />
         {isDragActive ? <p>Drop the files here ...</p> : <p>Drag and drop some files here, or click to select files</p>}
       </div>
-      <div className='w-full flex gap-1'>{renderFiles}</div>
+      <div className='w-full flex gap-1 overflow-auto'>{renderFiles}</div>
     </div>
   )
 }

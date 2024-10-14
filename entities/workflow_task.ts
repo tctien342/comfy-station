@@ -31,7 +31,7 @@ export class WorkflowTask {
   computedWeight!: number // More weight, lower priority
 
   @Property({ type: 'json', nullable: true })
-  inputValues?: { [key: string]: string | number }
+  inputValues?: { [key: string]: string | number | string[] }
 
   @Property({ type: 'int', nullable: true })
   executionTime?: number

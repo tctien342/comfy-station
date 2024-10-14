@@ -118,7 +118,7 @@ export const workflowRouter = router({
       const { cursor, direction } = input
 
       const filter =
-        ctx.session.user!.role === EUserRole.Admin
+        ctx.session.user!.role >= EUserRole.Editor
           ? {}
           : {
               task: {

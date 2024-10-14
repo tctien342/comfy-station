@@ -16,7 +16,10 @@ export enum ETaskStatus {
   Pending = 'Pending',
   Running = 'Running',
   Success = 'Success',
-  Failed = 'Failed'
+  Failed = 'Failed',
+  // This task is parent task, it will not be executed.
+  // It have sub-tasks that will be executed.
+  Parent = 'Parent'
 }
 
 export enum ETokenType {

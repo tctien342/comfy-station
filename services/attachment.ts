@@ -11,7 +11,7 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { CacheManager, Logger } from '@saintno/needed-tools'
-import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
+import { NodeHttpHandler } from '@aws-sdk/node-http-handler'
 import { Agent } from 'https'
 import fs from 'fs'
 import mime from 'mime'
@@ -94,7 +94,7 @@ class AttachmentService {
       const s3Url = await this.cacheStorage.get({
         key: `s3Url:${fileName}`,
         generator: () => this.getSignedUrl(fileName, expiresIn),
-        tl: '1day',
+        tl: '1hr',
         onStorage: true
       })
       if (s3Url) {

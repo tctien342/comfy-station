@@ -9,7 +9,7 @@ import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { EKeyboardKey, ESpecialKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { useToast } from '@/hooks/useToast'
-import { seed } from '@/utils/tools'
+import { convertObjectToArrayOfObjects, seed } from '@/utils/tools'
 import { trpc } from '@/utils/trpc'
 import { ChevronLeft, Play } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -60,11 +60,10 @@ export const WorkflowSidePicker: IComponent = () => {
       }
       if ([EValueType.File, EValueType.Image].includes(crrInput.type as EValueType)) {
         const files = inputData[key] as File[]
-        const file = files[0]
-        if (file) {
-          const attachment = await uploadAttachment(file)
-          inputRecord[key] = attachment.id
-        }
+        const ids = await Promise.all(files.map((file) => uploadAttachment(file))).then((attach) =>
+          attach.map((a) => a.id)
+        )
+        inputRecord[key] = ids
       } else {
         inputRecord[key] = inputData[key] || crrInput.default
       }
@@ -98,6 +97,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const cost = useMemo(() => {
     let val = crrWorkflowInfo.data?.cost || 0
     const inputConf = crrWorkflowInfo.data?.mapInput
+    const tasks = convertObjectToArrayOfObjects(inputData)
     if (inputConf) {
       for (const conf in inputConf) {
         if (inputConf[conf].cost?.related) {
@@ -108,7 +108,7 @@ export const WorkflowSidePicker: IComponent = () => {
         }
       }
     }
-    return val * repeat
+    return val * repeat * tasks.length
   }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])
 
   return (
