@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useRouter } from 'next/navigation'
 import { AttachmentImage } from './AttachmentImage'
+import { useState } from 'react'
 
 export const WorkflowCard: IComponent<{
   data: Workflow
@@ -21,12 +22,15 @@ export const WorkflowCard: IComponent<{
 
   const handlePressDelete = async () => {
     await deletor.mutateAsync(data.id)
-    stator.refetch()
     toast({
       title: 'Workflow Deleted'
     })
     dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
   }
+
+  trpc.watch.workflow.useSubscription(data.id, {
+    onData: () => stator.refetch()
+  })
 
   return (
     <ContextMenu>
@@ -40,7 +44,7 @@ export const WorkflowCard: IComponent<{
               <MiniBadge
                 dotClassName={stator.data?.isExecuting ? 'bg-orange-500' : 'bg-gray-500'}
                 className='bg-white text-zinc-800'
-                title={stator.data?.isExecuting ? 'Executin' : 'Idle'}
+                title={stator.data?.isExecuting ? 'Executing' : 'Idle'}
               />
             </div>
             <AttachmentImage className='w-full h-full !mt-0 !p-0' mode='avatar' data={data.avatar} shortName='N/A' />

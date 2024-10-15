@@ -151,7 +151,7 @@ export const TaskItem: IComponent<{
     return (
       <AttachmentImage
         mode='avatar'
-        className='h-32 !rounded-none w-fit !aspect-square object-cover p-0 m-0'
+        className='h-32 !rounded-none w-auto !aspect-square object-cover p-0 m-0'
         tryPreivew
         data={{ id: attachment.value[0] as string }}
       />
@@ -192,7 +192,7 @@ export const TaskItem: IComponent<{
           {currentStatus === ETaskStatus.Success && <MiniBadge dotClassName='bg-green-500' title='Success' />}
           {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
           {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
-          {totalOutputImages > 0 && <MiniBadge Icon={Image} title='Images' count={totalOutputImages} />}  
+          {totalOutputImages > 0 && <MiniBadge Icon={Image} title='Images' count={totalOutputImages} />}
         </div>
       </div>
       {previewAttachment}

@@ -50,6 +50,7 @@ export const AttachmentImage: IComponent<{
         <PhotoView src={image?.raw?.url}>
           <div className='w-full h-full flex items-center justify-center'>
             {imageLoaded && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img loading='lazy' src={image?.preview?.url} alt={shortName} className='w-full h-full object-cover' />
             )}
             {!imageLoaded && <LoadingSVG width={16} height={16} className='repeat-infinite' />}
@@ -73,7 +74,10 @@ export const AttachmentImage: IComponent<{
                 />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side='right' className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'>
+            <TooltipContent
+              side='right'
+              className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
+            >
               Set as thumbnail for this workflow
             </TooltipContent>
           </Tooltip>

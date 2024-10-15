@@ -163,7 +163,7 @@ export const WorkflowSidePicker: IComponent = () => {
       <div className='w-full flex flex-col gap-2 justify-end items-center border-t px-2 pt-2'>
         {cost.subTasks > 1 && (
           <span className='text-xs text-center px-4'>
-            Multiple image inputs detected, will splitted into many sub tasks for handling
+            Will splitted into {cost.subTasks} sub-tasks, each cost {cost.value / cost.subTasks} credits
           </span>
         )}
         <div className='w-full flex gap-2 justify-end items-center '>

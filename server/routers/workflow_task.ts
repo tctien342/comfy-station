@@ -58,7 +58,6 @@ export const workflowTaskRouter = router({
         nextCursor: data.endCursor
       }
     }),
-
   detail: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const task = await ctx.em.findOneOrFail(
       WorkflowTask,
@@ -118,7 +117,7 @@ export const workflowTaskRouter = router({
   executeTask: privateProcedure
     .input(
       z.object({
-        input: z.record(z.string(), z.union([z.string(), z.number(), z.array(z.string())])),
+        input: z.record(z.string(), z.union([z.string().optional(), z.number(), z.array(z.string())])),
         workflowId: z.string(),
         repeat: z.number().optional()
       })

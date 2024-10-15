@@ -83,7 +83,7 @@ export const ImageGallery: IComponent<{
             const item = rows[virtualRow.index]!
             return (
               <div
-                key={'id' in item ? item.id : virtualRow.key}
+                key={virtualRow.key}
                 data-index={virtualRow.index}
                 ref={rowVirtualizer.measureElement}
                 className={'animate-fade duration-200 p-1'}
