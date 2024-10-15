@@ -16,7 +16,7 @@ import { ChartBarIcon, ListIcon, PlaySquare } from 'lucide-react'
 
 const Layout: IComponent = ({ children }) => {
   const session = useSession()
-  const { pathname, routeConf } = useCurrentRoute()
+  const { routeConf } = useCurrentRoute()
   const dyn = useDynamicValue()
 
   const isAdmin = session.data?.user?.role === EUserRole.Admin
@@ -24,7 +24,7 @@ const Layout: IComponent = ({ children }) => {
 
   const renderDesktopView = useMemo(() => {
     return (
-      <div className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-auto'>
+      <div className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
         {isExecutePage && (
           <div className='w-full md:w-1/4 min-w-[290px] md:max-w-[360px] min-h-full bg-background border rounded-lg'>
             <WorkflowSidePicker />
@@ -50,12 +50,12 @@ const Layout: IComponent = ({ children }) => {
 
   const renderMobileView = useMemo(() => {
     return (
-      <div className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-auto'>
+      <div className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-x-hidden overflow-y-auto'>
         <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative'>
-          <TabsContent value='history' className='w-full flex-1 bg-background border rounded-lg mt-0'>
+          <TabsContent value='history' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-14'>
             <WorkflowSidePicker />
           </TabsContent>
-          <TabsContent value='visualize' className='w-full flex-1 bg-background border rounded-lg mt-0'>
+          <TabsContent value='visualize' className='w-full flex-1 bg-background border rounded-lg mt-0 relative pb-14'>
             <div
               id='main-content'
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
@@ -67,11 +67,11 @@ const Layout: IComponent = ({ children }) => {
             </div>
           </TabsContent>
           {isAdmin && (
-            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background border rounded-lg mt-0'>
+            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-14'>
               <AdminSideInfo />
             </TabsContent>
           )}
-          <TabsList className='bg-background h-fit'>
+          <TabsList className='bg-background h-fit fixed bottom-0 w-full rounded-none'>
             <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
               <div className='py-2 flex gap-2 items-center'>
                 <PlaySquare width={16} height={16} /> Execute

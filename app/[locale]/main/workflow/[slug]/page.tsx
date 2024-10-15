@@ -4,8 +4,7 @@ import { ImageGallery } from '@/components/ImageGallery'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { trpc } from '@/utils/trpc'
 
-// We will put the workflow map in here
-export default function Map() {
+export default function WorkflowGallery() {
   const { slug } = useCurrentRoute()
   const taskInfo = trpc.workflow.get.useQuery(slug!, { enabled: !!slug })
   const infoLoader = trpc.workflow.attachments.useInfiniteQuery(

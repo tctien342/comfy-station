@@ -1,3 +1,5 @@
+import { Logger } from '@saintno/needed-tools'
+import { createHash } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
@@ -8,9 +10,13 @@ interface Message {
 export class SharedStorage {
   private static instance: SharedStorage
   private filePath: string
+  private logger: Logger
 
   private constructor() {
+    this.logger = new Logger('SharedStorage')
     this.filePath = path.join(process.cwd(), '.cache/shared_communication.json')
+    // Ensure the file exists
+    this.getSecret()
   }
 
   /**
@@ -31,9 +37,9 @@ export class SharedStorage {
   public writeMessage(message: Message): void {
     fs.writeFile(this.filePath, JSON.stringify(message), (err) => {
       if (err) {
-        console.error('Error writing to file:', err)
+        this.logger.w('writeMessage', 'Error writing to file:', err)
       } else {
-        console.log('Message written to file:', message)
+        this.logger.i('writeMessage', 'Message written to file:', message)
       }
     })
   }
@@ -43,11 +49,15 @@ export class SharedStorage {
    * @returns The parsed message or null if an error occurs
    */
   public readMessage(): Message | null {
+    if (!fs.existsSync(this.filePath)) {
+      this.logger.w('readMessage', 'File does not exist:', this.filePath)
+      return null
+    }
     try {
       const data = fs.readFileSync(this.filePath, 'utf-8')
       return JSON.parse(data)
     } catch (err) {
-      console.error('Error reading from file:', err)
+      this.logger.w('readMessage', 'Error reading file:', err)
       return null
     }
   }
@@ -70,7 +80,7 @@ export class SharedStorage {
   public getSecret() {
     const current = this.readMessage()
     if (!current) {
-      const newSecret = Math.random().toString(36).substring(2, 15)
+      const newSecret = createHash('sha256').update(Math.random().toString()).digest('hex')
       this.writeMessage({ secret: newSecret })
       return newSecret
     }

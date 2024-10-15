@@ -1,0 +1,48 @@
+# Ignore node_modules and bun's cache
+node_modules
+.cache
+.next
+
+# Ignore environment files
+.env
+.env.example
+
+# Ignore build output
+dist
+build
+
+# Ignore logs
+*.log
+
+# Ignore local configuration files
+*.local
+*.dev
+*.test
+*.example
+
+# Ignore IDE/editor config files
+.vscode
+.idea
+
+# Ignore miscellaneous files
+.DS_Store
+*.swp
+
+node_modules
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.md
+LICENSE
+.vscode
+Makefile
+helm-charts
+.editorconfig
+.idea
+coverage*
+
+
+# Ignore all database files
+*.db

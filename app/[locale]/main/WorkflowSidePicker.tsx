@@ -121,6 +121,12 @@ export const WorkflowSidePicker: IComponent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug])
 
+  useEffect(() => {
+    if (crrWorkflowInfo.data?.name) {
+      document.title = `${crrWorkflowInfo.data.name} | ComfyUI-Station`
+    }
+  }, [crrWorkflowInfo.data])
+
   return (
     <div className='w-full h-full flex flex-col items-start py-2'>
       <div className='px-2 w-full'>

@@ -5,8 +5,9 @@ import { Attachment } from '@/entities/attachment'
 import { cn } from '@/lib/utils'
 import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
-import { Star } from 'lucide-react'
+import { Download, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import useDownloadFiles from '@/hooks/useDownloadFIles'
 
 export const AttachmentImage: IComponent<{
   shortName?: string
@@ -40,6 +41,7 @@ export const AttachmentImage: IComponent<{
     }
   )
 
+  const downloadFn = useDownloadFiles([image?.raw?.url!])
   const imageLoaded = !loading && (!isLoading || !enabled)
 
   if (mode === 'image') {
@@ -79,6 +81,21 @@ export const AttachmentImage: IComponent<{
               className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
             >
               Set as thumbnail for this workflow
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        <div className={cn('z-10 hidden group-hover:block absolute bottom-1 right-1')}>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button onClick={() => downloadFn()} size='icon' variant='ghost'>
+                <Download width={24} height={24} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side='right'
+              className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
+            >
+              Download this images
             </TooltipContent>
           </Tooltip>
         </div>

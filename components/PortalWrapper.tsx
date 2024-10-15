@@ -1,5 +1,6 @@
 /* Portal handle for popup or when you need put your component on top of app */
 
+import { useWindowResize } from '@/hooks/useWindowResize'
 import { getWindowRelativeOffset } from '@/utils/tools'
 import { uniqueId } from 'lodash'
 import React, { MutableRefObject, ReactNode, useEffect, useRef, useState } from 'react'
@@ -90,25 +91,23 @@ export const Portal: IComponent<{
   }, [])
 
   const reCalculate = () => {
-    if (followScroll) {
-      /**
-       * Set to new position on mouse scroll (WORKAROUND)
-       * TODO: Optimize this some day, use relative offset for avoid re-calculating
-       */
-      const top = window.pageYOffset || document.documentElement.scrollTop
-      const left = window.pageXOffset || document.documentElement.scrollLeft
-      /* Bind your component into portal, place on top of app */
-      if (target && el.current && bodyRef.current) {
-        el.current.style.width = target.offsetWidth ? `${target.offsetWidth}px` : target.style.width
-        el.current.style.height = target.offsetHeight ? `${target.offsetHeight}px` : target.style.height
-        const offset = getWindowRelativeOffset(scrollElement?.current || bodyRef.current, target)
-        const ele = document.getElementById(portalID)
-        if (ele) {
-          ele.style.left = `${offset.left + left}px`
-          ele.style.top = `${offset.top - top}px`
-          ele.style.pointerEvents = 'none'
-          ele.style.position = 'absolute'
-        }
+    /**
+     * Set to new position on mouse scroll (WORKAROUND)
+     * TODO: Optimize this some day, use relative offset for avoid re-calculating
+     */
+    const top = window.pageYOffset || document.documentElement.scrollTop
+    const left = window.pageXOffset || document.documentElement.scrollLeft
+    /* Bind your component into portal, place on top of app */
+    if (target && el.current && bodyRef.current) {
+      el.current.style.width = target.offsetWidth ? `${target.offsetWidth}px` : target.style.width
+      el.current.style.height = target.offsetHeight ? `${target.offsetHeight}px` : target.style.height
+      const offset = getWindowRelativeOffset(scrollElement?.current || bodyRef.current, target)
+      const ele = document.getElementById(portalID)
+      if (ele) {
+        ele.style.left = `${offset.left + left}px`
+        ele.style.top = `${offset.top - top}px`
+        ele.style.pointerEvents = 'none'
+        ele.style.position = 'absolute'
       }
     }
   }
@@ -138,13 +137,15 @@ export const Portal: IComponent<{
     }
   }, [el, mount, target, scrollElement, waitForTarget])
 
+  useWindowResize(() => {
+    reCalculate()
+  }, true)
+
   useEffect(() => {
-    window.addEventListener('scroll', reCalculate, true)
-    window.addEventListener('resize', reCalculate)
+    if (followScroll) window.addEventListener('scroll', reCalculate, true)
     window.addEventListener(FORCE_RECALCULATE_KEY, reCalculate)
     return () => {
-      window.removeEventListener('scroll', reCalculate)
-      window.removeEventListener('resize', reCalculate)
+      if (followScroll) window.removeEventListener('scroll', reCalculate)
       window.removeEventListener(FORCE_RECALCULATE_KEY, reCalculate)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

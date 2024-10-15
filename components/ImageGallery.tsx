@@ -100,6 +100,7 @@ export const ImageGallery: IComponent<{
               >
                 {!('loading' in item) && (
                   <AttachmentImage
+                    key={item.id}
                     isFavorited={favoriteIds?.includes(item.id)}
                     onPressFavorite={onPressFavorite}
                     className='w-full h-full object-cover'

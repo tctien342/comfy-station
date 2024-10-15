@@ -11,6 +11,9 @@ export const TaskBigStat: IComponent<{
   }
 }> = ({ title, count, activeNumber, loading = false, minDisplay = 10000 }) => {
   const prefixZero = useMemo(() => {
+    if (count === 0) {
+      return '0000'
+    }
     if (count > minDisplay) {
       return ''
     }
@@ -31,7 +34,7 @@ export const TaskBigStat: IComponent<{
           'animate-pulse': loading
         })}
       >
-        {prefixZero.length > 0 && <span className='text-foreground/20'>0000</span>}
+        {prefixZero.length > 0 && <span className='text-foreground/20'>{prefixZero}</span>}
         <span className={cn('text-foreground', activeNumber?.className)}>{count}</span>
       </p>
     </div>

@@ -13,7 +13,7 @@ const Layout: IComponent = ({ children }) => {
       onValueChange={setViewMode}
       className='w-full h-full flex relative items-center justify-center'
     >
-      <Portal targetRef={'main-content'} waitForTarget>
+      <Portal targetRef={'main-content'} waitForTarget followScroll={false}>
         <div
           className='absolute left-[50%] bottom-4 md:-bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg'
           style={{

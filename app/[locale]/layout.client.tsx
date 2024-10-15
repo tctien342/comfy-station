@@ -50,7 +50,15 @@ export const ClientLayout: IComponent = ({ children }) => {
         </div>
       )}
       <ReactFlowProvider>
-        <PhotoProvider>{children}</PhotoProvider>
+        <PhotoProvider
+          loadingElement={
+            <div className='flex justify-center items-center h-full w-full'>
+              <LoadingSVG width={32} height={32} />
+            </div>
+          }
+        >
+          {children}
+        </PhotoProvider>
       </ReactFlowProvider>
       <Toaster />
     </>

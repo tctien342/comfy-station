@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 const ENVBackendSchema = z.object({
-  APP_HOSTNAME: z.string().optional(),
   NEXTAUTH_SECRET: z.string().optional().default('secret'),
   BACKEND_URL: z.string().optional().default('http://localhost:3001'),
   S3_ENDPOINT: z.string().optional(),

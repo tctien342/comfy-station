@@ -2,7 +2,6 @@ import { MikroORMInstance } from '@/services/mikro-orm'
 import { verify } from 'jsonwebtoken'
 import type { CreateNextContextOptions } from '@trpc/server/adapters/next'
 import { User } from '@/entities/user'
-import { BackendENV } from '@/env'
 import { SharedStorage } from '@/services/shared'
 
 /**

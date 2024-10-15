@@ -8,10 +8,12 @@ import useCopyAction from '@/hooks/useCopyAction'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Check, Copy, Hourglass, Image, Repeat } from 'lucide-react'
+import { Check, Copy, Download, Hourglass, Image, Repeat } from 'lucide-react'
 import { useMemo } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import useDownloadFiles from '@/hooks/useDownloadFIles'
+import { cn } from '@/lib/utils'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
@@ -20,10 +22,26 @@ export const TaskItem: IComponent<{
     enabled: !!data.id,
     refetchOnWindowFocus: false
   })
+  const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachementUrls.useQuery(
+    data.id,
+    {
+      enabled: !!data.id,
+      refetchOnWindowFocus: false
+    }
+  )
   trpc.watch.historyItem.useSubscription(data.id, {
-    onData: () => refetch()
+    onData: () => {
+      refetch()
+      refetchAttachments()
+    }
   })
+
   const { copyToClipboard, isCopied } = useCopyAction()
+  const downloadAttachment = () =>
+    attachments
+      ?.filter((a) => !!a)
+      .map((a) => a!.url)
+      .map((v) => window.open(v))
 
   const isLoading = useMemo(() => {
     if (!task) return true
@@ -65,25 +83,6 @@ export const TaskItem: IComponent<{
       }
     }
     return totalTime
-  }, [task])
-
-  const totalOutputImages = useMemo(() => {
-    const getTaskOutputImages = (wTask: WorkflowTask) => {
-      if (!!wTask?.events.length) {
-        const finishedEv = wTask.events.find((e) => e.status === ETaskStatus.Success && e.details === 'FINISHED')
-        if (!finishedEv) return 0
-        const attachment = Object.values(finishedEv?.data || {}).find((d) => d.type === EValueType.Image)
-        return attachment ? attachment.value.length : 0
-      }
-      return 0
-    }
-    let totalImages = getTaskOutputImages(task!)
-    if (task?.subTasks?.length) {
-      for (const subTask of task.subTasks) {
-        totalImages += getTaskOutputImages(subTask)
-      }
-    }
-    return totalImages
   }, [task])
 
   const currentStatus = useMemo(() => {
@@ -177,7 +176,7 @@ export const TaskItem: IComponent<{
     )
 
   return (
-    <div className='w-full flex'>
+    <div className='w-full flex relative group'>
       <div className='flex-1 flex-col px-1 py-3'>
         <Label className='text-base font-semibold'>{task.workflow.name}</Label>
         <p className='text-sm'>ID: {task.id}</p>
@@ -192,10 +191,25 @@ export const TaskItem: IComponent<{
           {currentStatus === ETaskStatus.Success && <MiniBadge dotClassName='bg-green-500' title='Success' />}
           {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
           {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
-          {totalOutputImages > 0 && <MiniBadge Icon={Image} title='Images' count={totalOutputImages} />}
+          {!!attachments?.length && <MiniBadge Icon={Image} title='Images' count={attachments.length} />}
         </div>
       </div>
       {previewAttachment}
+      <div className={cn('z-10 hidden group-hover:block absolute bottom-1 right-1')}>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button onClick={() => downloadAttachment()} size='icon' variant='ghost'>
+              <Download width={24} height={24} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            side='left'
+            className='bg-background text-foreground z-10 border p-2 flex flex-col'
+          >
+            Download all attachments
+          </TooltipContent>
+        </Tooltip>
+      </div>
     </div>
   )
 }

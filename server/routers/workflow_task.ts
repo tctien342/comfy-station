@@ -9,6 +9,8 @@ import CachingService from '@/services/caching'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { convertObjectToArrayOfObjects, delay, seed } from '@/utils/tools'
+import AttachmentService from '@/services/attachment'
+import { Attachment } from '@/entities/attachment'
 
 export const workflowTaskRouter = router({
   list: privateProcedure
@@ -71,6 +73,29 @@ export const workflowTaskRouter = router({
       return task
     }
     throw new Error('Unauthorized')
+  }),
+  getOutputAttachementUrls: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['subTasks.events', 'events'] })
+    if (task.status === ETaskStatus.Parent) {
+      const attachment = task.subTasks
+        .map((t) => t.events.filter((e) => !!e.data))
+        .flat()
+        .map((e) => Object.values(e?.data || {}))
+        .flat()
+        .filter((d) => d.type === EValueType.Image)
+        .map((v) => v.value as string[])
+        .flat()
+      const attachments = await ctx.em.find(Attachment, { id: { $in: attachment } })
+      return Promise.all(attachments.map((a) => AttachmentService.getInstance().getAttachmentURL(a)))
+    } else {
+      const finishedEv = task.events.find((e) => !!e.data)
+      const attachment = Object.values(finishedEv?.data || {})
+        .filter((d) => d.type === EValueType.Image)
+        .map((v) => v.value as string[])
+        .flat()
+      const attachments = await ctx.em.find(Attachment, { id: { $in: attachment } })
+      return Promise.all(attachments.map((a) => AttachmentService.getInstance().getAttachmentURL(a)))
+    }
   }),
   get: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger', 'events'] })

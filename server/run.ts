@@ -10,16 +10,17 @@ import AttachmentService from '@/services/attachment'
 import CachingService from '@/services/caching'
 import { ComfyPoolInstance } from '@/services/comfyui'
 import { MikroORMInstance } from '@/services/mikro-orm'
-import { User } from '@/entities/user'
 import { handleGetUserByCredentials, handleGetUserByJWT } from './handlers/user'
+import { SharedStorage } from '@/services/shared'
 
 /**
  * Initialize all services
  */
-const mikro = MikroORMInstance.getInstance()
+MikroORMInstance.getInstance()
 ComfyPoolInstance.getInstance()
 AttachmentService.getInstance()
 CachingService.getInstance()
+SharedStorage.getInstance()
 
 const handler = createHTTPHandler({
   middleware: cors(),
@@ -66,4 +67,4 @@ server.on = function (event, listener) {
 /**
  * Start the server
  */
-server.listen(3001)
+server.listen(3001, '0.0.0.0')

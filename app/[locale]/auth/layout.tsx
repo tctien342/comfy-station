@@ -8,6 +8,8 @@ import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { useLocale, useTranslations } from 'next-intl'
 import { usePathname, useRouter } from '@/routing'
 import PackageInfo from '@/package.json'
+import { Metadata } from 'next'
+import { useEffect } from 'react'
 
 const Layout: IComponent = ({ children }) => {
   const route = useRouter()
@@ -15,6 +17,10 @@ const Layout: IComponent = ({ children }) => {
   const pathName = usePathname()
   const locale = useLocale()
   const currentTab = pathName.includes('token') ? 'token' : 'account'
+
+  useEffect(() => {
+    document.title = 'Login | ComfyUI-Station'
+  }, [])
 
   return (
     <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative h-full md:h-fit rounded-none md:rounded-xl'>
