@@ -7,7 +7,6 @@ import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
 import { Download, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
-import useDownloadFiles from '@/hooks/useDownloadFIles'
 
 export const AttachmentImage: IComponent<{
   shortName?: string
@@ -41,7 +40,7 @@ export const AttachmentImage: IComponent<{
     }
   )
 
-  const downloadFn = useDownloadFiles([image?.raw?.url!])
+  const downloadFn = () => window.open(image?.raw?.url, '_blank')
   const imageLoaded = !loading && (!isLoading || !enabled)
 
   if (mode === 'image') {

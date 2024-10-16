@@ -22,6 +22,13 @@ export const ImageGallery: IComponent<{
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: (i) => 100,
+    getItemKey: (i) => {
+      const item = rows[i]
+      if ('loading' in item) {
+        return i
+      }
+      return (rows[i] as Attachment)?.id ?? i
+    },
     overscan: 5,
     lanes: 3
   })

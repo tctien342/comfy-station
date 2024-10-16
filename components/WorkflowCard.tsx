@@ -43,7 +43,7 @@ export const WorkflowCard: IComponent<{
             <div className='absolute right-2 top-2 z-10'>
               <MiniBadge
                 dotClassName={stator.data?.isExecuting ? 'bg-orange-500' : 'bg-gray-500'}
-                className='bg-white text-zinc-800'
+                className='bg-white text-zinc-800 border-none'
                 title={stator.data?.isExecuting ? 'Executing' : 'Idle'}
               />
             </div>

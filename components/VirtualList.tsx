@@ -1,6 +1,7 @@
 import React, { CSSProperties, useCallback, useEffect, useRef } from 'react'
 import { VirtualItem, useVirtualizer } from '@tanstack/react-virtual'
 import { delay } from '@/utils/tools'
+import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 
 export type VirtualListProps<T> = {
   className?: string
@@ -37,15 +38,16 @@ export function VirtualList<T>({
   const scrollableRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollPosRef = useRef(0)
+  const { onAction } = useActionThreshold(1000)
 
   const getItemKeyCallback = useCallback((index: number) => getItemKey(items[index]!, index), [getItemKey, items])
+
   const virtualizer = useVirtualizer({
     count: items.length,
     getItemKey: getItemKeyCallback,
     getScrollElement: () => scrollableRef.current,
     estimateSize,
-    overscan,
-    debug: true
+    overscan
   })
 
   useEffect(
@@ -58,9 +60,8 @@ export function VirtualList<T>({
       if (isAtBottom.current) {
         virtualizer.scrollToOffset(virtualizer.getTotalSize() + PADDING_BOTTOM)
       } else if (scrollableRef.current) {
-        virtualizer.scrollToOffset(
-          virtualizer.getTotalSize() - scrollPosRef.current - scrollableRef.current!.clientHeight
-        )
+        virtualizer.scrollToOffset(virtualizer.getTotalSize() - scrollPosRef.current)
+        virtualizer?.measure?.()
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,7 +73,7 @@ export function VirtualList<T>({
       const scrollOffset = virtualizer.scrollOffset ?? 0
       const scrollHeight = virtualizer.getTotalSize()
 
-      scrollPosRef.current = scrollHeight - (scrollOffset ?? 0) - scrollableRef.current!.clientHeight
+      scrollPosRef.current = scrollHeight - scrollOffset
       isAtBottom.current = scrollPosRef.current < 60
     }
   }, [virtualizer, virtualizer.isScrolling, virtualizer.scrollOffset])
@@ -83,7 +84,7 @@ export function VirtualList<T>({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             if (entry.target.id === 'bottom' && hasNextPage && !isFetchingNextPage) {
-              onFetchMore?.()
+              onAction(() => onFetchMore?.())
             }
           }
         })
@@ -96,9 +97,10 @@ export function VirtualList<T>({
     return () => {
       observer.disconnect()
     }
-  }, [hasNextPage, isFetchingNextPage, onFetchMore])
+  }, [hasNextPage, isFetchingNextPage, onAction, onFetchMore])
 
   const virtualItems = virtualizer.getVirtualItems()
+
   return (
     <div
       style={{
@@ -134,17 +136,12 @@ export function VirtualList<T>({
           >
             {virtualItems.map((virtualItem) => {
               const item = items[virtualItem.index]!
-
               return (
                 <div
                   key={virtualItem.key}
-                  className='animate-fade'
                   ref={virtualizer.measureElement}
                   data-index={virtualItem.index}
-                  style={{
-                    ...itemStyle,
-                    animationDelay: `${(items.length - virtualItem.index) * 34}ms`
-                  }}
+                  style={itemStyle}
                 >
                   {renderItem(item, virtualItem)}
                 </div>

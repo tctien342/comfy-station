@@ -12,7 +12,6 @@ import { Check, Copy, Download, Hourglass, Image, Repeat } from 'lucide-react'
 import { useMemo } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
-import useDownloadFiles from '@/hooks/useDownloadFIles'
 import { cn } from '@/lib/utils'
 
 export const TaskItem: IComponent<{
@@ -41,7 +40,7 @@ export const TaskItem: IComponent<{
     attachments
       ?.filter((a) => !!a)
       .map((a) => a!.url)
-      .map((v) => window.open(v))
+      .map((v) => window.open(v, '_blank'))
 
   const isLoading = useMemo(() => {
     if (!task) return true
@@ -202,10 +201,7 @@ export const TaskItem: IComponent<{
               <Download width={24} height={24} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent
-            side='left'
-            className='bg-background text-foreground z-10 border p-2 flex flex-col'
-          >
+          <TooltipContent side='left' className='bg-background text-foreground z-10 border p-2 flex flex-col'>
             Download all attachments
           </TooltipContent>
         </Tooltip>
