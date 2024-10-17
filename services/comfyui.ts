@@ -165,6 +165,13 @@ export class ComfyPoolInstance {
                 await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
               }
               for (const key in input) {
+                if (!workflow.mapInput?.[key]) {
+                  this.logger.w('pickingJob', `Input key ${key} not found in workflow map`, {
+                    key,
+                    workflowId: workflow.id
+                  })
+                  continue
+                }
                 const inputData = input[key] || workflow.mapInput?.[key].default
                 if (!inputData) {
                   continue
