@@ -157,203 +157,207 @@ export class ComfyPoolInstance {
           const builder = getBuilder(workflow)
           await this.updateTaskEventFn(task, ETaskStatus.Pending)
           pool.run(async (api) => {
-            const client = await em.findOne(Client, { id: api.id })
-            if (client) {
-              task.client = client
-              await em.persist(task).flush()
-              await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
-            }
-            for (const key in input) {
-              const inputData = input[key] || workflow.mapInput?.[key].default
-              if (!inputData) {
-                continue
+            try {
+              const client = await em.findOne(Client, { id: api.id })
+              if (client) {
+                task.client = client
+                await em.persist(task).flush()
+                await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
               }
-              switch (workflow.mapInput?.[key].type) {
-                case EValueType.Number:
-                case EValueUltilityType.Seed:
-                  builder.input(key, Number(inputData))
-                  break
-                case EValueUltilityType.Prefixer:
-                  builder.input(key, task.id)
-                  break
-                case EValueType.String:
-                  builder.input(key, String(inputData))
-                  break
-                case EValueType.File:
-                case EValueType.Image:
-                  const attachmentId = inputData as string
-                  const file = await em.findOneOrFail(Attachment, { id: attachmentId })
-                  const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
-                  if (!fileBlob) {
-                    await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                      details: `Can not load attachments ${file.fileName}`,
-                      clientId: api.id
-                    })
-                    await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
-                    return
-                  }
-                  const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
-                  if (!uploadedImg) {
-                    await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                      details: `Failed to upload attachment into comfy server, ${file.fileName}`,
-                      clientId: api.id
-                    })
-                    await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
-                    return
-                  }
-                  builder.input(key, uploadedImg.info.filename)
-                  break
-                default:
-                  builder.input(key, inputData)
-                  break
-              }
-            }
-            return new CallWrapper(api, builder)
-              .onPending(async () => {
-                await this.updateTaskEventFn(task, ETaskStatus.Running, {
-                  details: 'LOADING RESOURCES',
-                  clientId: api.id
-                })
-              })
-              .onProgress(async (e) => {
-                await this.updateTaskEventFn(task, ETaskStatus.Running, {
-                  details: JSON.stringify({
-                    key: 'progress',
-                    data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
-                  }),
-                  clientId: api.id
-                })
-              })
-              .onPreview(async (e) => {
-                const arrayBuffer = await e.arrayBuffer()
-                const base64String = Buffer.from(arrayBuffer).toString('base64')
-                await this.cachingService.set('PREVIEW', task.id, base64String)
-              })
-              .onStart(async () => {
-                await this.updateTaskEventFn(task, ETaskStatus.Running, {
-                  details: 'START RENDERING',
-                  clientId: api.id
-                })
-              })
-              .onFinished((outData) => {
-                const backgroundFn = async () => {
-                  await this.updateTaskEventFn(task, ETaskStatus.Success, {
-                    details: 'DOWNLOADING OUTPUT',
-                    clientId: api.id
-                  })
-                  const attachment = AttachmentService.getInstance()
-                  const output = await parseOutput(api, workflow, outData)
-                  await this.updateTaskEventFn(task, ETaskStatus.Success, {
-                    details: 'UPLOADING OUTPUT',
-                    clientId: api.id
-                  })
-                  const tmpOutput = cloneDeep(output) as Record<string, any>
-                  // If key is array of Blob, convert it to base64
-                  for (const key in tmpOutput) {
-                    if (Array.isArray(tmpOutput[key])) {
-                      tmpOutput[key] = (await Promise.all(
-                        tmpOutput[key].map(async (v, idx) => {
-                          if (v instanceof Blob) {
-                            const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
-                            const [preview, png] = await Promise.all([
-                              imgUtil
-                                .clone()
-                                .resizeMax(1024)
-                                .intoPreviewJPG()
-                                .catch((e) => {
-                                  this.logger.w('Error while converting to preview', e)
-                                  return null
-                                }),
-                              imgUtil.intoPNG()
-                            ])
-                            const tmpName = `${task.id}_${key}_${idx}.png`
-                            const [uploaded] = await Promise.all([
-                              attachment.uploadFile(png, `${tmpName}`),
-                              preview
-                                ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
-                                : Promise.resolve(false)
-                            ])
-                            if (uploaded) {
-                              const fileInfo = await attachment.getFileURL(tmpName)
-                              const ratio = await imgUtil.getRatio()
-                              const outputAttachment = em.create(
-                                Attachment,
-                                {
-                                  fileName: tmpName,
-                                  size: png.byteLength,
-                                  storageType:
-                                    fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
-                                  status: EAttachmentStatus.UPLOADED,
-                                  ratio,
-                                  task,
-                                  workflow
-                                },
-                                { partial: true }
-                              )
-                              em.persist(outputAttachment)
-                              return outputAttachment.id
-                            }
-                          }
-                          return v
-                        })
-                      )) as string[]
-                    }
-                  }
-                  const outputConfig = workflow.mapOutput
-                  const outputData = Object.keys(outputConfig || {}).reduce(
-                    (acc, val) => {
-                      if (tmpOutput[val] && outputConfig?.[val]) {
-                        acc[val] = {
-                          type: outputConfig[val].type as EValueType,
-                          value: tmpOutput[val] as any
-                        }
-                      }
-                      return acc
-                    },
-                    {} as Record<
-                      string,
-                      {
-                        type: EValueType
-                        value: any
-                      }
-                    >
-                  )
-                  await Promise.all([
-                    em.flush(),
-                    this.updateTaskEventFn(task, ETaskStatus.Success, {
-                      details: 'FINISHED',
-                      clientId: api.id,
-                      data: outputData
-                    })
-                  ])
+              for (const key in input) {
+                const inputData = input[key] || workflow.mapInput?.[key].default
+                if (!inputData) {
+                  continue
                 }
-                const timeoutPromise = new Promise((_, reject) =>
-                  setTimeout(() => reject(new Error('Task execution timed out')), 60000)
-                )
-                Promise.race([backgroundFn(), timeoutPromise]).catch(async (e) => {
+                switch (workflow.mapInput?.[key].type) {
+                  case EValueType.Number:
+                  case EValueUltilityType.Seed:
+                    builder.input(key, Number(inputData))
+                    break
+                  case EValueUltilityType.Prefixer:
+                    builder.input(key, task.id)
+                    break
+                  case EValueType.String:
+                    builder.input(key, String(inputData))
+                    break
+                  case EValueType.File:
+                  case EValueType.Image:
+                    const attachmentId = inputData as string
+                    const file = await em.findOneOrFail(Attachment, { id: attachmentId })
+                    const fileBlob = await AttachmentService.getInstance().getFileBlob(file.fileName)
+                    if (!fileBlob) {
+                      await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                        details: `Can not load attachments ${file.fileName}`,
+                        clientId: api.id
+                      })
+                      await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+                      return
+                    }
+                    const uploadedImg = await api.uploadImage(fileBlob, file.fileName)
+                    if (!uploadedImg) {
+                      await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                        details: `Failed to upload attachment into comfy server, ${file.fileName}`,
+                        clientId: api.id
+                      })
+                      await this.cachingService.set('LAST_TASK_CLIENT', api.id, Date.now())
+                      return
+                    }
+                    builder.input(key, uploadedImg.info.filename)
+                    break
+                  default:
+                    builder.input(key, inputData)
+                    break
+                }
+              }
+
+              return new CallWrapper(api, builder)
+                .onPending(async () => {
+                  await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                    details: 'LOADING RESOURCES',
+                    clientId: api.id
+                  })
+                })
+                .onProgress(async (e) => {
+                  await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                    details: JSON.stringify({
+                      key: 'progress',
+                      data: { node: Number(e.node), max: Number(e.max), value: Number(e.value) }
+                    }),
+                    clientId: api.id
+                  })
+                })
+                .onPreview(async (e) => {
+                  const arrayBuffer = await e.arrayBuffer()
+                  const base64String = Buffer.from(arrayBuffer).toString('base64')
+                  await this.cachingService.set('PREVIEW', task.id, base64String)
+                })
+                .onStart(async () => {
+                  await this.updateTaskEventFn(task, ETaskStatus.Running, {
+                    details: 'START RENDERING',
+                    clientId: api.id
+                  })
+                })
+                .onFinished((outData) => {
+                  const backgroundFn = async () => {
+                    await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                      details: 'DOWNLOADING OUTPUT',
+                      clientId: api.id
+                    })
+                    const attachment = AttachmentService.getInstance()
+                    const output = await parseOutput(api, workflow, outData)
+                    await this.updateTaskEventFn(task, ETaskStatus.Success, {
+                      details: 'UPLOADING OUTPUT',
+                      clientId: api.id
+                    })
+                    const tmpOutput = cloneDeep(output) as Record<string, any>
+                    // If key is array of Blob, convert it to base64
+                    for (const key in tmpOutput) {
+                      if (Array.isArray(tmpOutput[key])) {
+                        tmpOutput[key] = (await Promise.all(
+                          tmpOutput[key].map(async (v, idx) => {
+                            if (v instanceof Blob) {
+                              const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
+                              const [preview, png] = await Promise.all([
+                                imgUtil
+                                  .clone()
+                                  .resizeMax(1024)
+                                  .intoPreviewJPG()
+                                  .catch((e) => {
+                                    this.logger.w('Error while converting to preview', e)
+                                    return null
+                                  }),
+                                imgUtil.intoPNG()
+                              ])
+                              const tmpName = `${task.id}_${key}_${idx}.png`
+                              const [uploaded] = await Promise.all([
+                                attachment.uploadFile(png, `${tmpName}`),
+                                preview
+                                  ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
+                                  : Promise.resolve(false)
+                              ])
+                              if (uploaded) {
+                                const fileInfo = await attachment.getFileURL(tmpName)
+                                const ratio = await imgUtil.getRatio()
+                                const outputAttachment = em.create(
+                                  Attachment,
+                                  {
+                                    fileName: tmpName,
+                                    size: png.byteLength,
+                                    storageType:
+                                      fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
+                                    status: EAttachmentStatus.UPLOADED,
+                                    ratio,
+                                    task,
+                                    workflow
+                                  },
+                                  { partial: true }
+                                )
+                                em.persist(outputAttachment)
+                                return outputAttachment.id
+                              }
+                            }
+                            return v
+                          })
+                        )) as string[]
+                      }
+                    }
+                    const outputConfig = workflow.mapOutput
+                    const outputData = Object.keys(outputConfig || {}).reduce(
+                      (acc, val) => {
+                        if (tmpOutput[val] && outputConfig?.[val]) {
+                          acc[val] = {
+                            type: outputConfig[val].type as EValueType,
+                            value: tmpOutput[val] as any
+                          }
+                        }
+                        return acc
+                      },
+                      {} as Record<
+                        string,
+                        {
+                          type: EValueType
+                          value: any
+                        }
+                      >
+                    )
+                    await Promise.all([
+                      em.flush(),
+                      this.updateTaskEventFn(task, ETaskStatus.Success, {
+                        details: 'FINISHED',
+                        clientId: api.id,
+                        data: outputData
+                      })
+                    ])
+                  }
+                  const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Task execution timed out')), 60000)
+                  )
+                  Promise.race([backgroundFn(), timeoutPromise]).catch(async (e) => {
+                    await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                      details: (e.cause as any)?.error?.message || e.message,
+                      clientId: api.id
+                    })
+                    console.error(e)
+                  })
+                })
+                .onFailed(async (e) => {
                   await this.updateTaskEventFn(task, ETaskStatus.Failed, {
                     details: (e.cause as any)?.error?.message || e.message,
                     clientId: api.id
                   })
                   console.error(e)
                 })
-              })
-              .onFailed(async (e) => {
-                await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                  details: (e.cause as any)?.error?.message || e.message,
-                  clientId: api.id
+                .run()
+                .catch(async (e) => {
+                  throw e
                 })
-                console.error(e)
+            } catch (e: any) {
+              await this.updateTaskEventFn(task, ETaskStatus.Failed, {
+                details: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
+                clientId: api.id
               })
-              .run()
-              .catch(async (e) => {
-                await this.updateTaskEventFn(task, ETaskStatus.Failed, {
-                  details: (e.cause as any)?.error?.message || e.message,
-                  clientId: api.id
-                })
-                console.error(e)
-                throw e
-              })
+              console.error(e)
+            }
           }, task.computedWeight)
         }
         await this.cachingService.set('LAST_TASK_CLIENT', -1, Date.now())
