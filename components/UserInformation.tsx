@@ -16,7 +16,10 @@ export const UserInfomation: IComponent = () => {
   const { data: avatarInfo } = trpc.attachment.get.useQuery({ id: session.data?.user?.avatar?.id || '' })
 
   const handlePressLogout = () => {
-    signOut()
+    signOut({
+      callbackUrl: '/',
+      redirect: true
+    })
   }
 
   const toggleTheme = () => {

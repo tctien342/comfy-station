@@ -28,6 +28,12 @@ export default defineCommand({
       required: false,
       alias: 'l',
       valueHint: 'From 1 -> 5'
+    },
+    weight: {
+      type: 'string',
+      description: 'weight of user for job priority, specify to update',
+      required: false,
+      alias: 'w'
     }
   },
   async run({ args }) {
@@ -37,7 +43,7 @@ export default defineCommand({
       const users = await db.find(User, {})
       consola.info('List of available users:')
       users.forEach((user) => {
-        consola.info(`- ${user.email} - Level: ${user.role}`)
+        consola.info(`- ${user.email} - Level: ${user.role} - Weight: ${user.weightOffset}`)
       })
       process.exit(0)
     }
@@ -51,6 +57,7 @@ export default defineCommand({
       }
       const newUser = new User(args.email, args.password)
       newUser.role = role
+      newUser.weightOffset = Number(args.weight || 1)
       await db.persistAndFlush(newUser)
       consola.success(`User ${newUser.email} created with role level ${newUser.role}`)
     } else {
@@ -61,6 +68,10 @@ export default defineCommand({
       }
       if (args.roleLevel) {
         user.role = role
+        updated = true
+      }
+      if (args.weight) {
+        user.weightOffset = Number(args.weight)
         updated = true
       }
       if (updated) {

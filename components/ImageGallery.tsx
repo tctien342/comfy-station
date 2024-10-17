@@ -9,10 +9,11 @@ export const ImageGallery: IComponent<{
   rows: Array<{ loading: true } | Attachment>
   favoriteIds?: string[]
   onFetchMore?: () => void
+  imgPerRow?: number
   hasNextPage: boolean
   isFetchingNextPage: boolean
   onPressFavorite?: (imageId: string) => void
-}> = ({ rows, hasNextPage, isFetchingNextPage, onPressFavorite, onFetchMore, favoriteIds }) => {
+}> = ({ rows, hasNextPage, isFetchingNextPage, onPressFavorite, onFetchMore, favoriteIds, imgPerRow = 3 }) => {
   const parentRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const firstLoaded = useRef(false)
@@ -30,7 +31,7 @@ export const ImageGallery: IComponent<{
       return (rows[i] as Attachment)?.id ?? i
     },
     overscan: 5,
-    lanes: 3
+    lanes: imgPerRow
   })
 
   useEffect(
@@ -98,8 +99,8 @@ export const ImageGallery: IComponent<{
                   animationDelay: `${virtualRow.index * 34}ms`,
                   position: 'absolute',
                   top: 0,
-                  left: `${(virtualRow.lane * 100) / 3}%`,
-                  width: 'calc(100%/3)',
+                  left: `${(virtualRow.lane * 100) / imgPerRow}%`,
+                  width: `calc(100%/${imgPerRow})`,
                   height: 'fit-content',
                   aspectRatio: 'loading' in item ? 1 : item.ratio,
                   transform: `translateY(${virtualRow.start}px)`

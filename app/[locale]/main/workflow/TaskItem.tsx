@@ -8,19 +8,27 @@ import useCopyAction from '@/hooks/useCopyAction'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Check, Copy, Download, Hourglass, Image, Repeat } from 'lucide-react'
-import { useMemo } from 'react'
+import { Check, Copy, Download, Hourglass, Image, Repeat, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { AttachmentImageSlider } from '@/components/AttachmentImageSlider'
+import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
+import { LoadableButton } from '@/components/LoadableButton'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
-}> = ({ data }) => {
+  deleting?: boolean
+  onPressDelete?: () => void
+}> = ({ data, onPressDelete, deleting }) => {
+  const [showImages, setShowImages] = useState(false)
   const { data: task, refetch } = trpc.workflowTask.detail.useQuery(data.id, {
     enabled: !!data.id,
     refetchOnWindowFocus: false
   })
+
   const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachementUrls.useQuery(
     data.id,
     {
@@ -28,6 +36,7 @@ export const TaskItem: IComponent<{
       refetchOnWindowFocus: false
     }
   )
+
   trpc.watch.historyItem.useSubscription(data.id, {
     onData: () => {
       refetch()
@@ -93,6 +102,20 @@ export const TaskItem: IComponent<{
     return ETaskStatus.Queuing
   }, [task?.status, task?.subTasks])
 
+  const finishedEv =
+    task?.status !== ETaskStatus.Parent
+      ? [task?.events.find((e) => !!e.data)]
+      : task?.subTasks
+          ?.filter((t) => t.status === ETaskStatus.Success && !!t.events.find((e) => !!e.data))
+          .map((v) => v.events)
+          .flat()
+
+  const outputData = (finishedEv as WorkflowTaskEvent[])
+    .filter((v) => !!v)
+    .map((v) => Object.values(v!.data ?? {}))
+    .flat()
+  const outputAttachments = outputData.filter((d) => d.type === EValueType.Image)
+
   const previewAttachment = useMemo(() => {
     if (isLoading) {
       return (
@@ -101,13 +124,8 @@ export const TaskItem: IComponent<{
         </div>
       )
     }
-    const finishedEv =
-      task?.status !== ETaskStatus.Parent
-        ? task?.events.find((e) => !!e.data)
-        : task?.subTasks?.find((t) => t.status === ETaskStatus.Success)?.events.find((e) => !!e.data)
-    const attachment = Object.values(finishedEv?.data || {}).find((d) => d.type === EValueType.Image)
-    if (!attachment) {
-      const text = Object.values(finishedEv?.data || {}).find((d) => d.type === EValueType.String)
+    if (!outputAttachments || outputAttachments.length === 0) {
+      const text = outputData.find((d) => d.type === EValueType.String)
       if (text) {
         return (
           <Tooltip>
@@ -148,15 +166,17 @@ export const TaskItem: IComponent<{
     }
     return (
       <AttachmentImage
+        onClick={() => setShowImages(true)}
         mode='avatar'
         className='h-32 !rounded-none w-auto !aspect-square object-cover p-0 m-0'
         tryPreivew
-        data={{ id: attachment.value[0] as string }}
+        data={{ id: outputAttachments[0].value[0] as string }}
       />
     )
-  }, [copyToClipboard, isCopied, isLoading, task?.events, task?.status, task?.subTasks])
+  }, [isLoading, outputAttachments, outputData, isCopied, copyToClipboard])
 
   const shortName = task?.trigger.user?.email?.split('@')[0] ?? '-'
+  const outputImageAttachments = outputAttachments.map((v) => v.value).flat() as string[]
 
   if (!task)
     return (
@@ -175,37 +195,60 @@ export const TaskItem: IComponent<{
     )
 
   return (
-    <div className='w-full flex relative group'>
-      <div className='flex-1 flex-col px-1 py-3'>
-        <Label className='text-base font-semibold'>{task.workflow.name}</Label>
-        <p className='text-sm'>ID: {task.id}</p>
-        <p className='text-sm'>
-          Trigger by: @{shortName}, {new Date(task!.createdAt).toLocaleString()}
-        </p>
-        <div className='w-full flex flex-wrap gap-2 mt-2'>
-          {currentStatus === ETaskStatus.Failed && <MiniBadge dotClassName='bg-red-500' title='Failed' />}
-          {currentStatus === ETaskStatus.Queuing && <MiniBadge dotClassName='bg-gray-200' title='Queuing' />}
-          {currentStatus === ETaskStatus.Pending && <MiniBadge dotClassName='bg-gray-500' title='Pendind' />}
-          {currentStatus === ETaskStatus.Running && <MiniBadge dotClassName='bg-orange-500' title='Running' />}
-          {currentStatus === ETaskStatus.Success && <MiniBadge dotClassName='bg-green-500' title='Success' />}
-          {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
-          {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
-          {!!attachments?.length && <MiniBadge Icon={Image} title='Images' count={attachments.length} />}
+    <ContextMenu>
+      <ContextMenuTrigger className='w-full flex relative'>
+        <div className='w-full flex relative group'>
+          <AttachmentImageSlider
+            images={outputImageAttachments}
+            show={showImages}
+            onHide={() => setShowImages(false)}
+          />
+          <div className='flex-1 flex-col px-1 py-3'>
+            <Label className='text-base font-semibold'>{task.workflow.name}</Label>
+            <p className='text-xs md:text-sm'>ID: #{task.id.split('-').pop()}</p>
+            <p className='text-xs md:text-sm'>
+              Trigger by: @{shortName}, {new Date(task!.createdAt).toLocaleString()}
+            </p>
+            <div className='w-full flex flex-wrap gap-2 mt-2'>
+              {currentStatus === ETaskStatus.Failed && <MiniBadge dotClassName='bg-red-500' title='Failed' />}
+              {currentStatus === ETaskStatus.Queuing && <MiniBadge dotClassName='bg-gray-200' title='Queuing' />}
+              {currentStatus === ETaskStatus.Pending && <MiniBadge dotClassName='bg-gray-500' title='Pendind' />}
+              {currentStatus === ETaskStatus.Running && <MiniBadge dotClassName='bg-orange-500' title='Running' />}
+              {currentStatus === ETaskStatus.Success && <MiniBadge dotClassName='bg-green-500' title='Success' />}
+              {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
+              {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
+              {!!attachments?.length && <MiniBadge Icon={Image} title='Images' count={attachments.length} />}
+            </div>
+          </div>
+          {previewAttachment}
+          <div className={cn('z-10 md:hidden group-hover:block absolute top-1 right-1')}>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button onClick={() => downloadAttachment()} size='icon' variant='ghost' className='text-white'>
+                  <Download width={24} height={24} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side='left' className='bg-background text-foreground z-10 border p-2 flex flex-col'>
+                Download all attachments
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-      </div>
-      {previewAttachment}
-      <div className={cn('z-10 hidden group-hover:block absolute bottom-1 right-1')}>
-        <Tooltip>
-          <TooltipTrigger>
-            <Button onClick={() => downloadAttachment()} size='icon' variant='ghost'>
-              <Download width={24} height={24} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side='left' className='bg-background text-foreground z-10 border p-2 flex flex-col'>
-            Download all attachments
-          </TooltipContent>
-        </Tooltip>
-      </div>
-    </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem className='text-destructive'>
+          <LoadableButton
+            onClick={onPressDelete}
+            loading={deleting}
+            variant='ghost'
+            size='sm'
+            className='text-left p-0'
+          >
+            <Trash2 className='w-4 h-4 mr-2' />
+            Delete
+          </LoadableButton>
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

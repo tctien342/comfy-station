@@ -32,7 +32,7 @@ const Layout: IComponent = ({ children }) => {
         )}
         <div
           id='main-content'
-          className='flex-auto hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
+          className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
         >
           <TopBar />
           <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1'>
@@ -40,7 +40,7 @@ const Layout: IComponent = ({ children }) => {
           </SimpleTransitionLayout>
         </div>
         {isAdmin && (
-          <div className='w-1/4 min-w-[290px] max-w-[360px] h-full bg-background border rounded-lg'>
+          <div className='w-1/4 min-w-max h-full bg-background border rounded-lg'>
             <AdminSideInfo />
           </div>
         )}
@@ -50,7 +50,7 @@ const Layout: IComponent = ({ children }) => {
 
   const renderMobileView = useMemo(() => {
     return (
-      <div className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-x-hidden overflow-y-auto'>
+      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
         <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative'>
           <TabsContent value='history' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-14'>
             <WorkflowSidePicker />

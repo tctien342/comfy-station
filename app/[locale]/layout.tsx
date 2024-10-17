@@ -1,6 +1,6 @@
 import './globals.scss'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 
@@ -8,6 +8,13 @@ import TRPCLayout from './layout.trpc'
 import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
 import { SessionLayout } from './layout.session'
 import { ClientLayout } from './layout.client'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+}
 
 export const metadata: Metadata = {
   title: 'Home | ComfyUI-Station',
@@ -33,7 +40,7 @@ export default async function RootLayout({
               className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
             />
             <TRPCLayout>
-              <div className='w-screen h-screen md:p-2 lg:p-4 flex justify-center items-center relative'>
+              <div className='w-screen h-[100dvh] md:h-screen md:p-2 lg:p-4 flex justify-center items-center relative'>
                 <ClientLayout>{children}</ClientLayout>
               </div>
             </TRPCLayout>

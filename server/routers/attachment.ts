@@ -7,6 +7,18 @@ import { EAttachmentStatus } from '@/entities/enum'
 import { ImageUtil } from '../utils/ImageUtil'
 import { ECompressPreset } from '@/hooks/useAttachmentUploader'
 
+const getAttachmentURL = async (attachment: Attachment) => {
+  const prevName = `${attachment.fileName}_preview.jpg`
+  const [imageInfo, imagePreviewInfo] = await Promise.all([
+    AttachmentService.getInstance().getFileURL(attachment.fileName, 3600 * 24),
+    AttachmentService.getInstance().getFileURL(prevName, 3600 * 24)
+  ])
+  return {
+    raw: imageInfo,
+    preview: imagePreviewInfo || imageInfo
+  }
+}
+
 export const attachmentRouter = router({
   get: privateProcedure
     .input(
@@ -19,16 +31,19 @@ export const attachmentRouter = router({
       if (!attachment) {
         return null
       }
-      const prevName = `${attachment.fileName}_preview.jpg`
-      const [imageInfo, imagePreviewInfo] = await Promise.all([
-        AttachmentService.getInstance().getFileURL(attachment.fileName, 3600 * 24),
-        AttachmentService.getInstance().getFileURL(prevName, 3600 * 24)
-      ])
-      return {
-        raw: imageInfo,
-        preview: imagePreviewInfo || imageInfo
-      }
+      return getAttachmentURL(attachment)
     }),
+  getList: privateProcedure.input(z.array(z.string())).query(async ({ ctx, input }) => {
+    const attachments = await ctx.em.find(Attachment, { id: { $in: input } })
+    return Promise.all(
+      attachments.map(async (attachment) => {
+        return {
+          id: attachment.id,
+          urls: await getAttachmentURL(attachment)
+        }
+      })
+    )
+  }),
   upload: privateProcedure.input(z.instanceof(FormData)).mutation(async ({ input, ctx }) => {
     const schema = z.object({
       file: z.instanceof(File),

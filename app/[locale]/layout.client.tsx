@@ -40,10 +40,31 @@ export const ClientLayout: IComponent = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
 
+  // Prevent zoom-to-tabs gesture in safari
+  useEffect(() => {
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault()
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = '0.99'
+    })
+
+    document.addEventListener('gesturechange', function (e) {
+      e.preventDefault()
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = '0.99'
+    })
+
+    document.addEventListener('gestureend', function (e) {
+      e.preventDefault()
+      // special hack to prevent zoom-to-tabs gesture in safari
+      document.body.style.zoom = '0.99'
+    })
+  }, [])
+
   return (
     <>
       {session.status === 'loading' && (
-        <div className='top-0 left-0 fixed w-screen h-screen z-10 bg-popover/50 flex justify-end items-end p-8'>
+        <div className='top-0 left-0 fixed w-screen h-[100dvh] md:h-screen z-10 bg-popover/50 flex justify-end items-end p-8'>
           <Card className='p-4 flex gap-4 items-center bg-background'>
             <LoadingSVG width={32} height={32} />
           </Card>

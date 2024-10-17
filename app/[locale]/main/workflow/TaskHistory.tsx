@@ -1,6 +1,8 @@
 import { VirtualList } from '@/components/VirtualList'
 import { trpc } from '@/utils/trpc'
 import { TaskItem } from './TaskItem'
+import { useToast } from '@/hooks/useToast'
+import { WorkflowTask } from '@/entities/workflow_task'
 
 export const TaskHistory: IComponent = () => {
   const tasker = trpc.workflowTask.list.useInfiniteQuery(
@@ -12,9 +14,20 @@ export const TaskHistory: IComponent = () => {
     }
   )
 
+  const { toast } = useToast()
+  const deletor = trpc.workflowTask.delete.useMutation()
+
   trpc.watch.historyList.useSubscription(undefined, {
     onData: () => tasker.refetch()
   })
+
+  const handlePressDelete = async (data: WorkflowTask) => {
+    await deletor.mutateAsync(data.id)
+    tasker.refetch()
+    toast({
+      title: 'Workflow Deleted'
+    })
+  }
 
   const allRows = tasker.data ? tasker.data.pages.flatMap((d) => d.items).reverse() : []
 
@@ -36,7 +49,7 @@ export const TaskHistory: IComponent = () => {
       }}
       estimateSize={() => 130}
       renderItem={(item) => {
-        return <TaskItem data={item} />
+        return <TaskItem data={item} onPressDelete={() => handlePressDelete(item)} deleting={deletor.isPending} />
       }}
       overscan={5}
     />

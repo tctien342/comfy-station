@@ -2,6 +2,7 @@
 
 import { ImageGallery } from '@/components/ImageGallery'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
+import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { trpc } from '@/utils/trpc'
 
 export default function WorkflowGallery() {
@@ -14,6 +15,7 @@ export default function WorkflowGallery() {
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor, enabled: !!slug }
   )
+  const dyn = useDynamicValue()
 
   const avatarSetter = trpc.workflow.setAvatar.useMutation()
 
@@ -48,6 +50,7 @@ export default function WorkflowGallery() {
   return (
     <div className='absolute top-0 left-0 w-full h-full flex-1 flex-wrap gap-2 shadow-inner'>
       <ImageGallery
+        imgPerRow={dyn([2, 2, 3])}
         rows={[...pending, ...images]}
         favoriteIds={[taskInfo.data?.avatar?.id ?? '']}
         onPressFavorite={handlePressFavorite}

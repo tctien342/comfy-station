@@ -11,6 +11,8 @@ import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useRouter } from 'next/navigation'
 import { AttachmentImage } from './AttachmentImage'
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { EUserRole } from '@/entities/enum'
 
 export const WorkflowCard: IComponent<{
   data: Workflow
@@ -18,6 +20,7 @@ export const WorkflowCard: IComponent<{
   const stator = trpc.workflowTask.workflowTaskStats.useQuery(data.id)
   const deletor = trpc.workflow.delete.useMutation()
   const router = useRouter()
+  const session = useSession()
   const { toast } = useToast()
 
   const handlePressDelete = async () => {
@@ -34,7 +37,10 @@ export const WorkflowCard: IComponent<{
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger className='h-fit flex-1 min-w-[240px] md:max-w-[320px] w-full !pb-0 shadow rounded-xl'>
+      <ContextMenuTrigger
+        disabled={session.data!.user.role < EUserRole.Editor}
+        className='h-fit flex-1 w-full !pb-0 shadow rounded-xl'
+      >
         <Card
           onClick={() => router.push(`/main/workflow/${data.id}`)}
           className='shadow-none cursor-pointer hover:shadow-lg transition-all overflow-hidden'

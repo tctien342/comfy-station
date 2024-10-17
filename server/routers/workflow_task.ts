@@ -64,7 +64,7 @@ export const workflowTaskRouter = router({
     const task = await ctx.em.findOneOrFail(
       WorkflowTask,
       { id: input },
-      { populate: ['workflow', 'trigger.user', 'events', 'subTasks.events'] }
+      { populate: ['workflow', 'trigger.user', 'events', 'subTasks', 'subTasks.events.*'] }
     )
     if (ctx.session.user?.role && ctx.session.user?.role >= EUserRole.Editor) {
       return task
@@ -74,26 +74,41 @@ export const workflowTaskRouter = router({
     }
     throw new Error('Unauthorized')
   }),
+  delete: privateProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger.user', 'attachments'] })
+    let allow = false
+    if (ctx.session.user!.role >= EUserRole.Editor) {
+      allow = true
+    }
+    if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
+      allow = true
+    }
+    if (allow) {
+      for (const attachment of task.attachments) {
+        ctx.em.remove(attachment)
+      }
+      await ctx.em.remove(task).flush()
+      return true
+    }
+    throw new Error('Unauthorized')
+  }),
   getOutputAttachementUrls: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['subTasks.events', 'events'] })
-    if (task.status === ETaskStatus.Parent) {
-      const attachment = task.subTasks
-        .map((t) => t.events.filter((e) => !!e.data))
-        .flat()
-        .map((e) => Object.values(e?.data || {}))
-        .flat()
-        .filter((d) => d.type === EValueType.Image)
-        .map((v) => v.value as string[])
-        .flat()
-      const attachments = await ctx.em.find(Attachment, { id: { $in: attachment } })
+    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['subTasks.events'] })
+
+    if (task.status !== ETaskStatus.Parent) {
+      const attachments = await ctx.em.find(Attachment, {
+        task
+      })
       return Promise.all(attachments.map((a) => AttachmentService.getInstance().getAttachmentURL(a)))
     } else {
-      const finishedEv = task.events.find((e) => !!e.data)
-      const attachment = Object.values(finishedEv?.data || {})
-        .filter((d) => d.type === EValueType.Image)
-        .map((v) => v.value as string[])
-        .flat()
-      const attachments = await ctx.em.find(Attachment, { id: { $in: attachment } })
+      const subTaskIds = task.subTasks.map((t) => t.id)
+      const attachments = await ctx.em.find(Attachment, {
+        task: {
+          id: {
+            $in: subTaskIds
+          }
+        }
+      })
       return Promise.all(attachments.map((a) => AttachmentService.getInstance().getAttachmentURL(a)))
     }
   }),
@@ -152,11 +167,34 @@ export const workflowTaskRouter = router({
         id: input.workflowId
       })
 
+      for (const key in input.input) {
+        const keyConfig = workflow.mapInput?.[key]
+        if (!keyConfig) continue
+        if (keyConfig.type === EValueType.Number) {
+          const temp = Number(input.input[key])
+          if (keyConfig.min && temp < keyConfig.min) {
+            throw new Error(`Value of ${key} is less than min value`)
+          }
+          if (keyConfig.max && temp > keyConfig.max) {
+            throw new Error(`Value of ${key} is greater than max value`)
+          }
+        }
+        if (keyConfig.type === EValueType.File || keyConfig.type === EValueType.Image) {
+          const temp = input.input[key]
+          if (Array.isArray(temp) && temp.length === 0) {
+            throw new Error(`Value of ${key} is empty`)
+          }
+        }
+      }
+
       const tasks = convertObjectToArrayOfObjects(input.input)
 
       const isBatch = (input.repeat && input.repeat > 1) || tasks.length > 1
+
+      // 5 minutes bias [0 -> 2] weight add on, eirly job will have lower weight -> more priority
+      const timeWeight = (Date.now() % 300000) / 150000
       // Weight calculation
-      const computedWeight = workflow.baseWeight + ctx.session.user!.weightOffset
+      const computedWeight = timeWeight + workflow.baseWeight + ctx.session.user!.weightOffset
 
       // Cost calculation
       let computedCost = workflow.cost
@@ -259,6 +297,7 @@ export const workflowTaskRouter = router({
             }
             const newInput = {
               ...task,
+              computedWeight: computedWeight + i / 10, // 0.1 weight add on for each repeat
               [seedConf?.key!]: ++newSeed
             }
             await delay(10)

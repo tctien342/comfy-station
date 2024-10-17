@@ -23,7 +23,7 @@ const Layout: IComponent = ({ children }) => {
   }, [])
 
   return (
-    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative h-full md:h-fit rounded-none md:rounded-xl'>
+    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative h-fit rounded-none md:rounded-xl'>
       <Image alt='Login background' className='object-cover w-full md:w-[400px]' height={400} src={AuthBackground} />
       <div className='flex justify-start flex-col p-8 w-full md:w-[460px] gap-4'>
         <Tabs value={currentTab}>

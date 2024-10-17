@@ -62,6 +62,14 @@ export const WorkflowSidePicker: IComponent = () => {
       }
       if ([EValueType.File, EValueType.Image].includes(crrInput.type as EValueType)) {
         const files = inputData[key] as File[]
+        if (!files || files.length === 0) {
+          toast({
+            title: `${key} is required`,
+            variant: 'destructive'
+          })
+          setLoading(false)
+          return
+        }
         const ids = await Promise.all(files.map((file) => uploadAttachment(file))).then((attach) =>
           attach.map((a) => a.id)
         )
