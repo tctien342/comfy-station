@@ -244,7 +244,7 @@ export const workflowTaskRouter = router({
         ctx.em.persist(taskEvent)
       }
 
-      const createTask = (inputValues = input.input, parent?: WorkflowTask) => {
+      const createTask = (inputValues = input.input, parent?: WorkflowTask, weightOffset = 0) => {
         const trigger = ctx.em.create(
           Trigger,
           {
@@ -263,7 +263,7 @@ export const workflowTaskRouter = router({
             inputValues,
             trigger,
             parent,
-            computedWeight,
+            computedWeight: computedWeight + weightOffset,
             computedCost
           },
           {
@@ -297,11 +297,12 @@ export const workflowTaskRouter = router({
             }
             const newInput = {
               ...task,
-              computedWeight: computedWeight + i / 10, // 0.1 weight add on for each repeat
               [seedConf?.key!]: ++newSeed
             }
             await delay(10)
-            createTask(newInput, parentTask)
+            // 0.1 weight add on for each repeat
+            const offsetWeight = i / 10
+            createTask(newInput, parentTask, offsetWeight)
           }
         }
       }

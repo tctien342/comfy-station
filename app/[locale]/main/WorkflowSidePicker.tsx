@@ -1,7 +1,6 @@
 import { LoadableButton } from '@/components/LoadableButton'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WorkflowInputArea } from '@/components/WorkflowInputArea'
 import { EValueType, EValueUltilityType } from '@/entities/enum'
@@ -20,7 +19,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const [loading, setLoading] = useState(false)
   const [repeat, setRepeat] = useState(1)
   const { toast } = useToast()
-  const [inputData, setInputData] = useState<Record<string, any>>({})
+  const [inputData, setInputData, reload] = useStorageState<Record<string, any>>(`input-wf-${slug}`, {})
   const crrWorkflowInfo = trpc.workflow.get.useQuery(slug!, {
     enabled: !!slug
   })
@@ -125,6 +124,11 @@ export const WorkflowSidePicker: IComponent = () => {
   }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])
 
   useEffect(() => {
+    reload()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug])
+
+  useEffect(() => {
     if (crrWorkflowInfo.data?.name) {
       document.title = `${crrWorkflowInfo.data.name} | ComfyUI-Station`
     }
@@ -153,7 +157,16 @@ export const WorkflowSidePicker: IComponent = () => {
         {!!crrWorkflowInfo.data && (
           <WorkflowInputArea
             workflow={crrWorkflowInfo.data}
-            onChange={(data) => setInputData(data)}
+            onChange={(data) =>
+              setInputData(data, (obj) => {
+                for (const key in obj) {
+                  if (!['string', 'number', 'boolean'].includes(typeof obj[key])) {
+                    delete obj[key]
+                  }
+                }
+                return obj
+              })
+            }
             repeat={repeat}
             data={inputData}
             onChangeRepeat={!!seedInput ? setRepeat : undefined}
