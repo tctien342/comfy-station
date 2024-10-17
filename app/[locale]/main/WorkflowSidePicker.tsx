@@ -20,7 +20,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const [loading, setLoading] = useState(false)
   const [repeat, setRepeat] = useState(1)
   const { toast } = useToast()
-  const [inputData, setInputData, reload] = useStorageState<Record<string, any>>(`input-wf-${slug}`, {})
+  const [inputData, setInputData] = useState<Record<string, any>>({})
   const crrWorkflowInfo = trpc.workflow.get.useQuery(slug!, {
     enabled: !!slug
   })
@@ -125,11 +125,6 @@ export const WorkflowSidePicker: IComponent = () => {
   }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])
 
   useEffect(() => {
-    reload()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug])
-
-  useEffect(() => {
     if (crrWorkflowInfo.data?.name) {
       document.title = `${crrWorkflowInfo.data.name} | ComfyUI-Station`
     }
@@ -158,16 +153,7 @@ export const WorkflowSidePicker: IComponent = () => {
         {!!crrWorkflowInfo.data && (
           <WorkflowInputArea
             workflow={crrWorkflowInfo.data}
-            onChange={(data) =>
-              setInputData(data, (obj) => {
-                for (const key in obj) {
-                  if (!['string', 'number', 'boolean'].includes(typeof obj[key])) {
-                    delete obj[key]
-                  }
-                }
-                return obj
-              })
-            }
+            onChange={(data) => setInputData(data)}
             repeat={repeat}
             data={inputData}
             onChangeRepeat={!!seedInput ? setRepeat : undefined}

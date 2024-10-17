@@ -357,6 +357,7 @@ export class ComfyPoolInstance {
                 clientId: api.id
               })
               console.error(e)
+              return false
             }
           }, task.computedWeight)
         }
