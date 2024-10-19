@@ -91,7 +91,7 @@ export const ImageGallery: IComponent<{
         }}
       >
         {items.length === 0 && (
-          <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center'>
+          <div className='w-full h-full flex items-center justify-center'>
             {renderEmpty?.() || <span className='text-foreground/50 uppercase'>Empty</span>}
           </div>
         )}

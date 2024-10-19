@@ -128,3 +128,11 @@ body {
   height: 100dvh;
   width: 100vw;
 }
+
+@media screen and (max-width: 767px) {
+  _::-webkit-full-page-media,
+  _:future,
+  :root .safari_only {
+    padding-bottom: 24px; //resize
+  }
+}

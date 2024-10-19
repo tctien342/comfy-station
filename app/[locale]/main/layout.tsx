@@ -71,7 +71,7 @@ const Layout: IComponent = ({ children }) => {
               <AdminSideInfo />
             </TabsContent>
           )}
-          <TabsList className='bg-background h-fit fixed bottom-0 w-full rounded-none border-t'>
+          <TabsList className='bg-background h-fit fixed bottom-0 w-full rounded-none border-t safari_only'>
             <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
               <div className='flex gap-2 items-center'>
                 <PlaySquare width={16} height={16} /> Execute
