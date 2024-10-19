@@ -173,7 +173,7 @@ export const TaskItem: IComponent<{
   }, [isLoading, outputAttachments, outputData, isCopied, copyToClipboard])
 
   const shortName = task?.trigger.user?.email?.split('@')[0] ?? '-'
-  const outputImageAttachments = outputAttachments.map((v) => v.value).flat() as string[]
+  const outputImageAttachments = attachments?.map((v) => v.high!.url).flat() as string[]
 
   if (!task)
     return (

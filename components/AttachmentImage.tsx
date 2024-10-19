@@ -84,7 +84,11 @@ export const AttachmentImage: IComponent<{
         )}
         <DropdownMenu>
           <DropdownMenuTrigger className='flex items-center'>
-            <div className={cn('z-10 md:hidden group-hover:block absolute bottom-1 right-1 p-2 bg-white rounded-lg btn')}>
+            <div
+              className={cn(
+                'z-10 md:hidden group-hover:block absolute bottom-1 right-1 p-2 bg-background text-foreground rounded-lg btn'
+              )}
+            >
               <Download width={16} height={16} />
             </div>
           </DropdownMenuTrigger>
