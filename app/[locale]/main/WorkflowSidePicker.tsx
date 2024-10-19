@@ -11,6 +11,7 @@ import { useStorageState } from '@/hooks/useStorageState'
 import { useToast } from '@/hooks/useToast'
 import { convertObjectToArrayOfObjects, seed } from '@/utils/tools'
 import { trpc } from '@/utils/trpc'
+import { cloneDeep } from 'lodash'
 import { ChevronLeft, Play } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -38,12 +39,26 @@ export const WorkflowSidePicker: IComponent = () => {
 
   const { uploadAttachment } = useAttachmentUploader()
 
+  const cacheFilter = (obj: any) => {
+    // Only caching string, number, boolean
+    const tmp = cloneDeep(obj)
+    for (const key in tmp) {
+      if (!['string', 'number', 'boolean'].includes(typeof tmp[key])) {
+        delete tmp[key]
+      }
+    }
+    return tmp
+  }
+
   const updateSeed = useCallback(() => {
     if (seedInput) {
-      setInputData((prev) => ({
-        ...prev,
-        [seedInput.key]: seed()
-      }))
+      setInputData(
+        (prev) => ({
+          ...prev,
+          [seedInput.key]: seed()
+        }),
+        cacheFilter
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedInput])
@@ -158,16 +173,7 @@ export const WorkflowSidePicker: IComponent = () => {
         {!!crrWorkflowInfo.data && (
           <WorkflowInputArea
             workflow={crrWorkflowInfo.data}
-            onChange={(data) =>
-              setInputData(data, (obj) => {
-                for (const key in obj) {
-                  if (!['string', 'number', 'boolean'].includes(typeof obj[key])) {
-                    delete obj[key]
-                  }
-                }
-                return obj
-              })
-            }
+            onChange={(data) => setInputData(data, cacheFilter)}
             randomSeedEnabled={randomSeedEnabled}
             changeRandomSeedEnabled={setRandomSeedEnabled}
             repeat={repeat}

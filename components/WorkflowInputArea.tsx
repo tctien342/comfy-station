@@ -32,11 +32,11 @@ export const WorkflowInputArea: IComponent<{
   const inputData = data
 
   const setInputData = useCallback(
-    (data: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => {
-      if (typeof data === 'function') {
-        onChange?.(data(inputData))
+    (input: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => {
+      if (typeof input === 'function') {
+        onChange?.(input(inputData))
       } else {
-        onChange?.(data)
+        onChange?.(input)
       }
     },
     [inputData, onChange]

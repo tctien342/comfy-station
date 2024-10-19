@@ -13,7 +13,7 @@ const DropFileInput: IComponent<{
   onChanges?: (files: File[]) => void
 }> = ({ defaultFiles, disabled, onChanges, maxFiles }) => {
   const cacheRef = useRef(new Map<File, string>())
-  const [files, setFiles] = useState<File[]>(defaultFiles || [])
+  const [files, setFiles] = useState<File[]>(defaultFiles?.filter((v) => v instanceof File) || [])
 
   const addFiles = useCallback(
     (newFiles: File[]) => {
