@@ -14,7 +14,6 @@ import { Button } from './ui/button'
 import { Dice5, Repeat } from 'lucide-react'
 import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
-import { isEqual } from 'lodash'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -23,11 +22,22 @@ export const WorkflowInputArea: IComponent<{
   disabled?: boolean
   repeat?: number
   onChangeRepeat?: (repeat: number) => void
-  data?: Record<string, any>
+  data: Record<string, any>
   onChange?: (data: Record<string, any>) => void
 }> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange }) => {
-  const [inputData, setInputData] = useState<Record<string, any>>(data || {})
   const { updateSelecting, recenter } = useWorkflowVisStore()
+  const inputData = data
+
+  const setInputData = useCallback(
+    (data: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => {
+      if (typeof data === 'function') {
+        onChange?.(data(inputData))
+      } else {
+        onChange?.(data)
+      }
+    },
+    [inputData, onChange]
+  )
 
   const inputKeys: Array<keyof typeof workflow.mapInput> = useMemo(() => {
     return Object.keys(workflow?.mapInput || {}) as any
@@ -128,18 +138,8 @@ export const WorkflowInputArea: IComponent<{
         </div>
       )
     },
-    [disabled, updateSelecting, workflow]
+    [disabled, setInputData, updateSelecting, workflow]
   )
-
-  useEffect(() => {
-    onChange?.(inputData)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputData])
-
-  useEffect(() => {
-    if (!isEqual(data, inputData)) setInputData(data || {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
 
   useEffect(() => {
     if (workflow.mapInput) {

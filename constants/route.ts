@@ -10,7 +10,7 @@ export const RouteConf = {
   },
   execute: {
     key: 'execute',
-    title: 'Execute',
+    title: 'Tasks',
     path: '/main/workflow',
     SubIcon: ChevronLeft,
     backUrl: '/main'

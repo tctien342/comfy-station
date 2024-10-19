@@ -3,6 +3,7 @@ import { trpc } from '@/utils/trpc'
 import { TaskItem } from './TaskItem'
 import { useToast } from '@/hooks/useToast'
 import { WorkflowTask } from '@/entities/workflow_task'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 export const TaskHistory: IComponent = () => {
   const tasker = trpc.workflowTask.list.useInfiniteQuery(
@@ -23,7 +24,6 @@ export const TaskHistory: IComponent = () => {
 
   const handlePressDelete = async (data: WorkflowTask) => {
     await deletor.mutateAsync(data.id)
-    tasker.refetch()
     toast({
       title: 'Workflow Deleted'
     })
@@ -43,6 +43,15 @@ export const TaskHistory: IComponent = () => {
         width: '100%',
         height: '100%',
         boxShadow: 'inset 0 0 10px 0 rgba(0, 0, 0, 0.1)'
+      }}
+      renderEmpty={() => {
+        return (
+          <div className='flex flex-col text-center text-foreground/50'>
+            <ExclamationTriangleIcon className='w-6 h-6 mx-auto my-2' />
+            <span className='uppercase'>Task is empty</span>
+            <p className='text-xs'>Create your first task to see the results</p>
+          </div>
+        )
       }}
       getItemKey={(item) => {
         return item.id

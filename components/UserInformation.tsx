@@ -34,7 +34,7 @@ export const UserInfomation: IComponent = () => {
   const shortEmail = email?.split('@')[0]
 
   return (
-    <div className='w-full flex gap-2 items-center p-2'>
+    <div className='w-full flex gap-2 items-center px-2'>
       <DropdownMenu>
         <DropdownMenuTrigger className='flex items-center order-1'>
           <Avatar className='order-1'>

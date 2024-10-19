@@ -118,7 +118,7 @@ export const WorkflowSidePicker: IComponent = () => {
       }
     }
     return {
-      value: val * repeat * tasks.length,
+      value: Number((val * repeat * tasks.length).toFixed(2)),
       subTasks: tasks.length
     }
   }, [crrWorkflowInfo.data?.cost, crrWorkflowInfo.data?.mapInput, repeat, inputData])

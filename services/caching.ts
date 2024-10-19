@@ -1,6 +1,7 @@
 import { EClientStatus } from '@/entities/enum'
 import { TMonitorEvent } from '@saintno/comfyui-sdk'
-import { Logger, StorageManager } from '@saintno/needed-tools'
+import { Logger } from '@saintno/needed-tools'
+import { LRUCache } from 'lru-cache'
 import { createClient, RedisClientType } from 'redis' // Assuming you have the Redis package installed
 
 const REDIS_CONF = process.env.REDIS
@@ -18,7 +19,7 @@ export type TCachingKeyMap = {
 
 class CachingService extends EventTarget {
   private logger: Logger
-  private cache: RedisClientType<any> | StorageManager<any>
+  private cache: RedisClientType<any> | LRUCache<string, string>
 
   static getInstance() {
     if (!(global as any).__CachingService__) {
@@ -28,8 +29,8 @@ class CachingService extends EventTarget {
   }
 
   private async destroy() {
-    if (this.cache instanceof StorageManager) {
-      await this.cache.clear()
+    if (this.cache instanceof LRUCache) {
+      this.cache.clear()
     } else {
       await this.cache.quit()
     }
@@ -62,7 +63,10 @@ class CachingService extends EventTarget {
       })
     } else {
       // Use in-memory cache
-      this.cache = new StorageManager('memory', { ramCache: true, log: false })
+      this.cache = new LRUCache({
+        ttl: 1000 * 60 * 60, // 1 Hour cache
+        ttlAutopurge: true
+      })
       this.logger.i('init', 'Use memory as the caching mechanism')
     }
     this.listenSystemKilled()
@@ -70,7 +74,7 @@ class CachingService extends EventTarget {
 
   async set(category: keyof TCachingKeyMap, id: string | number, value: any) {
     const key = `${category}:${id}`
-    if (this.cache instanceof StorageManager) {
+    if (this.cache instanceof LRUCache) {
       this.dispatchEvent(new CustomEvent(key, { detail: value }))
       this.dispatchEvent(
         new CustomEvent(category, {
@@ -115,8 +119,8 @@ class CachingService extends EventTarget {
   ): () => void {
     const key = `${category}:${id}`
     this.addEventListener(key, callback as any, options)
-    // If the cache is not an instance of StorageManager, we need to subscribe to the cache
-    if (!(this.cache instanceof StorageManager)) {
+    // If the cache is not an instance of LRUCache, we need to subscribe to the cache
+    if (!(this.cache instanceof LRUCache)) {
       const cacher = this.cache
       const fn = (value: string) => {
         this.dispatchEvent(new CustomEvent(key, { detail: JSON.parse(value) }))
@@ -143,7 +147,7 @@ class CachingService extends EventTarget {
     options?: AddEventListenerOptions | boolean
   ): () => void {
     this.addEventListener(category, callback as any, options)
-    if (!(this.cache instanceof StorageManager)) {
+    if (!(this.cache instanceof LRUCache)) {
       const cacher = this.cache
       const fn = (value: string) => {
         this.dispatchEvent(new CustomEvent(category, { detail: JSON.parse(value) }))

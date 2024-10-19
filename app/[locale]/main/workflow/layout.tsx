@@ -4,18 +4,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useStorageState } from '@/hooks/useStorageState'
 import { TaskHistory } from './TaskHistory'
 import { Portal } from '@/components/PortalWrapper'
+import { useDynamicValue } from '@/hooks/useDynamicValue'
+import { useMemo } from 'react'
 
 const Layout: IComponent = ({ children }) => {
   const [viewMode, setViewMode] = useStorageState('workflow_view_mode', 'history')
-  return (
-    <Tabs
-      value={viewMode}
-      onValueChange={setViewMode}
-      className='w-full h-full flex relative items-center justify-center'
-    >
+  const dyn = useDynamicValue()
+
+  const renderMobile = useMemo(() => {
+    return (
+      <TabsList className='block md:hidden shadow bg-background/40 w-full'>
+        <TabsTrigger value='history' className='w-1/2 data-[state=active]:text-white data-[state=active]:bg-primary'>
+          History
+        </TabsTrigger>
+        <TabsTrigger value='visualize' className='w-1/2 data-[state=active]:text-white data-[state=active]:bg-primary'>
+          Gallery
+        </TabsTrigger>
+      </TabsList>
+    )
+  }, [])
+
+  const renderDesktop = useMemo(() => {
+    return (
       <Portal targetRef={'main-content'} waitForTarget followScroll={false}>
         <div
-          className='absolute left-[50%] bottom-4 md:-bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg'
+          className='absolute hidden md:block left-[50%] bottom-4 md:-bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg'
           style={{
             transform: 'translateX(-50%)'
           }}
@@ -26,6 +39,16 @@ const Layout: IComponent = ({ children }) => {
           </TabsList>
         </div>
       </Portal>
+    )
+  }, [])
+
+  return (
+    <Tabs
+      value={viewMode}
+      onValueChange={setViewMode}
+      className='w-full h-full flex flex-col relative items-center justify-center'
+    >
+      {dyn([renderMobile, renderDesktop, renderDesktop])}
       <TabsContent value='history' className='mt-0 w-full h-full relative'>
         <TaskHistory />
       </TabsContent>

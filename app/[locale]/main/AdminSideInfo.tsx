@@ -41,7 +41,7 @@ export const AdminSideInfo: IComponent = () => {
   return (
     <div className='w-full h-full flex flex-col items-start'>
       <UserInfomation />
-      <div className='flex w-full flex-row md:flex-col gap-6 p-4 items-center'>
+      <div className='flex w-full flex-row md:flex-col gap-6 p-2 md:p-4 items-center'>
         <div className='flex md:w-full flex-col md:flex-row justify-around gap-2'>
           <TaskBigStat
             loading={!taskStats}
@@ -55,14 +55,16 @@ export const AdminSideInfo: IComponent = () => {
         </div>
         <div className='flex-1 md:w-full'>
           <TaskBar loading={tasks === undefined} tasks={tasks || []} />
-          <div className='flex md:hidden gap-2 py-2 w-full items-center'>
-            {!!clientStats && (
-              <>
-                <MiniBadge title='Online' dotClassName='bg-green-500' count={clientStats.online} />
-                <MiniBadge title='Offline' dotClassName='bg-zinc-600' count={clientStats.offline} />
-                <MiniBadge title='Error' dotClassName='bg-red-500' count={clientStats.error} />
-              </>
-            )}
+          <div className='flex md:hidden flex-col gap-2 py-2 w-full items-center'>
+            <div className='flex gap-2'>
+              {!!clientStats && (
+                <>
+                  <MiniBadge title='Online' dotClassName='bg-green-500' count={clientStats.online} />
+                  <MiniBadge title='Offline' dotClassName='bg-zinc-600' count={clientStats.offline} />
+                  <MiniBadge title='Error' dotClassName='bg-red-500' count={clientStats.error} />
+                </>
+              )}
+            </div>
             <AddClientDialog />
           </div>
         </div>

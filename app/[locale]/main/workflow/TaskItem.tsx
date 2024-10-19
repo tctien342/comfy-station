@@ -210,11 +210,16 @@ export const TaskItem: IComponent<{
               Trigger by: @{shortName}, {new Date(task!.createdAt).toLocaleString()}
             </p>
             <div className='w-full flex flex-wrap gap-2 mt-2'>
-              {currentStatus === ETaskStatus.Failed && <MiniBadge dotClassName='bg-red-500' title='Failed' />}
-              {currentStatus === ETaskStatus.Queuing && <MiniBadge dotClassName='bg-gray-200' title='Queuing' />}
-              {currentStatus === ETaskStatus.Pending && <MiniBadge dotClassName='bg-gray-500' title='Pendind' />}
-              {currentStatus === ETaskStatus.Running && <MiniBadge dotClassName='bg-orange-500' title='Running' />}
-              {currentStatus === ETaskStatus.Success && <MiniBadge dotClassName='bg-green-500' title='Success' />}
+              <MiniBadge
+                dotClassName={cn({
+                  'bg-red-500': currentStatus === ETaskStatus.Failed,
+                  'bg-gray-200': currentStatus === ETaskStatus.Queuing,
+                  'bg-gray-500': currentStatus === ETaskStatus.Pending,
+                  'bg-orange-500': currentStatus === ETaskStatus.Running,
+                  'bg-green-500': currentStatus === ETaskStatus.Success
+                })}
+                title={currentStatus}
+              />
               {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
               {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
               {!!attachments?.length && <MiniBadge Icon={Image} title='Images' count={attachments.length} />}

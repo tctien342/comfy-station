@@ -60,6 +60,7 @@ export const AddClientDialog: IComponent = () => {
           onClick={() => {
             setShow(true)
           }}
+          className='hidden md:block'
           size='icon'
           variant='ghost'
         >

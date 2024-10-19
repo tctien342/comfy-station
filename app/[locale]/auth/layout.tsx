@@ -1,5 +1,5 @@
 'use client'
-import { Card } from '@/components/ui/card'
+import { Card, CardHeader } from '@/components/ui/card'
 
 import AuthBackground from '@/assets/auth-background.jpg'
 import Image from 'next/image'
@@ -23,8 +23,13 @@ const Layout: IComponent = ({ children }) => {
   }, [])
 
   return (
-    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative h-fit rounded-none md:rounded-xl'>
-      <Image alt='Login background' className='object-cover w-full md:w-[400px]' height={400} src={AuthBackground} />
+    <Card className='bg-background flex flex-col md:flex-row overflow-hidden relative w-full border-none md:w-fit h-fit rounded-none md:rounded-xl'>
+      <Image
+        alt='Login background'        
+        className='object-cover w-full md:w-[400px]'
+        height={400}
+        src={AuthBackground}
+      />
       <div className='flex justify-start flex-col p-8 w-full md:w-[460px] gap-4'>
         <Tabs value={currentTab}>
           <TabsList className='grid w-full grid-cols-2'>

@@ -118,7 +118,7 @@ export const workflowRouter = router({
       const { cursor, direction } = input
 
       const filter =
-        ctx.session.user!.role >= EUserRole.Editor
+        ctx.session.user!.role === EUserRole.Admin // Only admin can see all images
           ? {}
           : {
               task: {

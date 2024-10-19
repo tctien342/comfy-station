@@ -27,15 +27,15 @@ export const workflowTaskRouter = router({
       const { cursor, direction } = input
 
       const extra =
-        ctx.session.user!.role === EUserRole.User
-          ? {
+        ctx.session.user!.role === EUserRole.Admin // Admin can see all tasks
+          ? {}
+          : {
               trigger: {
                 user: {
                   id: ctx.session.user?.id
                 }
               }
             }
-          : {}
 
       const data = await ctx.em.findByCursor(
         WorkflowTask,
@@ -77,7 +77,7 @@ export const workflowTaskRouter = router({
   delete: privateProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
     const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger.user', 'attachments'] })
     let allow = false
-    if (ctx.session.user!.role >= EUserRole.Editor) {
+    if (ctx.session.user!.role === EUserRole.Admin) {
       allow = true
     }
     if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
@@ -87,7 +87,12 @@ export const workflowTaskRouter = router({
       for (const attachment of task.attachments) {
         ctx.em.remove(attachment)
       }
-      await ctx.em.remove(task).flush()
+      await Promise.all([
+        ctx.em.remove(task).flush(),
+        CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),
+        CachingService.getInstance().set('WORKFLOW', task.id, Date.now()),
+        CachingService.getInstance().set('HISTORY_LIST', ctx.session.user!.id, Date.now())
+      ])
       return true
     }
     throw new Error('Unauthorized')

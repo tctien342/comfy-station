@@ -42,7 +42,7 @@ export const TopBar: IComponent = () => {
   }, [role, routeConf?.key])
 
   return (
-    <div className='w-full py-2 px-3 flex items-center'>
+    <div className='w-full min-h-fit py-2 px-3 flex items-center'>
       <SimpleTransitionLayout deps={[routeConf?.title ?? '']} className='w-full flex items-center'>
         {!!Icon && (
           <Button

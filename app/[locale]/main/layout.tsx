@@ -35,7 +35,7 @@ const Layout: IComponent = ({ children }) => {
           className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
         >
           <TopBar />
-          <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1'>
+          <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
             {children}
           </SimpleTransitionLayout>
         </div>
@@ -52,10 +52,10 @@ const Layout: IComponent = ({ children }) => {
     return (
       <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
         <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative'>
-          <TabsContent value='history' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-14'>
+          <TabsContent value='history' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-10'>
             <WorkflowSidePicker />
           </TabsContent>
-          <TabsContent value='visualize' className='w-full flex-1 bg-background border rounded-lg mt-0 relative pb-14'>
+          <TabsContent value='visualize' className='w-full flex-1 bg-background border rounded-lg mt-0 relative pb-10'>
             <div
               id='main-content'
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
@@ -67,24 +67,24 @@ const Layout: IComponent = ({ children }) => {
             </div>
           </TabsContent>
           {isAdmin && (
-            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-14'>
+            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-10'>
               <AdminSideInfo />
             </TabsContent>
           )}
           <TabsList className='bg-background h-fit fixed bottom-0 w-full rounded-none border-t'>
             <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
-              <div className='py-2 flex gap-2 items-center'>
+              <div className='flex gap-2 items-center'>
                 <PlaySquare width={16} height={16} /> Execute
               </div>
             </TabsTrigger>
             <TabsTrigger value='visualize' className='py-2 data-[state=active]:shadow-none'>
-              <div className='py-2 flex gap-2 items-center'>
-                <ListIcon width={16} height={16} /> {isExecutePage ? 'History' : 'Workflows'}
+              <div className='flex gap-2 items-center'>
+                <ListIcon width={16} height={16} /> {isExecutePage ? 'Tasks' : 'Workflows'}
               </div>
             </TabsTrigger>
             {isAdmin && (
               <TabsTrigger value='admin-pannel' className='py-2 data-[state=active]:shadow-none'>
-                <div className='py-2 flex gap-2 items-center'>
+                <div className='flex gap-2 items-center'>
                   <ChartBarIcon width={16} height={16} /> Admin
                 </div>
               </TabsTrigger>

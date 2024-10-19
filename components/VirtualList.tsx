@@ -13,6 +13,7 @@ export type VirtualListProps<T> = {
   renderItem: (item: T, virtualItem: VirtualItem) => React.ReactNode
   estimateSize: (index: number) => number
   overscan?: number
+  renderEmpty?: () => React.ReactNode
   onFetchMore?: () => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
@@ -28,6 +29,7 @@ export function VirtualList<T>({
   estimateSize,
   renderItem,
   hasNextPage,
+  renderEmpty,
   isFetchingNextPage,
   overscan,
   onFetchMore
@@ -116,6 +118,11 @@ export function VirtualList<T>({
           overflow: 'auto'
         }}
       >
+        {items.length === 0 && (
+          <div className='absolute top-0 left-0 w-full h-full flex items-center justify-center'>
+            {renderEmpty?.() || <span className='text-foreground/50 uppercase'>Empty</span>}
+          </div>
+        )}
         <div
           style={{
             width: '100%',

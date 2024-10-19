@@ -18,17 +18,7 @@ export const AttachmentImage: IComponent<{
   loading?: boolean
   className?: string
   tryPreivew?: boolean
-}> = ({
-  data,
-  mode = 'image',
-  shortName = 'N/A',
-  onClick,
-  className,
-  tryPreivew,
-  isFavorited,
-  loading,
-  onPressFavorite
-}) => {
+}> = ({ data, mode = 'image', shortName = 'N/A', onClick, className, isFavorited, loading, onPressFavorite }) => {
   const enabled = !!data?.id
   const { data: image, isLoading } = trpc.attachment.get.useQuery(
     {
@@ -57,32 +47,34 @@ export const AttachmentImage: IComponent<{
             {!imageLoaded && <LoadingSVG width={16} height={16} className='repeat-infinite' />}
           </div>
         </PhotoView>
-        <div
-          className={cn('z-10 group-hover:block absolute top-1 left-1', {
-            hidden: !isFavorited
-          })}
-        >
-          <Tooltip>
-            <TooltipTrigger>
-              <Button onClick={() => onPressFavorite?.(data?.id!)} size='icon' variant='ghost'>
-                <Star
-                  width={24}
-                  height={24}
-                  className={cn({
-                    'fill-zinc-200 stroke-zinc-200': !isFavorited,
-                    'fill-yellow-500 stroke-yellow-500': isFavorited
-                  })}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side='right'
-              className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
-            >
-              Set as thumbnail for this workflow
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        {!!onPressFavorite && (
+          <div
+            className={cn('z-10 group-hover:block absolute top-1 left-1', {
+              hidden: !isFavorited
+            })}
+          >
+            <Tooltip>
+              <TooltipTrigger>
+                <Button onClick={() => onPressFavorite?.(data?.id!)} size='icon' variant='ghost'>
+                  <Star
+                    width={24}
+                    height={24}
+                    className={cn({
+                      'fill-zinc-200 stroke-zinc-200': !isFavorited,
+                      'fill-yellow-500 stroke-yellow-500': isFavorited
+                    })}
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side='right'
+                className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
+              >
+                Set as thumbnail for this workflow
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
         <div className={cn('z-10 hidden group-hover:block absolute bottom-1 right-1')}>
           <Tooltip>
             <TooltipTrigger>

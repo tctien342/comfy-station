@@ -27,10 +27,10 @@ export const TaskBigStat: IComponent<{
   }, [count, minDisplay])
 
   return (
-    <div className='flex flex-col items-end'>
+    <div className='flex flex-col md:items-end'>
       <div className='text-xs font-semibold'>{title}</div>
       <p
-        className={cn('text-5xl font-digital tracking-wide', {
+        className={cn('text-2xl md:text-5xl font-digital tracking-wide', {
           'animate-pulse': loading
         })}
       >
