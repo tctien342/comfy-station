@@ -41,8 +41,8 @@ export const AdminSideInfo: IComponent = () => {
   return (
     <div className='w-full h-full flex flex-col items-start'>
       <UserInfomation />
-      <div className='flex w-full flex-col gap-2 p-4'>
-        <div className='flex justify-around gap-2'>
+      <div className='flex w-full flex-row md:flex-col gap-6 p-4 items-center'>
+        <div className='flex md:w-full flex-col md:flex-row justify-around gap-2'>
           <TaskBigStat
             loading={!taskStats}
             title='TASK PENDING'
@@ -53,12 +53,26 @@ export const AdminSideInfo: IComponent = () => {
           />
           <TaskBigStat loading={!taskStats} title='TASK EXECUTED' count={taskStats?.executed || 0} />
         </div>
-        <TaskBar loading={tasks === undefined} tasks={tasks || []} />
+        <div className='flex-1 md:w-full'>
+          <TaskBar loading={tasks === undefined} tasks={tasks || []} />
+          <div className='flex md:hidden gap-2 py-2 w-full items-center'>
+            {!!clientStats && (
+              <>
+                <MiniBadge title='Online' dotClassName='bg-green-500' count={clientStats.online} />
+                <MiniBadge title='Offline' dotClassName='bg-zinc-600' count={clientStats.offline} />
+                <MiniBadge title='Error' dotClassName='bg-red-500' count={clientStats.error} />
+              </>
+            )}
+            <AddClientDialog />
+          </div>
+        </div>
       </div>
-      <div className='flex-auto w-full shadow-inner border-t border-b flex flex-col divide-y-[1px]'>
-        {clients?.map((client) => <ClientInfoMonitoring key={client.id} client={client} />)}
+      <div className='flex-1 w-full shadow-inner border-t border-b relative'>
+        <div className='absolute w-full h-full overflow-auto divide-y-[1px]'>
+          {clients?.map((client) => <ClientInfoMonitoring key={client.id} client={client} />)}
+        </div>
       </div>
-      <div className='flex gap-2 p-2 w-full items-center'>
+      <div className='md:flex hidden gap-2 p-2 w-full items-center'>
         {!!clientStats && (
           <>
             <MiniBadge title='Online' dotClassName='bg-green-500' count={clientStats.online} />

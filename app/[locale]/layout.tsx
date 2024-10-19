@@ -37,10 +37,10 @@ export default async function RootLayout({
           <NextIntlClientProvider timeZone='UTC' messages={messages}>
             <BackgroundSVG
               preserveAspectRatio='none'
-              className='-z-10 absolute top-0 left-0 w-screen h-screen object-fill'
+              className='-z-10 absolute top-0 left-0 w-full h-full object-fill'
             />
             <TRPCLayout>
-              <div className='w-screen h-[100dvh] md:h-screen md:p-2 lg:p-4 flex justify-center items-center relative'>
+              <div className='w-screen h-full md:p-2 lg:p-4 flex justify-center items-center relative'>
                 <ClientLayout>{children}</ClientLayout>
               </div>
             </TRPCLayout>

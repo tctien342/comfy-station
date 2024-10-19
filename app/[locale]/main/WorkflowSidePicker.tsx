@@ -179,8 +179,8 @@ export const WorkflowSidePicker: IComponent = () => {
             Will splitted into {cost.subTasks} sub-tasks, each cost {cost.value / cost.subTasks} credits
           </span>
         )}
-        <div className='w-full flex gap-2 justify-end items-center '>
-          {!!cost && <span className='text-xs text-gray-600'>Cost {cost.value} credits</span>}
+        <div className='w-full flex gap-2 justify-end items-center flex-col md:flex-row py-2 md:py-0'>
+          {!!cost && <span className='text-xs text-gray-600 hidden md:block'>Cost {cost.value} credits</span>}
           <Button
             onClick={() => {
               router.push('/main')
@@ -191,9 +191,14 @@ export const WorkflowSidePicker: IComponent = () => {
             Back
             <ChevronLeft className='w-4 h-4 ml-1' />
           </Button>
-          <LoadableButton loading={loading} onClick={handlePressRun}>
+          <LoadableButton loading={loading} onClick={handlePressRun} className='w-full md:w-fit relative'>
             Run
             <Play className='w-4 h-4 ml-1' />
+            {!!cost && (
+              <span className='absolute right-4 text-xs text-white/80 ml-1 block md:hidden'>
+                Cost {cost.value} credits
+              </span>
+            )}
           </LoadableButton>
         </div>
       </div>
