@@ -10,7 +10,7 @@ export const AttachmentImageSlider: IComponent<{
   const lister = trpc.attachment.getList.useQuery(images, {
     enabled: show && images.length > 0
   })
-  const imagesURL = lister.data?.filter((item) => !!item.urls.raw).map((item) => item.urls.raw!.url) ?? []
+  const imagesURL = lister.data?.filter((item) => !!item.urls.raw).map((item) => item.urls.high!.url) ?? []
   return (
     <PhotoSlider
       images={imagesURL.map((item) => ({ src: item, key: item }))}
