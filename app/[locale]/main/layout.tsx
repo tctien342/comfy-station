@@ -52,10 +52,10 @@ const Layout: IComponent = ({ children }) => {
     return (
       <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
         <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative'>
-          <TabsContent value='history' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-10'>
+          <TabsContent value='history' className='w-full flex-1 bg-background rounded-lg mt-0 pb-10'>
             <WorkflowSidePicker />
           </TabsContent>
-          <TabsContent value='visualize' className='w-full flex-1 bg-background border rounded-lg mt-0 relative pb-10'>
+          <TabsContent value='visualize' className='w-full flex-1 bg-background rounded-lg mt-0 relative pb-10'>
             <div
               id='main-content'
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
@@ -67,7 +67,7 @@ const Layout: IComponent = ({ children }) => {
             </div>
           </TabsContent>
           {isAdmin && (
-            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background border rounded-lg mt-0 pb-10'>
+            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background px-1 pt-2 rounded-lg mt-0 pb-10'>
               <AdminSideInfo />
             </TabsContent>
           )}

@@ -13,7 +13,7 @@ const Layout: IComponent = ({ children }) => {
 
   const renderMobile = useMemo(() => {
     return (
-      <TabsList className='block md:hidden shadow bg-background/40 w-full'>
+      <TabsList className='block md:hidden bg-background/40 w-full rounded-none shadow-none border-t'>
         <TabsTrigger value='history' className='w-1/2 data-[state=active]:text-white data-[state=active]:bg-primary'>
           History
         </TabsTrigger>

@@ -264,7 +264,8 @@ export class ComfyPoolInstance {
                           tmpOutput[key].map(async (v, idx) => {
                             if (v instanceof Blob) {
                               const imgUtil = new ImageUtil(Buffer.from(await v.arrayBuffer()))
-                              const [preview, png] = await Promise.all([
+                              const [preview, high, raw] = await Promise.all([
+                                // For thumbnail
                                 imgUtil
                                   .clone()
                                   .resizeMax(1024)
@@ -273,14 +274,24 @@ export class ComfyPoolInstance {
                                     this.logger.w('Error while converting to preview', e)
                                     return null
                                   }),
+                                // For on click into thumbnail preview
+                                imgUtil
+                                  .clone()
+                                  .intoPreviewJPG()
+                                  .catch((e) => {
+                                    this.logger.w('Error while converting to preview', e)
+                                    return null
+                                  }),
+                                // Raw image, use for download
                                 imgUtil.intoPNG()
                               ])
                               const tmpName = `${task.id}_${key}_${idx}.png`
                               const [uploaded] = await Promise.all([
-                                attachment.uploadFile(png, `${tmpName}`),
+                                attachment.uploadFile(raw, `${tmpName}`),
                                 preview
                                   ? attachment.uploadFile(preview, `${tmpName}_preview.jpg`)
-                                  : Promise.resolve(false)
+                                  : Promise.resolve(false),
+                                high ? attachment.uploadFile(high, `${tmpName}_high.jpg`) : Promise.resolve(false)
                               ])
                               if (uploaded) {
                                 const fileInfo = await attachment.getFileURL(tmpName)
@@ -289,7 +300,7 @@ export class ComfyPoolInstance {
                                   Attachment,
                                   {
                                     fileName: tmpName,
-                                    size: png.byteLength,
+                                    size: raw.byteLength,
                                     storageType:
                                       fileInfo?.type === EAttachmentType.LOCAL ? EStorageType.LOCAL : EStorageType.S3,
                                     status: EAttachmentStatus.UPLOADED,

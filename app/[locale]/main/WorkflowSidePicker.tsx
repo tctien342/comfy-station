@@ -18,6 +18,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const { router, slug } = useCurrentRoute()
   const [loading, setLoading] = useState(false)
   const [repeat, setRepeat] = useState(1)
+  const [randomSeedEnabled, setRandomSeedEnabled] = useState(true)
   const { toast } = useToast()
   const [inputData, setInputData, reload] = useStorageState<Record<string, any>>(`input-wf-${slug}`, {})
   const crrWorkflowInfo = trpc.workflow.get.useQuery(slug!, {
@@ -97,7 +98,7 @@ export const WorkflowSidePicker: IComponent = () => {
       })
       .finally(() => {
         setLoading(false)
-        updateSeed()
+        if (randomSeedEnabled) updateSeed()
       })
   }
 
@@ -167,6 +168,8 @@ export const WorkflowSidePicker: IComponent = () => {
                 return obj
               })
             }
+            randomSeedEnabled={randomSeedEnabled}
+            changeRandomSeedEnabled={setRandomSeedEnabled}
             repeat={repeat}
             data={inputData}
             onChangeRepeat={!!seedInput ? setRepeat : undefined}
@@ -191,7 +194,12 @@ export const WorkflowSidePicker: IComponent = () => {
             Back
             <ChevronLeft className='w-4 h-4 ml-1' />
           </Button>
-          <LoadableButton loading={loading} onClick={handlePressRun} className='w-full md:w-fit relative'>
+          <LoadableButton
+            disabled={!slug}
+            loading={loading}
+            onClick={handlePressRun}
+            className='w-full md:w-fit relative'
+          >
             Run
             <Play className='w-4 h-4 ml-1' />
             {!!cost && (

@@ -56,13 +56,15 @@ const useImageBundler = (): UseImageBundlerResult => {
       const zip = new JSZip()
       const totalFiles = fileUrls.length
       let completedFiles = 0
+      let percents: number[] = Array(totalFiles).fill(0)
 
       // Download each file in parallel and add it to the zip
       await Promise.all(
-        fileUrls.map(async (url) => {
-          const fileName = url.split('/').pop() || 'file'
+        fileUrls.map(async (url, idx) => {
+          const fileName = url.split('/').pop()?.split('?')[0] || 'file'
           const fileBlob = await downloadFile(url, (fileProgress) => {
-            setProgress(((completedFiles + fileProgress / 100) / totalFiles) * 100)
+            percents[idx] = fileProgress
+            setProgress(percents.reduce((acc, cur) => acc + cur, 0) / totalFiles)
           })
           zip.file(fileName, fileBlob)
           completedFiles++

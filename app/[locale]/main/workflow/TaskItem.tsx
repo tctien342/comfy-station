@@ -17,6 +17,8 @@ import { AttachmentImageSlider } from '@/components/AttachmentImageSlider'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { LoadableButton } from '@/components/LoadableButton'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import DownloadImagesButton from '@/components/ui-ext/download-button'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
@@ -45,11 +47,6 @@ export const TaskItem: IComponent<{
   })
 
   const { copyToClipboard, isCopied } = useCopyAction()
-  const downloadAttachment = () =>
-    attachments
-      ?.filter((a) => !!a)
-      .map((a) => a!.url)
-      .map((v) => window.open(v, '_blank'))
 
   const isLoading = useMemo(() => {
     if (!task) return true
@@ -226,18 +223,10 @@ export const TaskItem: IComponent<{
             </div>
           </div>
           {previewAttachment}
-          <div className={cn('z-10 md:hidden group-hover:block absolute top-1 right-1')}>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button onClick={() => downloadAttachment()} size='icon' variant='ghost' className='text-white'>
-                  <Download width={24} height={24} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side='left' className='bg-background text-foreground z-10 border p-2 flex flex-col'>
-                Download all attachments
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <DownloadImagesButton
+            workflowTaskId={data.id}
+            className={cn('z-10 flex absolute top-1 right-1 p-2 bg-background text-foreground rounded-lg btn')}
+          />
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>

@@ -9,13 +9,16 @@ import { ECompressPreset } from '@/hooks/useAttachmentUploader'
 
 const getAttachmentURL = async (attachment: Attachment) => {
   const prevName = `${attachment.fileName}_preview.jpg`
-  const [imageInfo, imagePreviewInfo] = await Promise.all([
+  const highName = `${attachment.fileName}_high.jpg`
+  const [imageInfo, imagePreviewInfo, imageHighInfo] = await Promise.all([
     AttachmentService.getInstance().getFileURL(attachment.fileName, 3600 * 24),
-    AttachmentService.getInstance().getFileURL(prevName, 3600 * 24)
+    AttachmentService.getInstance().getFileURL(prevName, 3600 * 24),
+    AttachmentService.getInstance().getFileURL(highName, 3600 * 24)
   ])
   return {
     raw: imageInfo,
-    preview: imagePreviewInfo || imageInfo
+    preview: imagePreviewInfo || imageInfo,
+    high: imageHighInfo || imageInfo
   }
 }
 

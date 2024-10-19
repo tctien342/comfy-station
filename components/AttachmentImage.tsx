@@ -7,6 +7,7 @@ import { PhotoView } from 'react-photo-view'
 import { Button } from './ui/button'
 import { Download, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 
 export const AttachmentImage: IComponent<{
   shortName?: string
@@ -30,7 +31,13 @@ export const AttachmentImage: IComponent<{
     }
   )
 
-  const downloadFn = () => window.open(image?.raw?.url, '_blank')
+  const downloadFn = (mode: 'jpg' | 'raw' = 'raw') => {
+    if (mode === 'raw') {
+      window.open(image?.raw?.url, '_blank')
+    } else {
+      window.open(image?.high?.url, '_blank')
+    }
+  }
   const imageLoaded = !loading && (!isLoading || !enabled)
 
   if (mode === 'image') {
@@ -38,7 +45,7 @@ export const AttachmentImage: IComponent<{
       <div
         className={cn('w-16 h-16 rounded-xl cursor-pointer btn bg-secondary overflow-hidden relative group', className)}
       >
-        <PhotoView src={image?.raw?.url}>
+        <PhotoView src={image?.high?.url}>
           <div className='w-full h-full flex items-center justify-center'>
             {imageLoaded && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -75,21 +82,21 @@ export const AttachmentImage: IComponent<{
             </Tooltip>
           </div>
         )}
-        <div className={cn('z-10 hidden group-hover:block absolute bottom-1 right-1')}>
-          <Tooltip>
-            <TooltipTrigger>
-              <Button onClick={() => downloadFn()} size='icon' variant='ghost'>
-                <Download width={24} height={24} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side='right'
-              className='max-w-[128px] bg-background text-foreground z-10 border p-2 flex flex-col'
-            >
-              Download this images
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className='flex items-center'>
+            <div className={cn('z-10 md:hidden group-hover:block absolute bottom-1 right-1 p-2 bg-white rounded-lg btn')}>
+              <Download width={16} height={16} />
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side='left' align='center'>
+            <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
+              <span>Download compressed JPG</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
+              <span>Download Raw</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     )
   }

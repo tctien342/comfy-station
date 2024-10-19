@@ -14,6 +14,7 @@ import { Button } from './ui/button'
 import { Dice5, Repeat } from 'lucide-react'
 import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
+import { Switch } from './ui/switch'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -21,10 +22,12 @@ export const WorkflowInputArea: IComponent<{
   workflow: Partial<Workflow>
   disabled?: boolean
   repeat?: number
+  randomSeedEnabled?: boolean
+  changeRandomSeedEnabled?: (enabled: boolean) => void
   onChangeRepeat?: (repeat: number) => void
   data: Record<string, any>
   onChange?: (data: Record<string, any>) => void
-}> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange }) => {
+}> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange, randomSeedEnabled, changeRandomSeedEnabled }) => {
   const { updateSelecting, recenter } = useWorkflowVisStore()
   const inputData = data
 
@@ -77,7 +80,7 @@ export const WorkflowInputArea: IComponent<{
                 setInputData((prev) => ({ ...prev, [val]: e.target.value }))
               }}
               value={data}
-              defaultValue={String(input.default ?? '')}
+              placeholder={String(input.default ?? '')}
             />
           )}
           {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
@@ -90,30 +93,38 @@ export const WorkflowInputArea: IComponent<{
             />
           )}
           {[EValueType.Number, EValueUltilityType.Seed].includes(input.type as EValueType) && (
-            <div className='w-full gap-2 flex'>
-              <Input
-                disabled={disabled}
-                defaultValue={String(input.default ?? '')}
-                value={data}
-                onChange={(e) => {
-                  setInputData((prev) => ({ ...prev, [val]: e.target.value }))
-                }}
-                min={input.min}
-                max={input.max}
-                type='number'
-              />
-              {input.type === EValueUltilityType.Seed && (
-                <Button
-                  onClick={() => {
-                    setInputData((prev) => ({ ...prev, [val]: seed() }))
+            <>
+              <div className='w-full gap-2 flex'>
+                <Input
+                  disabled={disabled}
+                  placeholder={String(input.default ?? '')}
+                  value={data}
+                  onChange={(e) => {
+                    setInputData((prev) => ({ ...prev, [val]: e.target.value }))
                   }}
-                  variant='outline'
-                  size='icon'
-                >
-                  <Dice5 className='w-4 h-4' />
-                </Button>
+                  min={input.min}
+                  max={input.max}
+                  type='number'
+                />
+                {input.type === EValueUltilityType.Seed && (
+                  <Button
+                    onClick={() => {
+                      setInputData((prev) => ({ ...prev, [val]: seed() }))
+                    }}
+                    variant='outline'
+                    size='icon'
+                  >
+                    <Dice5 className='w-4 h-4' />
+                  </Button>
+                )}
+              </div>
+              {input.type === EValueUltilityType.Seed && (
+                <div className='flex items-center space-x-2 w-full'>
+                  <Switch checked={randomSeedEnabled} onCheckedChange={changeRandomSeedEnabled} />
+                  <Label htmlFor='airplane-mode'>Random seed after run</Label>
+                </div>
               )}
-            </div>
+            </>
           )}
           {SelectionSchema.safeParse(input.type).success && (
             <Select
