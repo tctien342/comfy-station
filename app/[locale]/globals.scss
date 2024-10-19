@@ -129,7 +129,7 @@ body {
   width: 100vw;
 }
 
-@media screen and (max-width: 767px) {
+@media (display-mode: standalone) {
   _::-webkit-full-page-media,
   _:future,
   :root .safari_only {

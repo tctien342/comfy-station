@@ -51,7 +51,7 @@ const Layout: IComponent = ({ children }) => {
   const renderMobileView = useMemo(() => {
     return (
       <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
-        <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative'>
+        <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative safari_only'>
           <TabsContent value='history' className='w-full flex-1 bg-background rounded-lg mt-0 pb-10'>
             <WorkflowSidePicker />
           </TabsContent>
