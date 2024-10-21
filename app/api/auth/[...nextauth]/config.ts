@@ -2,9 +2,8 @@ import jwt from 'jsonwebtoken'
 import { AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import type { User } from '@/entities/user'
-import { getBaseUrl } from '@/utils/trpc'
 import { BackendENV } from '@/env'
-import { SharedStorage } from '@/services/shared'
+import { getBaseUrl } from '@/utils/trpc'
 
 const getUserInfomationByCredentials = async (email: string, password: string) => {
   const data = await fetch(`${getBaseUrl()}/user/credential`, {

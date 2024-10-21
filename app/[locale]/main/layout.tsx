@@ -156,7 +156,7 @@ const Layout: IComponent = ({ children }) => {
   if (session.status !== 'authenticated') return null
   return (
     <div className='w-full h-full bg-white/10 dark:bg-black/10 backdrop-blur-sm md:border md:rounded-xl md:p-2'>
-      <TooltipProvider>{dyn([renderMobileView, renderDesktopView, renderDesktopView])}</TooltipProvider>
+      <TooltipProvider>{dyn([renderMobileView, renderDesktopView, renderDesktopView], null)}</TooltipProvider>
     </div>
   )
 }

@@ -6,8 +6,8 @@ import { useCallback, useEffect, useState } from 'react'
 export const useDynamicValue = (
   breakPoints = [720, 960],
   mode: 'width' | 'height' = 'width'
-): (<T = undefined>(values: [T, T, T]) => T) => {
-  const [sel, setSel] = useState(0)
+): (<T = undefined>(values: [T, T, T], fallBack?: T) => T) => {
+  const [sel, setSel] = useState(-1)
 
   const handleResize = useCallback(() => {
     const currentSize = mode === 'width' ? document.documentElement.clientWidth : document.documentElement.clientHeight
@@ -30,7 +30,11 @@ export const useDynamicValue = (
    * Return size base on screen status
    * @param values [small,medium,large] dynamic size to be used
    */
-  const getValue = <T = undefined>(values: [T, T, T]): T => {
+  const getValue = <T = undefined>(values: [T, T, T], fallBack?: T): T => {
+    if (sel === -1) {
+      if (fallBack) return fallBack
+      return values[0]
+    }
     return values[sel]
   }
   return getValue

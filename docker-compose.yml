@@ -5,7 +5,7 @@ services:
     build:
       context: .
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - BACKEND_URL=${BACKEND_URL}
     restart: unless-stopped
     ports:
       - '3000:3000'
@@ -13,7 +13,7 @@ services:
     env_file:
       - .env
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - BACKEND_URL=${BACKEND_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - INTERNAL_SECRET=${INTERNAL_SECRET}
       - S3_ENDPOINT=${S3_ENDPOINT}

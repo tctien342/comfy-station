@@ -4,10 +4,11 @@ import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 
-import TRPCLayout from './layout.trpc'
 import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
 import { SessionLayout } from './layout.session'
 import { ClientLayout } from './layout.client'
+import { BackendENV } from '@/env'
+import TRPCLayout from './layout.trpc'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -21,6 +22,11 @@ export const metadata: Metadata = {
   description: 'A station for all your comfyui instance'
 }
 
+async function getBackendURL() {
+  'use server'
+  return BackendENV.BACKEND_URL
+}
+
 export default async function RootLayout({
   children,
   params: { session, locale }
@@ -29,9 +35,10 @@ export default async function RootLayout({
   params: { locale: string; session: any }
 }>) {
   const messages = await getMessages()
+  const backendURL = await getBackendURL()
 
   return (
-    <html lang={locale} className=''>
+    <html lang={locale} data-backend-url={backendURL}>
       <body>
         <SessionLayout session={session}>
           <NextIntlClientProvider timeZone='UTC' messages={messages}>

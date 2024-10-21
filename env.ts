@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const ENVBackendSchema = z.object({
-  NEXT_PUBLIC_API_URL: z.string().optional().default('http://localhost:3001'),
+  BACKEND_URL: z.string().optional().default('http://localhost:3001'),
   NEXTAUTH_SECRET: z.string().optional().default('secret'),
   INTERNAL_SECRET: z.string().optional().default('internal-secret'),
   S3_ENDPOINT: z.string().optional(),
@@ -12,7 +12,7 @@ const ENVBackendSchema = z.object({
 })
 
 export const BackendENV = ENVBackendSchema.parse({
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  BACKEND_URL: process.env.BACKEND_URL,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   INTERNAL_SECRET: process.env.INTERNAL_SECRET,
   S3_ENDPOINT: process.env.S3_ENDPOINT,

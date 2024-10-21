@@ -1,30 +1,12 @@
 import superjson from 'superjson'
 
-import {
-  createWSClient,
-  httpBatchLink,
-  httpLink,
-  isNonJsonSerializable,
-  loggerLink,
-  splitLink,
-  wsLink
-} from '@trpc/client'
+import { createWSClient, httpBatchLink, httpLink, isNonJsonSerializable, splitLink, wsLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import { ssrPrepass } from '@trpc/next/ssrPrepass'
 import type { AppRouter } from '@/server/routers/_app'
 import { BackendENV } from '@/env'
-import { getSession } from 'next-auth/react'
 
 let AuthToken = ''
-
-export const wsClient = createWSClient({
-  url: `${getBaseWsUrl()}/api/trpc`,
-  connectionParams() {
-    return {
-      Authorization: `Bearer ${AuthToken}`
-    }
-  }
-})
 
 export function setAuthToken(newToken: string) {
   /**
@@ -36,18 +18,36 @@ export function setAuthToken(newToken: string) {
 }
 
 export function getBaseUrl() {
-  return BackendENV.NEXT_PUBLIC_API_URL
+  if (typeof window !== 'undefined') {
+    // Get html tag
+    const html = document.querySelector('html')
+    // Get data-backend-url attribute
+    const backendURL = html?.getAttribute('data-backend-url')
+    if (backendURL) {
+      return backendURL
+    }
+  }
+  return BackendENV.BACKEND_URL
 }
 
 function getBaseWsUrl() {
-  const BackendURL = BackendENV.NEXT_PUBLIC_API_URL
+  const BackendURL = getBaseUrl()
   if (BackendURL.includes('https')) {
     return BackendURL.replace('https', 'wss')
   }
   return BackendURL.replace('http', 'ws')
 }
 
-export const trpc = createTRPCNext<AppRouter>({
+const wsClient = createWSClient({
+  url: `${getBaseWsUrl()}/api/trpc`,
+  connectionParams() {
+    return {
+      Authorization: `Bearer ${AuthToken}`
+    }
+  }
+})
+
+const trpc = createTRPCNext<AppRouter>({
   transformer: superjson,
   config(opts) {
     const { ctx } = opts
@@ -131,3 +131,5 @@ export const trpc = createTRPCNext<AppRouter>({
   ssr: true,
   ssrPrepass
 })
+
+export { wsClient, trpc }
