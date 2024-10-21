@@ -13,6 +13,13 @@ export const handleGetUserByCredentials = async (
     req: IncomingMessage
   }
 ) => {
+  const auth = req.headers.authorization
+  if (!auth || auth !== `Bearer ${BackendENV.INTERNAL_SECRET}`) {
+    res.writeHead(401)
+    res.end()
+    return
+  }
+
   let body = ''
   req.on('data', (chunk) => {
     body += chunk.toString()
@@ -38,24 +45,29 @@ export const handleGetUserByCredentials = async (
   })
 }
 
-export const handleGetUserByJWT = async (
+export const handleGetUserByEmail = async (
   req: IncomingMessage,
   res: ServerResponse<IncomingMessage> & {
     req: IncomingMessage
   }
 ) => {
+  const auth = req.headers.authorization
+  if (!auth || auth !== `Bearer ${BackendENV.INTERNAL_SECRET}`) {
+    res.writeHead(401)
+    res.end()
+    return
+  }
+
   let body = ''
   req.on('data', (chunk) => {
     body += chunk.toString()
   })
   req.on('end', async () => {
     try {
-      const { token } = JSON.parse(body)
+      const { email } = JSON.parse(body)
       // Check if email and password are correct
       const em = await mikro.getEM()
-      const secret = SharedStorage.getInstance().getSecret()
-      const tokenInfo = verify(token, secret) as { email: string }
-      const user = await em.fork().findOne(User, { email: tokenInfo.email })
+      const user = await em.fork().findOne(User, { email: email })
       if (!user) {
         res.writeHead(401)
         res.end()

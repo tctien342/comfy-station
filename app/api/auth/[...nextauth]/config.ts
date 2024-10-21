@@ -11,19 +11,21 @@ const getUserInfomationByCredentials = async (email: string, password: string) =
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${BackendENV.INTERNAL_SECRET}`
     }
   }).then((res) => res.json())
 
   return data as User
 }
 
-const getUserInfomationByJWT = async (token: string) => {
-  const data = await fetch(`${getBaseUrl()}/user/jwt`, {
+const getUserInfomationByEmail = async (email: string) => {
+  const data = await fetch(`${getBaseUrl()}/user/email`, {
     method: 'POST',
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ email }),
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${BackendENV.INTERNAL_SECRET}`
     }
   }).then((res) => res.json())
   return data as User
@@ -54,17 +56,15 @@ export const NextAuthOptions: AuthOptions = {
   ],
   secret: BackendENV.NEXTAUTH_SECRET ?? 'secret',
   callbacks: {
-    async jwt({ token }) {
-      return { ...token }
-    },
     async session({ session, token }) {
-      const secret = SharedStorage.getInstance().getSecret()
-      const accessToken = jwt.sign({ email: token.email }, secret)
-      session.accessToken = accessToken as string
-      if (session.accessToken) {
-        const user = await getUserInfomationByJWT(accessToken)
+      if (token.email) {
+        const user = await getUserInfomationByEmail(token.email).catch(() => {
+          console.log('Failed to get user information from Backend')
+          return null
+        })
         if (user) {
           session.user = user
+          session.accessToken = jwt.sign({ email: user.email }, BackendENV.NEXTAUTH_SECRET)
         }
       }
       return session

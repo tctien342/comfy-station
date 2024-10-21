@@ -10,7 +10,7 @@ import AttachmentService from '@/services/attachment'
 import CachingService from '@/services/caching'
 import { ComfyPoolInstance } from '@/services/comfyui'
 import { MikroORMInstance } from '@/services/mikro-orm'
-import { handleGetUserByCredentials, handleGetUserByJWT } from './handlers/user'
+import { handleGetUserByCredentials, handleGetUserByEmail } from './handlers/user'
 import { SharedStorage } from '@/services/shared'
 
 /**
@@ -35,8 +35,8 @@ const server = createServer((req, res) => {
       handleGetUserByCredentials(req, res)
       return
     }
-    if (req.url === '/user/jwt' && req.method === 'POST') {
-      handleGetUserByJWT(req, res)
+    if (req.url === '/user/email' && req.method === 'POST') {
+      handleGetUserByEmail(req, res)
       return
     }
   } catch (e) {
