@@ -14,6 +14,7 @@ const getUserInfomationByCredentials = async (email: string, password: string) =
       'Content-Type': 'application/json'
     }
   }).then((res) => res.json())
+
   return data as User
 }
 
@@ -38,9 +39,13 @@ export const NextAuthOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (credentials) {
-          const user = await getUserInfomationByCredentials(credentials.email, credentials.password)
-          if (user) {
-            return { id: user.id, email: user.email }
+          try {
+            const user = await getUserInfomationByCredentials(credentials.email, credentials.password)
+            if (user) {
+              return { id: user.id, email: user.email }
+            }
+          } catch (e) {
+            console.error(e)
           }
         }
         return null
@@ -50,14 +55,14 @@ export const NextAuthOptions: AuthOptions = {
   secret: BackendENV.NEXTAUTH_SECRET ?? 'secret',
   callbacks: {
     async jwt({ token }) {
-      const secret = SharedStorage.getInstance().getSecret()
-      const accessToken = jwt.sign({ email: token.email }, secret)
-      return { ...token, accessToken }
+      return { ...token }
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string
+      const secret = SharedStorage.getInstance().getSecret()
+      const accessToken = jwt.sign({ email: token.email }, secret)
+      session.accessToken = accessToken as string
       if (session.accessToken) {
-        const user = await getUserInfomationByJWT(session.accessToken)
+        const user = await getUserInfomationByJWT(accessToken)
         if (user) {
           session.user = user
         }
