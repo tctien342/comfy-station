@@ -10,21 +10,31 @@ import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { WorkflowSidePicker } from './WorkflowSidePicker'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ChartBarIcon, ListIcon, PlaySquare } from 'lucide-react'
+import { ChartBarIcon, Image, ListIcon, PlaySquare } from 'lucide-react'
+import { forceRecalculatePortal, Portal } from '@/components/PortalWrapper'
+import { RouteConf, TRouterKey } from '@/constants/route'
 
 const Layout: IComponent = ({ children }) => {
   const session = useSession()
-  const { routeConf } = useCurrentRoute()
+  const { routeConf, router } = useCurrentRoute()
   const dyn = useDynamicValue()
 
   const isAdmin = session.data?.user?.role === EUserRole.Admin
   const isExecutePage = routeConf?.key === 'execute'
 
+  useEffect(() => {
+    setTimeout(() => forceRecalculatePortal(), 200)
+  }, [routeConf])
+
   const renderDesktopView = useMemo(() => {
     return (
-      <div className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
+      <Tabs
+        value={routeConf?.key}
+        onValueChange={(value) => router.push(RouteConf[value as TRouterKey].path)}
+        className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'
+      >
         {isExecutePage && (
           <div className='w-full md:w-1/4 min-w-[290px] md:max-w-[360px] min-h-full bg-background border rounded-lg'>
             <WorkflowSidePicker />
@@ -38,15 +48,31 @@ const Layout: IComponent = ({ children }) => {
           <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
             {children}
           </SimpleTransitionLayout>
+          {!isExecutePage && (
+            <Portal targetRef={'main-content'} waitForTarget followScroll={false}>
+              <div
+                className='absolute hidden md:block left-[50%] bottom-4 md:-bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg duration-200'
+                style={{
+                  transform: 'translateX(-50%)'
+                }}
+              >
+                <TabsList>
+                  <TabsTrigger value='home'>Workflows</TabsTrigger>
+                  <TabsTrigger value='gallery'>Gallery</TabsTrigger>
+                  <TabsTrigger value='setting'>Setting</TabsTrigger>
+                </TabsList>
+              </div>
+            </Portal>
+          )}
         </div>
         {isAdmin && (
           <div className='w-1/4 min-w-max h-full bg-background border rounded-lg'>
             <AdminSideInfo />
           </div>
         )}
-      </div>
+      </Tabs>
     )
-  }, [children, isAdmin, isExecutePage, routeConf?.key])
+  }, [children, isAdmin, isExecutePage, routeConf?.key, router])
 
   const renderMobileView = useMemo(() => {
     return (
@@ -61,7 +87,18 @@ const Layout: IComponent = ({ children }) => {
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
             >
               <TopBar />
-              <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1'>
+              <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
+                {children}
+              </SimpleTransitionLayout>
+            </div>
+          </TabsContent>
+          <TabsContent value='gallery' className='w-full flex-1 bg-background rounded-lg mt-0 relative pb-10'>
+            <div
+              id='main-content'
+              className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
+            >
+              <TopBar />
+              <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
                 {children}
               </SimpleTransitionLayout>
             </div>
@@ -77,9 +114,30 @@ const Layout: IComponent = ({ children }) => {
                 <PlaySquare width={16} height={16} /> Execute
               </div>
             </TabsTrigger>
-            <TabsTrigger value='visualize' className='py-2 data-[state=active]:shadow-none'>
+            <TabsTrigger
+              onClick={() => {
+                if (routeConf?.key === 'gallery') {
+                  router.push(RouteConf['home'].path)
+                }
+              }}
+              value='visualize'
+              className='py-2 data-[state=active]:shadow-none'
+            >
               <div className='flex gap-2 items-center'>
                 <ListIcon width={16} height={16} /> {isExecutePage ? 'Tasks' : 'Workflows'}
+              </div>
+            </TabsTrigger>
+            <TabsTrigger
+              onClick={() => {
+                if (routeConf?.key !== 'gallery') {
+                  router.push(RouteConf['gallery'].path)
+                }
+              }}
+              value='gallery'
+              className='py-2 data-[state=active]:shadow-none'
+            >
+              <div className='flex gap-2 items-center'>
+                <Image width={16} height={16} /> Gallery
               </div>
             </TabsTrigger>
             {isAdmin && (
@@ -93,7 +151,7 @@ const Layout: IComponent = ({ children }) => {
         </Tabs>
       </div>
     )
-  }, [children, isAdmin, isExecutePage, routeConf?.key])
+  }, [children, isAdmin, isExecutePage, routeConf?.key, router])
 
   if (session.status !== 'authenticated') return null
   return (

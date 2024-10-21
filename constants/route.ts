@@ -1,4 +1,4 @@
-import { ChevronLeft, HomeIcon } from 'lucide-react'
+import { ChevronLeft, Cog, HomeIcon, Image } from 'lucide-react'
 
 export const RouteConf = {
   home: {
@@ -6,6 +6,20 @@ export const RouteConf = {
     title: 'Workflows',
     path: '/main',
     SubIcon: HomeIcon,
+    backUrl: false
+  },
+  gallery: {
+    key: 'gallery',
+    title: 'Gallery',
+    path: '/main/gallery',
+    SubIcon: Image,
+    backUrl: false
+  },
+  setting: {
+    key: 'setting',
+    title: 'Setting',
+    path: '/main/setting',
+    SubIcon: Cog,
     backUrl: false
   },
   execute: {
@@ -16,3 +30,5 @@ export const RouteConf = {
     backUrl: '/main'
   }
 } as const
+
+export type TRouterKey = keyof typeof RouteConf

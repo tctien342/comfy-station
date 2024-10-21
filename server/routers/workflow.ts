@@ -107,7 +107,7 @@ export const workflowRouter = router({
   attachments: privateProcedure
     .input(
       z.object({
-        workflowId: z.string(),
+        workflowId: z.string().optional(),
         search: z.string().optional(),
         limit: z.number().min(1).max(100).nullish(),
         cursor: z.string().nullish(),
@@ -115,7 +115,11 @@ export const workflowRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.workflowId })
+      const workflow = input.workflowId
+        ? {
+            workflow: await ctx.em.findOneOrFail(Workflow, { id: input.workflowId })
+          }
+        : {}
       const limit = input.limit ?? 50
       const { cursor, direction } = input
 
@@ -133,7 +137,7 @@ export const workflowRouter = router({
       const data = await ctx.em.findByCursor(
         Attachment,
         {
-          workflow,
+          ...workflow,
           ...filter
         },
         direction === 'forward'

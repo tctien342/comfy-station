@@ -385,14 +385,13 @@ export const workflowTaskRouter = router({
   getRunning: privateProcedure
     .input(
       z.object({
-        workflowId: z.string()
+        workflowId: z.string().optional()
       })
     )
     .query(async ({ input, ctx }) => {
+      const query = input.workflowId ? { workflow: { id: input.workflowId } } : {}
       return ctx.em.find(WorkflowTask, {
-        workflow: {
-          id: input.workflowId
-        },
+        ...query,
         status: {
           $in: [ETaskStatus.Pending, ETaskStatus.Queuing, ETaskStatus.Running]
         }

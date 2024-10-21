@@ -84,6 +84,7 @@ export const Portal: IComponent<{
     if (!el.current) {
       const bootstrapDiv = document.createElement('div')
       bootstrapDiv.id = portalID
+      bootstrapDiv.className += ' transition-all duration-300'
       el.current = bootstrapDiv
     }
     setResult(createPortal(childrenWrapper as any, el.current))
@@ -144,12 +145,13 @@ export const Portal: IComponent<{
   useEffect(() => {
     if (followScroll) window.addEventListener('scroll', reCalculate, true)
     window.addEventListener(FORCE_RECALCULATE_KEY, reCalculate)
+
     return () => {
       if (followScroll) window.removeEventListener('scroll', reCalculate)
       window.removeEventListener(FORCE_RECALCULATE_KEY, reCalculate)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [target])
 
   useEffect((): void => {
     if (el.current) {
