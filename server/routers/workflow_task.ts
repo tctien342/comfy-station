@@ -2,7 +2,14 @@ import { z } from 'zod'
 import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { WorkflowTask } from '@/entities/workflow_task'
-import { ETaskStatus, ETriggerBy, EUserRole, EValueType, EValueUltilityType } from '@/entities/enum'
+import {
+  ETaskStatus,
+  ETriggerBy,
+  EUserRole,
+  EValueType,
+  EValueUltilityType,
+  EWorkflowActiveStatus
+} from '@/entities/enum'
 import { Workflow } from '@/entities/workflow'
 import { Trigger } from '@/entities/trigger'
 import CachingService from '@/services/caching'
@@ -29,13 +36,26 @@ export const workflowTaskRouter = router({
       const extra =
         ctx.session.user!.role === EUserRole.Admin // Admin can see all tasks
           ? {}
-          : {
-              trigger: {
-                user: {
-                  id: ctx.session.user?.id
+          : ctx.session.user!.role === EUserRole.Editor
+            ? {
+                trigger: {
+                  user: {
+                    id: ctx.session.user?.id
+                  }
                 }
               }
-            }
+            : {
+                trigger: {
+                  user: {
+                    id: ctx.session.user?.id
+                  }
+                },
+                workflow: {
+                  status: {
+                    $not: EWorkflowActiveStatus.Deleted
+                  }
+                }
+              }
 
       const data = await ctx.em.findByCursor(
         WorkflowTask,
@@ -61,12 +81,22 @@ export const workflowTaskRouter = router({
       }
     }),
   detail: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
+    const extra =
+      ctx.session.user!.role === EUserRole.Admin // Admin can see all tasks
+        ? {}
+        : {
+            workflow: {
+              status: {
+                $not: EWorkflowActiveStatus.Deleted
+              }
+            }
+          }
     const task = await ctx.em.findOneOrFail(
       WorkflowTask,
-      { id: input },
+      { id: input, ...extra },
       { populate: ['workflow', 'trigger.user', 'events', 'subTasks', 'subTasks.events.*'] }
     )
-    if (ctx.session.user?.role && ctx.session.user?.role >= EUserRole.Editor) {
+    if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {
       return task
     }
     if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
@@ -135,8 +165,18 @@ export const workflowTaskRouter = router({
     )
   }),
   get: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger', 'events'] })
-    if (ctx.session.user?.role && ctx.session.user?.role >= EUserRole.Editor) {
+    const extra =
+      ctx.session.user!.role === EUserRole.Admin // Admin can see all tasks
+        ? {}
+        : {
+            workflow: {
+              status: {
+                $not: EWorkflowActiveStatus.Deleted
+              }
+            }
+          }
+    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input, ...extra }, { populate: ['trigger', 'events'] })
+    if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {
       return task
     }
     if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
@@ -185,10 +225,16 @@ export const workflowTaskRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      const extra =
+        ctx.session.user!.role > EUserRole.User // Admin can see all tasks
+          ? {}
+          : {
+              status: EWorkflowActiveStatus.Activated
+            }
       const workflow = await ctx.em.findOneOrFail(Workflow, {
-        id: input.workflowId
+        id: input.workflowId,
+        ...extra
       })
-
       for (const key in input.input) {
         const keyConfig = workflow.mapInput?.[key]
         if (!keyConfig) continue

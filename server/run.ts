@@ -29,14 +29,20 @@ const handler = createHTTPHandler({
 })
 
 const server = createServer((req, res) => {
-  // Check if req is /user/get
-  if (req.url === '/user/credential' && req.method === 'POST') {
-    handleGetUserByCredentials(req, res)
-    return
-  }
-  if (req.url === '/user/jwt' && req.method === 'POST') {
-    handleGetUserByJWT(req, res)
-    return
+  try {
+    // Check if req is /user/get
+    if (req.url === '/user/credential' && req.method === 'POST') {
+      handleGetUserByCredentials(req, res)
+      return
+    }
+    if (req.url === '/user/jwt' && req.method === 'POST') {
+      handleGetUserByJWT(req, res)
+      return
+    }
+  } catch (e) {
+    console.error(e)
+    res.writeHead(500)
+    res.end()
   }
   /**
    * Handle the request however you like,

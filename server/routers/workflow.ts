@@ -80,9 +80,11 @@ export const workflowRouter = router({
       const limit = input.limit ?? 50
       const { cursor, direction } = input
 
+      const filter = ctx.session.user!.role > EUserRole.User ? {} : { status: EWorkflowActiveStatus.Activated }
+
       const data = await ctx.em.findByCursor(
         Workflow,
-        {},
+        filter,
         direction === 'forward'
           ? {
               first: limit,
@@ -152,23 +154,43 @@ export const workflowRouter = router({
       }
     }),
   listWorkflowSelections: privateProcedure.query(async ({ ctx }) => {
-    const data = await ctx.em.find(
-      Workflow,
-      {},
-      {
-        fields: ['id', 'name', 'description']
-      }
-    )
+    const filter = ctx.session.user!.role > EUserRole.User ? {} : { status: EWorkflowActiveStatus.Activated }
+    const data = await ctx.em.find(Workflow, filter, {
+      fields: ['id', 'name', 'description']
+    })
     return data
   }),
   get: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    return ctx.em.findOneOrFail(Workflow, { id: input }, { populate: ['author.email', 'avatar'] })
+    const filter =
+      ctx.session.user!.role > EUserRole.User
+        ? {}
+        : {
+            status: {
+              $in: [EWorkflowActiveStatus.Activated, EWorkflowActiveStatus.Deactivated]
+            }
+          }
+    return ctx.em.findOneOrFail(
+      Workflow,
+      {
+        id: input,
+        ...filter
+      },
+      { populate: ['author.email', 'avatar'] }
+    )
   }),
-  delete: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    const workflow = await ctx.em.findOneOrFail(Workflow, { id: input })
-    await ctx.em.removeAndFlush(workflow)
-    return true
-  }),
+  changeStatus: editorProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        status: z.nativeEnum(EWorkflowActiveStatus)
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.id })
+      workflow.status = input.status
+      await ctx.em.flush()
+      return true
+    }),
   testWorkflow: editorProcedure.subscription(async ({ input, ctx }) => {
     return observable<TWorkflowProgressMessage>((subscriber) => {
       const handle = (data: { input: Record<string, any>; workflow: Workflow }) => {
