@@ -28,15 +28,15 @@ const handler = createHTTPHandler({
   createContext: createContext as any
 })
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   try {
     // Check if req is /user/get
     if (req.url === '/user/credential' && req.method === 'POST') {
-      handleGetUserByCredentials(req, res)
+      await handleGetUserByCredentials(req, res)
       return
     }
     if (req.url === '/user/email' && req.method === 'POST') {
-      handleGetUserByEmail(req, res)
+      await handleGetUserByEmail(req, res)
       return
     }
   } catch (e) {

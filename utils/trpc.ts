@@ -36,11 +36,11 @@ export function setAuthToken(newToken: string) {
 }
 
 export function getBaseUrl() {
-  return BackendENV.BACKEND_URL
+  return BackendENV.NEXT_PUBLIC_API_URL
 }
 
 function getBaseWsUrl() {
-  const BackendURL = BackendENV.BACKEND_URL
+  const BackendURL = BackendENV.NEXT_PUBLIC_API_URL
   if (BackendURL.includes('https')) {
     return BackendURL.replace('https', 'wss')
   }

@@ -3,14 +3,16 @@ version: '3.8'
 services:
   app:
     build: .
+    restart: unless-stopped
     ports:
       - '3000:3000'
       - '3001:3001'
     env_file:
       - .env
     environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - BACKEND_URL=${BACKEND_URL}
+      - INTERNAL_SECRET=${INTERNAL_SECRET}
       - S3_ENDPOINT=${S3_ENDPOINT}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - S3_REGION=${S3_REGION}

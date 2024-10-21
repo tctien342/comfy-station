@@ -14,7 +14,12 @@ const getUserInfomationByCredentials = async (email: string, password: string) =
       'Content-Type': 'application/json',
       Authorization: `Bearer ${BackendENV.INTERNAL_SECRET}`
     }
-  }).then((res) => res.json())
+  })
+    .then((res) => res.json())
+    .catch((e) => {
+      console.error(e)
+      return null
+    })
 
   return data as User
 }
@@ -27,7 +32,12 @@ const getUserInfomationByEmail = async (email: string) => {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${BackendENV.INTERNAL_SECRET}`
     }
-  }).then((res) => res.json())
+  })
+    .then((res) => res.json())
+    .catch((e) => {
+      console.error(e)
+      return null
+    })
   return data as User
 }
 
@@ -58,13 +68,12 @@ export const NextAuthOptions: AuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (token.email) {
-        const user = await getUserInfomationByEmail(token.email).catch(() => {
-          console.log('Failed to get user information from Backend')
-          return null
-        })
+        const user = await getUserInfomationByEmail(token.email)
         if (user) {
           session.user = user
           session.accessToken = jwt.sign({ email: user.email }, BackendENV.NEXTAUTH_SECRET)
+        } else {
+          throw new Error('User not found')
         }
       }
       return session

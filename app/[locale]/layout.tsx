@@ -8,7 +8,6 @@ import TRPCLayout from './layout.trpc'
 import { BackgroundSVG } from '@/components/svg/BackgroundSVG'
 import { SessionLayout } from './layout.session'
 import { ClientLayout } from './layout.client'
-import Head from 'next/head'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -33,10 +32,6 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className=''>
-      <Head>
-        <link rel='icon' type='image/png' sizes='32x32' href='/favicons/favicon-32x32.png' />
-        <link rel='icon' type='image/png' sizes='16x16' href='/favicons/favicon-16x16.png' />
-      </Head>
       <body>
         <SessionLayout session={session}>
           <NextIntlClientProvider timeZone='UTC' messages={messages}>
