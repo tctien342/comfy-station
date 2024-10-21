@@ -24,7 +24,9 @@ RUN rm -rf node_modules .next
 COPY --from=install /temp/dev/node_modules node_modules
 
 # Run bun run build to build the application
+ARG NEXT_PUBLIC_APP_URL=http://localhost:3001
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 RUN bun run build
 
 # Step 7: Expose the application ports
