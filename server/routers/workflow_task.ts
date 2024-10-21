@@ -52,7 +52,7 @@ export const workflowTaskRouter = router({
                 },
                 workflow: {
                   status: {
-                    $not: EWorkflowActiveStatus.Deleted
+                    $ne: EWorkflowActiveStatus.Deleted
                   }
                 }
               }
@@ -87,7 +87,7 @@ export const workflowTaskRouter = router({
         : {
             workflow: {
               status: {
-                $not: EWorkflowActiveStatus.Deleted
+                $ne: EWorkflowActiveStatus.Deleted
               }
             }
           }
@@ -171,7 +171,7 @@ export const workflowTaskRouter = router({
         : {
             workflow: {
               status: {
-                $not: EWorkflowActiveStatus.Deleted
+                $ne: EWorkflowActiveStatus.Deleted
               }
             }
           }
