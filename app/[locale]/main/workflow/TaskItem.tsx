@@ -194,7 +194,7 @@ export const TaskItem: IComponent<{
   return (
     <ContextMenu>
       <ContextMenuTrigger className='w-full flex relative'>
-        <div className='w-full flex relative group'>
+        <div className='w-full flex relative group pl-2'>
           <AttachmentImageSlider
             images={outputImageAttachments}
             show={showImages}
@@ -223,10 +223,13 @@ export const TaskItem: IComponent<{
             </div>
           </div>
           {previewAttachment}
-          <DownloadImagesButton
-            workflowTaskId={data.id}
-            className={cn('z-10 flex absolute top-1 right-1 p-2 bg-background text-foreground rounded-lg btn')}
-          />
+
+          <div className='flex absolute top-1 right-1'>
+            <DownloadImagesButton
+              workflowTaskId={data.id}
+              className={cn('z-10 p-2 bg-background text-foreground rounded-lg btn')}
+            />
+          </div>
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>

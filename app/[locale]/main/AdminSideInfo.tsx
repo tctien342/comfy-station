@@ -40,7 +40,9 @@ export const AdminSideInfo: IComponent = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-start'>
-      <UserInfomation />
+      <div className='w-full hidden md:block'>
+        <UserInfomation />
+      </div>
       <div className='flex w-full flex-row md:flex-col gap-6 p-2 md:p-4 items-center'>
         <div className='flex md:w-full flex-col md:flex-row justify-around gap-2'>
           <TaskBigStat

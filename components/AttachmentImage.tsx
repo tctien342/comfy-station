@@ -82,25 +82,25 @@ export const AttachmentImage: IComponent<{
             </Tooltip>
           </div>
         )}
-        <DropdownMenu>
-          <DropdownMenuTrigger className='flex items-center'>
-            <div
-              className={cn(
-                'z-10 md:hidden group-hover:block absolute bottom-1 right-1 p-2 bg-background text-foreground rounded-lg btn'
-              )}
-            >
-              <Download width={16} height={16} />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side='left' align='center'>
-            <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
-              <span>Download compressed JPG</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
-              <span>Download Raw</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className={cn('z-10 absolute bottom-1 right-1')}>
+          <div className='relative w-fit h-fit'>
+            <DropdownMenu>
+              <DropdownMenuTrigger className='flex items-center'>
+                <div className={cn('z-10 p-2 bg-background text-foreground rounded-lg btn')}>
+                  <Download width={16} height={16} />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side='left'>
+                <DropdownMenuItem onClick={() => downloadFn('jpg')} className='cursor-pointer text-sm'>
+                  <span>Download compressed JPG</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => downloadFn()} className='cursor-pointer text-sm'>
+                  <span>Download Raw</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
       </div>
     )
   }

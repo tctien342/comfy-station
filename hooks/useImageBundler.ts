@@ -48,6 +48,16 @@ const useImageBundler = (): UseImageBundlerResult => {
    * @param fileUrls - An array of file URLs to download and bundle
    */
   const bundleImages = async (fileUrls: string[]): Promise<void> => {
+    if (fileUrls.length === 0) {
+      setError('No files to bundle')
+      return
+    }
+
+    if (fileUrls.length === 1) {
+      window.open(fileUrls[0], '_blank')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     setProgress(0)

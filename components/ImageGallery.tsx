@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useRef } from 'react'
 import { AttachmentImage } from './AttachmentImage'
 import { delay } from '@/utils/tools'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
+import { useOnScreen } from '@/hooks/useOnScreen'
 
 export const ImageGallery: IComponent<{
   items: Array<{ loading: true } | Attachment>
@@ -28,6 +29,7 @@ export const ImageGallery: IComponent<{
   const bottomRef = useRef<HTMLDivElement>(null)
   const firstLoaded = useRef(false)
   const debounce = useActionDebounce(300, true)
+  const isBottomOnScreen = useOnScreen(bottomRef)
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
@@ -44,40 +46,26 @@ export const ImageGallery: IComponent<{
     lanes: imgPerRow
   })
 
-  useEffect(
-    () => {
-      if (items.length > 0 && !firstLoaded.current) {
-        delay(200).then(() => {
-          firstLoaded.current = true
-        })
-      }
-    },
+  useEffect(() => {
+    if (items.length > 0 && !firstLoaded.current) {
+      firstLoaded.current = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items]
-  )
+  }, [items])
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      if (firstLoaded.current) {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            if (entry.target.id === 'bottom' && hasNextPage && !isFetchingNextPage) {
-              debounce(() => {
-                onFetchMore?.()
-              })
-            }
-          }
-        })
-      }
+    console.log({
+      isBottomOnScreen,
+      hasNextPage,
+      isFetchingNextPage
     })
-    if (bottomRef.current) {
-      observer.observe(bottomRef.current)
-    }
-    return () => {
-      observer.disconnect()
+    if (isBottomOnScreen && hasNextPage && !isFetchingNextPage) {
+      debounce(() => {
+        onFetchMore?.()
+      })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasNextPage, isFetchingNextPage, onFetchMore])
+  }, [isBottomOnScreen, hasNextPage, isFetchingNextPage, onFetchMore])
 
   return (
     <>
@@ -137,16 +125,15 @@ export const ImageGallery: IComponent<{
             )
           })}
         </div>
-        {items.length > 0 && (
-          <div
-            id='bottom'
-            ref={bottomRef}
-            className='w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400'
-          >
-            {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
-            {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
-          </div>
-        )}
+        <div
+          id='bottom'
+          ref={bottomRef}
+          className='w-full flex items-center justify-center mt-4 pt-4 pb-24 text-gray-400'
+        >
+          {hasNextPage && <div className='flex'>More data...</div>}
+          {isFetchingNextPage && <div className='flex'>Loading more data...</div>}
+          {!isFetchingNextPage && !hasNextPage && <div className='flex'>No more data</div>}
+        </div>
       </div>
     </>
   )

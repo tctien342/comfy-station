@@ -2,6 +2,7 @@ import React, { CSSProperties, useCallback, useEffect, useRef } from 'react'
 import { VirtualItem, useVirtualizer } from '@tanstack/react-virtual'
 import { delay } from '@/utils/tools'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
+import { cn } from '@/lib/utils'
 
 export type VirtualListProps<T> = {
   className?: string
@@ -149,6 +150,10 @@ export function VirtualList<T>({
                   ref={virtualizer.measureElement}
                   data-index={virtualItem.index}
                   style={itemStyle}
+                  className={cn({
+                    'bg-background': virtualItem.index % 2 === 0,
+                    'bg-secondary/20': virtualItem.index % 2 !== 0
+                  })}
                 >
                   {renderItem(item, virtualItem)}
                 </div>

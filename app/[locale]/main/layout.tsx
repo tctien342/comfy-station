@@ -10,7 +10,7 @@ import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { WorkflowSidePicker } from './WorkflowSidePicker'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ChartBarIcon, Image, ListIcon, PlaySquare } from 'lucide-react'
 import { forceRecalculatePortal, Portal } from '@/components/PortalWrapper'
@@ -20,6 +20,7 @@ const Layout: IComponent = ({ children }) => {
   const session = useSession()
   const { routeConf, router } = useCurrentRoute()
   const dyn = useDynamicValue()
+  const [executeTab, setExecuteTab] = useState('visualize')
 
   const isAdmin = session.data?.user?.role === EUserRole.Admin
   const isExecutePage = routeConf?.key === 'execute'
@@ -66,7 +67,7 @@ const Layout: IComponent = ({ children }) => {
           )}
         </div>
         {isAdmin && (
-          <div className='w-1/4 min-w-max h-full bg-background border rounded-lg'>
+          <div className='w-1/4 max-w-[360px] min-w-max h-full bg-background border rounded-lg'>
             <AdminSideInfo />
           </div>
         )}
@@ -77,11 +78,36 @@ const Layout: IComponent = ({ children }) => {
   const renderMobileView = useMemo(() => {
     return (
       <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
-        <Tabs defaultValue='visualize' className='w-full h-full flex flex-col relative safari_only'>
-          <TabsContent value='history' className='w-full flex-1 bg-background rounded-lg mt-0 pb-10'>
+        <Tabs
+          value={executeTab}
+          onValueChange={(v) => setExecuteTab(v)}
+          className='w-full h-full flex flex-col relative safari_only'
+        >
+          {isExecutePage && (
+            <TabsList className='bg-background z-10 h-fit w-full rounded-none border-b safari_only'>
+              <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
+                <div className='flex gap-2 items-center'>
+                  <PlaySquare width={16} height={16} /> Execute
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value='visualize' className='py-2 data-[state=active]:shadow-none'>
+                <div className='flex gap-2 items-center'>
+                  <ListIcon width={16} height={16} /> {isExecutePage ? 'Tasks' : 'Workflows'}
+                </div>
+              </TabsTrigger>
+              {isAdmin && (
+                <TabsTrigger value='admin-pannel' className='py-2 data-[state=active]:shadow-none'>
+                  <div className='flex gap-2 items-center'>
+                    <ChartBarIcon width={16} height={16} /> Admin
+                  </div>
+                </TabsTrigger>
+              )}
+            </TabsList>
+          )}
+          <TabsContent value='history' className='w-full flex-1 bg-background rounded-lg mt-0'>
             <WorkflowSidePicker />
           </TabsContent>
-          <TabsContent value='visualize' className='w-full flex-1 bg-background rounded-lg mt-0 relative pb-10'>
+          <TabsContent value='visualize' className='w-full flex-1 bg-background rounded-lg mt-0 relative'>
             <div
               id='main-content'
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
@@ -92,66 +118,53 @@ const Layout: IComponent = ({ children }) => {
               </SimpleTransitionLayout>
             </div>
           </TabsContent>
-          <TabsContent value='gallery' className='w-full flex-1 bg-background rounded-lg mt-0 relative pb-10'>
+          <TabsContent value='gallery' className='w-full flex-1 bg-background rounded-lg mt-0 relative'>
             <div
               id='main-content'
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
             >
-              <TopBar />
               <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
                 {children}
               </SimpleTransitionLayout>
             </div>
           </TabsContent>
           {isAdmin && (
-            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background px-1 pt-2 rounded-lg mt-0 pb-10'>
+            <TabsContent value='admin-pannel' className='w-full flex-1 bg-background px-1 rounded-lg mt-0 pt-2'>
               <AdminSideInfo />
             </TabsContent>
           )}
-          <TabsList className='bg-background h-fit fixed bottom-0 w-full rounded-none border-t safari_only'>
-            <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
-              <div className='flex gap-2 items-center'>
-                <PlaySquare width={16} height={16} /> Execute
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              onClick={() => {
-                if (routeConf?.key === 'gallery') {
-                  router.push(RouteConf['home'].path)
-                }
-              }}
-              value='visualize'
-              className='py-2 data-[state=active]:shadow-none'
-            >
-              <div className='flex gap-2 items-center'>
-                <ListIcon width={16} height={16} /> {isExecutePage ? 'Tasks' : 'Workflows'}
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              onClick={() => {
-                if (routeConf?.key !== 'gallery') {
-                  router.push(RouteConf['gallery'].path)
-                }
-              }}
-              value='gallery'
-              className='py-2 data-[state=active]:shadow-none'
-            >
-              <div className='flex gap-2 items-center'>
-                <Image width={16} height={16} /> Gallery
-              </div>
-            </TabsTrigger>
-            {isAdmin && (
-              <TabsTrigger value='admin-pannel' className='py-2 data-[state=active]:shadow-none'>
-                <div className='flex gap-2 items-center'>
-                  <ChartBarIcon width={16} height={16} /> Admin
-                </div>
-              </TabsTrigger>
-            )}
+        </Tabs>
+        <Tabs
+          defaultValue='home'
+          value={routeConf?.key}
+          onValueChange={() => {
+            setExecuteTab('visualize')
+          }}
+          className='w-full flex flex-col relative safari_only'
+        >
+          <TabsList className='bg-background z-10 h-fit w-full rounded-none border-b safari_only'>
+            {Object.values(RouteConf)
+              .filter((v) => v.onNav)
+              .map((config) => {
+                const Ico = config.SubIcon
+                return (
+                  <TabsTrigger
+                    key={config.key}
+                    value={config.key}
+                    onClick={() => router.push(config.path)}
+                    className='py-2 data-[state=active]:shadow-none'
+                  >
+                    <div className='flex gap-2 items-center'>
+                      <Ico width={16} height={16} /> {config.title}
+                    </div>
+                  </TabsTrigger>
+                )
+              })}
           </TabsList>
         </Tabs>
       </div>
     )
-  }, [children, isAdmin, isExecutePage, routeConf?.key, router])
+  }, [children, executeTab, isAdmin, isExecutePage, routeConf?.key, router])
 
   if (session.status !== 'authenticated') return null
   return (
