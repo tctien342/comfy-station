@@ -77,14 +77,14 @@ const Layout: IComponent = ({ children }) => {
 
   const renderMobileView = useMemo(() => {
     return (
-      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'>
+      <div className='fixed top-0 bottom-0 w-full h-full flex flex-col md:flex-row overflow-hidden'>
         <Tabs
           value={executeTab}
           onValueChange={(v) => setExecuteTab(v)}
-          className='w-full h-full flex flex-col relative safari_only'
+          className='w-full h-full flex flex-col relative'
         >
           {isExecutePage && (
-            <TabsList className='bg-background z-10 h-fit w-full rounded-none border-b safari_only'>
+            <TabsList className='bg-background z-10 h-fit w-full rounded-none border-b'>
               <TabsTrigger value='history' className='py-2 data-[state=active]:shadow-none'>
                 <div className='flex gap-2 items-center'>
                   <PlaySquare width={16} height={16} /> Execute
@@ -142,7 +142,7 @@ const Layout: IComponent = ({ children }) => {
           }}
           className='w-full flex flex-col relative safari_only'
         >
-          <TabsList className='bg-background z-10 h-fit w-full rounded-none border-b safari_only'>
+          <TabsList className='bg-background z-10 h-fit w-full rounded-none border-t safari_only'>
             {Object.values(RouteConf)
               .filter((v) => v.onNav)
               .map((config) => {
@@ -168,7 +168,7 @@ const Layout: IComponent = ({ children }) => {
 
   if (session.status !== 'authenticated') return null
   return (
-    <div className='w-full h-full bg-white/10 dark:bg-black/10 backdrop-blur-sm md:border md:rounded-xl md:p-2'>
+    <div className='w-full h-full bg-background md:bg-white/10 md:dark:bg-black/10 md:backdrop-blur-sm md:border md:rounded-xl md:p-2'>
       <TooltipProvider>{dyn([renderMobileView, renderDesktopView, renderDesktopView], null)}</TooltipProvider>
     </div>
   )
