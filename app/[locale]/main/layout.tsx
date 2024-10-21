@@ -112,7 +112,7 @@ const Layout: IComponent = ({ children }) => {
               id='main-content'
               className='flex flex-col h-full overflow-hidden bg-background md:border md:rounded-lg transition-all duration-300 relative'
             >
-              <TopBar />
+              {!isExecutePage && <TopBar />}
               <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
                 {children}
               </SimpleTransitionLayout>
@@ -140,7 +140,7 @@ const Layout: IComponent = ({ children }) => {
           onValueChange={() => {
             setExecuteTab('visualize')
           }}
-          className='w-full flex flex-col relative safari_only'
+          className='w-full flex flex-col relative'
         >
           <TabsList className='bg-background z-10 h-fit w-full rounded-none border-t safari_only'>
             {Object.values(RouteConf)
