@@ -5,8 +5,8 @@ import type { User } from '@/entities/user'
 import { BackendENV } from '@/env'
 import { getBaseUrl } from '@/utils/trpc'
 
-const getUserInfomationByCredentials = async (email: string, password: string) => {
-  const data = await fetch(`${getBaseUrl()}/user/credential`, {
+const getUserInfomationByCredentials = async (email: string, password: string): Promise<User | false> => {
+  return fetch(`${getBaseUrl()}/user/credential`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
@@ -14,17 +14,19 @@ const getUserInfomationByCredentials = async (email: string, password: string) =
       Authorization: `Bearer ${BackendENV.INTERNAL_SECRET}`
     }
   })
-    .then((res) => res.json())
-    .catch((e) => {
-      console.error(e)
-      return null
+    .then((res) => {
+      if (!res.ok) {
+        return false
+      }
+      return res.json()
     })
-
-  return data as User
+    .catch((e) => {
+      return false
+    })
 }
 
-const getUserInfomationByEmail = async (email: string) => {
-  const data = await fetch(`${getBaseUrl()}/user/email`, {
+const getUserInfomationByEmail = async (email: string): Promise<User | false> => {
+  return fetch(`${getBaseUrl()}/user/email`, {
     method: 'POST',
     body: JSON.stringify({ email }),
     headers: {
@@ -32,12 +34,15 @@ const getUserInfomationByEmail = async (email: string) => {
       Authorization: `Bearer ${BackendENV.INTERNAL_SECRET}`
     }
   })
-    .then((res) => res.json())
-    .catch((e) => {
-      console.error(e)
-      return null
+    .then((res) => {
+      if (!res.ok) {
+        return false
+      }
+      return res.json()
     })
-  return data as User
+    .catch((e) => {
+      return false
+    })
 }
 
 export const NextAuthOptions: AuthOptions = {
@@ -50,13 +55,9 @@ export const NextAuthOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (credentials) {
-          try {
-            const user = await getUserInfomationByCredentials(credentials.email, credentials.password)
-            if (user) {
-              return { id: user.id, email: user.email }
-            }
-          } catch (e) {
-            console.error(e)
+          const user = await getUserInfomationByCredentials(credentials.email, credentials.password)
+          if (user) {
+            return { id: user.id, email: user.email }
           }
         }
         return null

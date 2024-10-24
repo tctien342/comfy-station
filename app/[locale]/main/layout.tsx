@@ -50,7 +50,7 @@ const Layout: IComponent = ({ children }) => {
             {children}
           </SimpleTransitionLayout>
           {!isExecutePage && (
-            <Portal targetRef={'main-content'} waitForTarget followScroll={false}>
+            <Portal targetRef={'main-content'} waitForTarget followScroll>
               <div
                 className='absolute hidden md:block left-[50%] bottom-4 md:-bottom-4 z-10 shadow p-1 backdrop-blur-lg bg-background/40 rounded-lg duration-200'
                 style={{

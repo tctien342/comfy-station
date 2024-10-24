@@ -1,4 +1,4 @@
-import { AttachmentImage } from '@/components/AttachmentImage'
+import { AttachmentReview } from '@/components/AttachmentReview'
 import { MiniBadge } from '@/components/MiniBadge'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { Button } from '@/components/ui/button'
@@ -17,8 +17,8 @@ import { AttachmentImageSlider } from '@/components/AttachmentImageSlider'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { LoadableButton } from '@/components/LoadableButton'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import DownloadImagesButton from '@/components/ui-ext/download-button'
+import { AttachmentImage } from '@/components/AttachmentImage'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
@@ -164,13 +164,13 @@ export const TaskItem: IComponent<{
     return (
       <AttachmentImage
         onClick={() => setShowImages(true)}
-        mode='avatar'
-        className='h-32 !rounded-none w-auto !aspect-square object-cover p-0 m-0'
-        tryPreivew
+        alt={task?.workflow.name || ''}
+        preferredSize='preview'
         data={{ id: outputAttachments[0].value[0] as string }}
+        containerClassName='h-32 w-auto !aspect-square'
       />
     )
-  }, [isLoading, outputAttachments, outputData, isCopied, copyToClipboard])
+  }, [isLoading, outputAttachments, task?.workflow.name, outputData, isCopied, copyToClipboard])
 
   const shortName = task?.trigger.user?.email?.split('@')[0] ?? '-'
   const outputImageAttachments = outputAttachments.map((v) => v.value).flat() as string[]

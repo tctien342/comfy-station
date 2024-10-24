@@ -8,11 +8,12 @@ import { LoadableButton } from './LoadableButton'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useRouter } from 'next/navigation'
-import { AttachmentImage } from './AttachmentImage'
+import { AttachmentReview } from './AttachmentReview'
 import { useSession } from 'next-auth/react'
 import { EUserRole, EWorkflowActiveStatus } from '@/entities/enum'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
+import { AttachmentImage } from './AttachmentImage'
 
 export const WorkflowCard: IComponent<{
   data: Workflow
@@ -95,7 +96,13 @@ export const WorkflowCard: IComponent<{
                 title={stator.data?.isExecuting ? 'Executing' : 'Idle'}
               />
             </div>
-            <AttachmentImage className='w-full h-full !mt-0 !p-0' mode='avatar' data={data.avatar} shortName='N/A' />
+            <AttachmentImage
+              alt={data.name || ''}
+              preferredSize='preview'
+              className='w-full h-full'
+              containerClassName='!mt-0'
+              data={data.avatar}
+            />
           </CardHeader>
           <CardContent className='pt-4 pb-2 px-2'>
             <CardTitle>{data.name}</CardTitle>

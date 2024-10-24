@@ -1,7 +1,7 @@
 import { Attachment } from '@/entities/attachment'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ReactNode, useEffect, useRef } from 'react'
-import { AttachmentImage } from './AttachmentImage'
+import { AttachmentReview } from './AttachmentReview'
 import { delay } from '@/utils/tools'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 import { useOnScreen } from '@/hooks/useOnScreen'
@@ -71,7 +71,7 @@ export const ImageGallery: IComponent<{
     <>
       <div
         ref={parentRef}
-        className='List'
+        className='List group'
         style={{
           height: `100%`,
           width: `100%`,
@@ -110,7 +110,7 @@ export const ImageGallery: IComponent<{
                 }}
               >
                 {!('loading' in item) && (
-                  <AttachmentImage
+                  <AttachmentReview
                     key={item.id}
                     isFavorited={favoriteIds?.includes(item.id)}
                     onPressFavorite={onPressFavorite}
@@ -120,7 +120,7 @@ export const ImageGallery: IComponent<{
                     shortName='NA'
                   />
                 )}
-                {'loading' in item && <AttachmentImage loading className='w-full h-full object-cover' />}
+                {'loading' in item && <AttachmentReview loading className='w-full h-full object-cover' />}
               </div>
             )
           })}

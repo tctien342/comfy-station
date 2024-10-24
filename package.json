@@ -84,6 +84,7 @@
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.53.0",
     "react-photo-view": "^1.2.6",
+    "react-zoom-pan-pinch": "^3.6.1",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2",
     "sass": "^1.79.3",

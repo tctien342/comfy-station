@@ -2,7 +2,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@
 import { EResourceType, EValueSelectionType } from '@/entities/enum'
 import { trpc } from '@/utils/trpc'
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { AttachmentImage } from '@/components/AttachmentImage'
+import { AttachmentReview } from '@/components/AttachmentReview'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Check, ChevronsUpDown, TriangleAlertIcon } from 'lucide-react'
 import { ListBulletIcon } from '@heroicons/react/24/outline'
@@ -108,7 +108,7 @@ export const SelectResourceList: IComponent<{
                   />
                 </TableCell>
                 <TableCell>
-                  <AttachmentImage mode='avatar' shortName={shortName} data={item.image} />
+                  <AttachmentReview mode='avatar' shortName={shortName} data={item.image} />
                 </TableCell>
                 <TableCell>{item.type}</TableCell>
                 <TableCell className='truncate max-w-[128px]'>{item.displayName?.trim() || '-'}</TableCell>

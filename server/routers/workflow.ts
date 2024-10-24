@@ -119,7 +119,11 @@ export const workflowRouter = router({
         ? {
             workflow: await ctx.em.findOneOrFail(Workflow, { id: input.workflowId })
           }
-        : {}
+        : {
+            workflow: {
+              $ne: null
+            }
+          }
       const limit = input.limit ?? 50
       const { cursor, direction } = input
 

@@ -32,7 +32,7 @@ export const useDynamicValue = (
    */
   const getValue = <T = undefined>(values: [T, T, T], fallBack?: T): T => {
     if (sel === -1) {
-      if (fallBack) return fallBack
+      if (fallBack !== undefined) return fallBack
       return values[0]
     }
     return values[sel]

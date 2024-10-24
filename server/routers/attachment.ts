@@ -3,7 +3,7 @@ import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment'
-import { EAttachmentStatus } from '@/entities/enum'
+import { EAttachmentStatus, EUserRole } from '@/entities/enum'
 import { ImageUtil } from '../utils/ImageUtil'
 import { ECompressPreset } from '@/hooks/useAttachmentUploader'
 
@@ -123,5 +123,27 @@ export const attachmentRouter = router({
       await ctx.em.persistAndFlush(attachment)
       return attachment
     }
+  }),
+  taskDetail: privateProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const permFilter =
+      ctx.session.user!.role === EUserRole.Admin
+        ? {}
+        : {
+            task: {
+              trigger: {
+                user: ctx.session.user
+              }
+            }
+          }
+    return await ctx.em.findOneOrFail(
+      Attachment,
+      {
+        id: input,
+        ...permFilter
+      },
+      {
+        populate: ['workflow', 'task']
+      }
+    )
   })
 })
