@@ -1,12 +1,14 @@
 import { useEffect, useState, useRef } from 'react'
 
-export function useOnScreen(ref: React.RefObject<HTMLElement>) {
+export function useOnScreen(ref: React.RefObject<HTMLElement>, offset: string = '512px') {
   const [isOnScreen, setIsOnScreen] = useState(false)
   const observerRef = useRef<IntersectionObserver>()
 
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(([entry]) => setIsOnScreen(entry.isIntersecting))
-  }, [])
+    observerRef.current = new IntersectionObserver(([entry]) => setIsOnScreen(entry.isIntersecting), {
+      rootMargin: offset
+    })
+  }, [offset])
 
   useEffect(() => {
     if (ref.current) {

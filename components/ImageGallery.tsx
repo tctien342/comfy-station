@@ -42,7 +42,7 @@ export const ImageGallery: IComponent<{
       }
       return (items[i] as Attachment)?.id ?? i
     },
-    overscan: 5,
+    overscan: 10,
     lanes: imgPerRow
   })
 
@@ -54,11 +54,6 @@ export const ImageGallery: IComponent<{
   }, [items])
 
   useEffect(() => {
-    console.log({
-      isBottomOnScreen,
-      hasNextPage,
-      isFetchingNextPage
-    })
     if (isBottomOnScreen && hasNextPage && !isFetchingNextPage) {
       debounce(() => {
         onFetchMore?.()

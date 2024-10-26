@@ -8,9 +8,10 @@ import { Button } from './ui/button'
 import { Download, MoreHorizontal, Star } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
-import { Dialog, DialogContent, DialogTrigger } from './ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 import { AttachmentDetail } from './AttachmentDetail'
 import LoadableImage from './LoadableImage'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 export const AttachmentReview: IComponent<{
   shortName?: string
@@ -51,7 +52,7 @@ export const AttachmentReview: IComponent<{
         <PhotoView src={image?.high?.url}>
           <div className='w-full h-full flex items-center justify-center'>
             <LoadableImage
-              loading={!imageLoaded}
+              loading={loading || isLoading}
               src={image?.preview?.url}
               alt={shortName}
               className='w-full h-full object-cover'
@@ -65,7 +66,7 @@ export const AttachmentReview: IComponent<{
             })}
           >
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Button onClick={() => onPressFavorite?.(data?.id!)} size='icon' variant='ghost'>
                   <Star
                     width={24}
@@ -94,7 +95,13 @@ export const AttachmentReview: IComponent<{
                   <MoreHorizontal width={16} height={16} />
                 </div>
               </DialogTrigger>
-              <DialogContent className='max-w-full p-0 md:p-4 md:w-[calc(100vw-20px)] h-[calc(100vh-20px)] bg-background flex flex-col'>
+              <DialogContent className='max-w-full p-0 overflow-hidden md:w-[calc(100vw-20px)] h-full md:h-[calc(100vh-20px)] bg-background flex flex-col'>
+                <VisuallyHidden>
+                  <DialogHeader>
+                    <DialogTitle className='text-base font-bold'>Attachment Detail</DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription>Attachment Detail</DialogDescription>
+                </VisuallyHidden>
                 {!!data && (
                   <AttachmentDetail
                     onPressDownloadHigh={() => downloadFn('jpg')}

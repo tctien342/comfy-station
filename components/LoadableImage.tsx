@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useRef, useState } from 'react'
 import { LoadingSVG } from './svg/LoadingSVG'
 import { cn } from '@/lib/utils'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
@@ -74,7 +74,6 @@ const LoadableImage: React.FC<LoadableImageProps> = ({
         <img
           src={src}
           alt={alt}
-          loading='lazy'
           onClick={onClick}
           className={cn('w-full h-full object-cover', className)}
           onLoad={handleImageLoad}

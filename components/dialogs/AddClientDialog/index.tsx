@@ -55,7 +55,7 @@ export const AddClientDialog: IComponent = () => {
   }
   return (
     <Dialog open={show} onOpenChange={setShow}>
-      <DialogTrigger className='ml-auto'>
+      <DialogTrigger asChild className='ml-auto'>
         <Button
           onClick={() => {
             setShow(true)

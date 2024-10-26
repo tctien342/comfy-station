@@ -143,7 +143,7 @@ export const ClientInfoMonitoring: IComponent<{
         <div className='flex-1 flex flex-col p-2 gap-3'>
           <div className='flex gap-2 w-full'>
             <DropdownMenu>
-              <DropdownMenuTrigger className='flex items-center'>
+              <DropdownMenuTrigger asChild className='flex items-center'>
                 <LoadableButton loading={actioning} variant='outline' size='icon' className='aspect-square'>
                   <HamburgerMenuIcon width={16} height={16} />
                 </LoadableButton>

@@ -39,7 +39,7 @@ const DownloadImagesButton: IComponent<{
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className='flex items-center'>
+      <DropdownMenuTrigger asChild className='flex items-center'>
         <Button size='icon' variant='ghost' className={className}>
           {isLoading ? (
             <div className='w-full overflow-hidden'>

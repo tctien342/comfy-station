@@ -12,6 +12,7 @@ import LoadableImage from './LoadableImage'
 import { IconPicker } from './IconPicker'
 import { IMapperInput } from '@/entities/workflow'
 import { AttachmentReview } from './AttachmentReview'
+import { AttachmentImage } from './AttachmentImage'
 
 export const AttachmentDetail: IComponent<{
   attachment: Attachment | { id: string }
@@ -30,14 +31,35 @@ export const AttachmentDetail: IComponent<{
 
   const renderMapperInput = useCallback((config: IMapperInput, inputVal: any) => {
     const value = inputVal || config.default
-    if (config.type === EValueType.Image && isArray(value)) {
+    if (config.type === EValueType.Image) {
+      let src = value
+      if (isArray(src) && src.length === 1) {
+        src = src[0]
+      }
       return (
         <div className='flex flex-col'>
           <strong>{config.key}</strong>
-          <div className='flex gap-2 mt-2'>
-            {value.map((v) => (
-              <AttachmentReview key={v} data={{ id: v }} mode='avatar' />
-            ))}
+          <div className='flex flex-wrap gap-2 mt-2'>
+            {isArray(src) &&
+              src.map((v) => (
+                <AttachmentImage
+                  alt='Input image'
+                  containerClassName='w-32 h-32'
+                  className='rounded-lg'
+                  key={v}
+                  data={{ id: v }}
+                />
+              ))}
+            {!isArray(src) && (
+              <AttachmentImage
+                zoomable
+                zoomableProps={{ wrapperClass: 'max-h-[30vh] md:max-h-[400px] rounded-lg' }}
+                alt='Input image'
+                className='w-full h-auto'
+                key={src}
+                data={{ id: src }}
+              />
+            )}
           </div>
         </div>
       )
@@ -68,9 +90,9 @@ export const AttachmentDetail: IComponent<{
           </TransformWrapper>
         </div>
         <div className='w-full md:w-1/2 lg:w-[480px] h-1/2 md:h-full'>
-          <div className='w-full h-full overflow-x-hidden overflow-y-auto p-3 pr-0 shadow-inner'>
-            <h1 className='text-xl font-bold uppercase'>{detail?.workflow?.name}</h1>
-            <h1 className='text-sm uppercase'>{detail?.workflow?.description}</h1>
+          <div className='w-full h-full overflow-x-hidden overflow-y-auto py-3 md:px-3 pr-0 shadow-inner'>
+            <h1 className='text-xl font-bold uppercase px-1'>{detail?.workflow?.name}</h1>
+            <h1 className='text-sm uppercase px-1'>{detail?.workflow?.description}</h1>
             <code className='whitespace-pre-wrap flex flex-col gap-2 mt-2'>
               {Object.entries(config)
                 .filter(([key]) => configMap[key].type !== EValueUltilityType.Prefixer)
@@ -87,7 +109,7 @@ export const AttachmentDetail: IComponent<{
                   )
                 })}
             </code>
-            <div className='mt-4 flex gap-2 pb-4'>
+            <div className='mt-4 flex gap-2 pb-4 px-1'>
               <Button onClick={onPressDownloadHigh} className='rounded-full'>
                 <Download width={16} height={16} className='mr-2' /> Compressed JPG
               </Button>
