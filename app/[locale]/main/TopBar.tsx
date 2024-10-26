@@ -38,12 +38,20 @@ export const TopBar: IComponent = () => {
           </>
         )
       }
+      case 'settingUsers':
+        return (
+          <>
+            <Button size='icon' variant='secondary' className='rounded-full'>
+              <SearchIcon size={16} />
+            </Button>
+          </>
+        )
     }
   }, [role, routeConf?.key])
 
   return (
     <div className='w-full min-h-fit py-2 px-3 flex items-center'>
-      <SimpleTransitionLayout deps={[routeConf?.title ?? '']} className='w-full flex items-center'>
+      <SimpleTransitionLayout deps={[routeConf?.group ?? '']} className='w-full flex items-center'>
         {!!Icon && (
           <Button
             disabled={!routeConf?.backUrl}

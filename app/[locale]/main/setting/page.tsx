@@ -1,13 +1,7 @@
 'use client'
 
-import { UserInfomation } from '@/components/UserInformation'
+import { redirect } from '@/routing'
 
 export default function SettingPage() {
-  return (
-    <div className='w-full h-full flex justify-center'>
-      <div className='w-full md:hidden block'>
-        <UserInfomation />
-      </div>
-    </div>
-  )
+  redirect('/main/setting/account')
 }

@@ -32,8 +32,11 @@ const Layout: IComponent = ({ children }) => {
   const renderDesktopView = useMemo(() => {
     return (
       <Tabs
-        value={routeConf?.key}
-        onValueChange={(value) => router.push(RouteConf[value as TRouterKey].path)}
+        value={routeConf?.group}
+        onValueChange={(value) => {
+          const conf = Object.values(RouteConf).find((v) => v.group === value)
+          if (conf) router.push(conf.path)
+        }}
         className='w-full h-full flex flex-col md:flex-row space-x-2 overflow-hidden'
       >
         {isExecutePage && (
@@ -46,7 +49,7 @@ const Layout: IComponent = ({ children }) => {
           className='flex-1 hidden md:flex flex-col h-full overflow-hidden bg-background border rounded-lg transition-all duration-300 relative'
         >
           <TopBar />
-          <SimpleTransitionLayout deps={[routeConf?.key || '']} className='flex-1 relative'>
+          <SimpleTransitionLayout deps={[routeConf?.group || '']} className='flex-1 relative'>
             {children}
           </SimpleTransitionLayout>
           {!isExecutePage && (
@@ -58,9 +61,9 @@ const Layout: IComponent = ({ children }) => {
                 }}
               >
                 <TabsList>
-                  <TabsTrigger value='home'>Workflows</TabsTrigger>
-                  <TabsTrigger value='gallery'>Gallery</TabsTrigger>
-                  <TabsTrigger value='setting'>Setting</TabsTrigger>
+                  <TabsTrigger value='Workflows'>Workflows</TabsTrigger>
+                  <TabsTrigger value='Gallery'>Gallery</TabsTrigger>
+                  <TabsTrigger value='Setting'>Setting</TabsTrigger>
                 </TabsList>
               </div>
             </Portal>
@@ -73,7 +76,7 @@ const Layout: IComponent = ({ children }) => {
         )}
       </Tabs>
     )
-  }, [children, isAdmin, isExecutePage, routeConf?.key, router])
+  }, [children, isAdmin, isExecutePage, routeConf?.group, router])
 
   const renderMobileView = useMemo(() => {
     return (
