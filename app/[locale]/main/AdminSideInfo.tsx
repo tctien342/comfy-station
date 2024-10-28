@@ -40,7 +40,7 @@ export const AdminSideInfo: IComponent = () => {
 
   return (
     <div className='w-full h-full flex flex-col items-start'>
-      <div className='w-full hidden md:block'>
+      <div className='w-full hidden md:block py-2'>
         <UserInfomation />
       </div>
       <div className='flex w-full flex-row md:flex-col gap-6 p-2 md:p-4 items-center'>

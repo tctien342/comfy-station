@@ -1,8 +1,11 @@
+'use client'
+
 /* eslint-disable @next/next/no-img-element */
 import React, { ReactNode, useRef, useState } from 'react'
 import { LoadingSVG } from './svg/LoadingSVG'
 import { cn } from '@/lib/utils'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { Info } from 'lucide-react'
 
 export interface LoadableImageProps {
   src?: string
@@ -48,7 +51,7 @@ const LoadableImage: React.FC<LoadableImageProps> = ({
     setImageError(true)
   }
 
-  const isLoading = loading || imageLoading
+  const isLoading = loading || (!!src && imageLoading)
 
   return (
     <div
@@ -80,6 +83,11 @@ const LoadableImage: React.FC<LoadableImageProps> = ({
           onError={handleImageError}
           style={{ display: isLoading && !imageError ? 'none' : 'block' }}
         />
+      )}
+      {!src && !isLoading && (
+        <div onClick={onClick} className='flex justify-center items-center h-full w-full opacity-40'>
+          {fallback || <Info width={32} height={32} />}
+        </div>
       )}
     </div>
   )

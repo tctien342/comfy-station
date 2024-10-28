@@ -274,6 +274,14 @@ export const workflowTaskRouter = router({
       computedCost *= input.repeat ?? 1
       computedCost *= tasks.length
 
+      if (ctx.session.user!.balance !== -1 && computedCost > ctx.session.user!.balance) {
+        throw new Error('Insufficient balance')
+      }
+      if (ctx.session.user!.balance !== -1) {
+        ctx.session.user!.balance -= computedCost
+        await CachingService.getInstance().set('USER_BALANCE', ctx.session.user!.id, ctx.session.user!.balance)
+      }
+
       // Create Parent Task
       const trigger = ctx.em.create(
         Trigger,

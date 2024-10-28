@@ -29,7 +29,7 @@ export const handleGetUserByCredentials = async (
       const { email, password } = JSON.parse(body)
       // Check if email and password are correct
       const em = await mikro.getEM()
-      const user = await em.findOne(User, { email, password: User.hashPassword(password) })
+      const user = await em.findOne(User, { email, password: User.hashPassword(password) }, { populate: ['avatar'] })
       if (!user) {
         res.writeHead(401)
         res.end()
@@ -67,7 +67,7 @@ export const handleGetUserByEmail = async (
       const { email } = JSON.parse(body)
       // Check if email and password are correct
       const em = await mikro.getEM()
-      const user = await em.fork().findOne(User, { email: email })
+      const user = await em.fork().findOne(User, { email: email }, { populate: ['avatar'] })
       if (!user) {
         res.writeHead(401)
         res.end()

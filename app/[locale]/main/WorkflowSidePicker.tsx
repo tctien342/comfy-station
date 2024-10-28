@@ -3,12 +3,13 @@ import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WorkflowInputArea } from '@/components/WorkflowInputArea'
-import { EValueType, EValueUltilityType } from '@/entities/enum'
+import { EValueType, EValueUltilityType, EWorkflowActiveStatus } from '@/entities/enum'
 import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { EKeyboardKey, ESpecialKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
 import { useStorageState } from '@/hooks/useStorageState'
 import { useToast } from '@/hooks/useToast'
+import { cn } from '@/lib/utils'
 import { convertObjectToArrayOfObjects, seed } from '@/utils/tools'
 import { trpc } from '@/utils/trpc'
 import { cloneDeep } from 'lodash'
@@ -160,10 +161,17 @@ export const WorkflowSidePicker: IComponent = () => {
           <SelectContent>
             {workflowListLoader.data?.map((selection) => (
               <SelectItem key={selection.id} value={selection.id} className='flex flex-col w-full items-start'>
-                <div className='md:w-[300px] font-semibold whitespace-normal break-words text-left'>
+                <div
+                  className={cn('md:w-[300px] font-semibold whitespace-normal break-words text-left', {
+                    'line-through': selection.status === EWorkflowActiveStatus.Deactivated
+                  })}
+                >
                   {selection.name}
                 </div>
-                <p className='text-xs'>{selection.description}</p>
+                <p className='text-xs'>
+                  {selection.status === EWorkflowActiveStatus.Deactivated && '[DEACTIVATED] '}
+                  {selection.description}
+                </p>
               </SelectItem>
             ))}
           </SelectContent>
