@@ -169,7 +169,8 @@ const Layout: IComponent = ({ children }) => {
     )
   }, [children, executeTab, isAdmin, isExecutePage, routeConf?.key, router])
 
-  if (session.status !== 'authenticated') return null
+  if (!session.data) return null
+
   return (
     <div className='w-full h-full bg-background md:bg-white/10 md:dark:bg-black/10 md:backdrop-blur-sm md:border md:rounded-xl md:p-2'>
       <TooltipProvider>{dyn([renderMobileView, renderDesktopView, renderDesktopView], null)}</TooltipProvider>

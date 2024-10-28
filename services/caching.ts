@@ -15,6 +15,7 @@ export type TCachingKeyMap = {
   HISTORY_ITEM: CustomEvent<number>
   HISTORY_ITEM_PREVIEW: CustomEvent<Blob>
   WORKFLOW: CustomEvent<number>
+  USER_BALANCE: CustomEvent<number>
 }
 
 class CachingService extends EventTarget {

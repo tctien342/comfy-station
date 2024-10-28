@@ -1,3 +1,4 @@
+import { EUserRole } from '@/entities/enum'
 import { ChevronLeft, Cog, HomeIcon, Image, User, Users } from 'lucide-react'
 
 export const RouteConf = {
@@ -8,7 +9,8 @@ export const RouteConf = {
     path: '/main',
     SubIcon: HomeIcon,
     backUrl: false,
-    onNav: true
+    onNav: true,
+    minPerm: EUserRole.User
   },
   gallery: {
     key: 'gallery',
@@ -17,7 +19,8 @@ export const RouteConf = {
     path: '/main/gallery',
     SubIcon: Image,
     backUrl: false,
-    onNav: true
+    onNav: true,
+    minPerm: EUserRole.User
   },
   setting: {
     key: 'setting',
@@ -26,7 +29,8 @@ export const RouteConf = {
     path: '/main/setting',
     SubIcon: Cog,
     backUrl: false,
-    onNav: true
+    onNav: true,
+    minPerm: EUserRole.User
   },
   settingAccount: {
     key: 'settingAccount',
@@ -35,7 +39,8 @@ export const RouteConf = {
     path: '/main/setting/account',
     SubIcon: User,
     backUrl: false,
-    onNav: false
+    onNav: false,
+    minPerm: EUserRole.User
   },
   settingUsers: {
     key: 'settingUsers',
@@ -44,7 +49,8 @@ export const RouteConf = {
     path: '/main/setting/users',
     SubIcon: Users,
     backUrl: false,
-    onNav: false
+    onNav: false,
+    minPerm: EUserRole.Admin
   },
   execute: {
     key: 'execute',
@@ -53,7 +59,8 @@ export const RouteConf = {
     path: '/main/workflow',
     SubIcon: ChevronLeft,
     backUrl: '/main',
-    onNav: false
+    onNav: false,
+    minPerm: EUserRole.User
   }
 } as const
 

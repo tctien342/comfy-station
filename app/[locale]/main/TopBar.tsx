@@ -1,11 +1,10 @@
+import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
 import { AddWorkflowDialog } from '@/components/dialogs/AddWorkflowDialog'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UserInfomation } from '@/components/UserInformation'
 import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
-import { trpc } from '@/utils/trpc'
 import { SearchIcon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
@@ -44,6 +43,7 @@ export const TopBar: IComponent = () => {
             <Button size='icon' variant='secondary' className='rounded-full'>
               <SearchIcon size={16} />
             </Button>
+            {role === EUserRole.Admin && <AddUserDialog />}
           </>
         )
     }

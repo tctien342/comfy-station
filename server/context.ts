@@ -15,15 +15,16 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   const rawAuthorization = headers['authorization'] ?? opts.info?.connectionParams?.Authorization
   const accessToken = rawAuthorization?.replace('Bearer ', '')
 
+  const em = orm.em.fork()
   try {
     let user: User | null = null
     if (accessToken) {
       const tokenInfo = verify(accessToken, BackendENV.NEXTAUTH_SECRET) as { email: string }
-      user = await orm.em.fork().findOne(User, { email: tokenInfo.email })
+      user = await em.findOne(User, { email: tokenInfo.email })
     }
     return {
       session: { user },
-      em: orm.em.fork(),
+      em,
       headers
     }
   } catch (e) {

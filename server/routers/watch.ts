@@ -47,5 +47,14 @@ export const watchRouter = router({
         subscriber.next(ev.detail)
       })
     })
+  }),
+  balance: privateProcedure.subscription(async ({ ctx }) => {
+    const cacher = CachingService.getInstance()
+    return observable<number>((subscriber) => {
+      subscriber.next(ctx.session.user!.balance)
+      return cacher.on('USER_BALANCE', ctx.session.user!.id, (ev) => {
+        subscriber.next(ev.detail)
+      })
+    })
   })
 })
