@@ -12,6 +12,13 @@ import { ComfyPoolInstance } from '@/services/comfyui'
 import { MikroORMInstance } from '@/services/mikro-orm'
 import { handleGetUserByCredentials, handleGetUserByEmail } from './handlers/user'
 import { SharedStorage } from '@/services/shared'
+import swagger from '@elysiajs/swagger'
+
+import { Elysia, t } from 'elysia'
+import { WorkflowPlugin } from './handlers/workflow'
+import { convertIMessToRequest } from './utils/request'
+import { verify } from 'jsonwebtoken'
+import { BackendENV } from '@/env'
 
 /**
  * Initialize all services
@@ -28,6 +35,41 @@ const handler = createHTTPHandler({
   createContext: createContext as any
 })
 
+/**
+ * Allow external API to be accessed through token
+ */
+const elysia = new Elysia()
+  // Bind Swagger to Elysia
+  .use(swagger())
+  // Bind Internal Path
+  .use(
+    new Elysia({ prefix: '/ext/api' }).guard(
+      {
+        headers: t.Object({
+          authorization: t.TemplateLiteral('Bearer ${string}', { default: 'Bearer XXXX-XXXX-XXXX-XXXX' })
+        }),
+        beforeHandle: async ({ headers, set }) => {
+          const bearerToken = headers.authorization
+          if (!bearerToken) {
+            set.status = 401
+            return 'Unauthorized'
+          }
+          const token = bearerToken.split('Bearer ')[1]
+          try {
+            verify(token, BackendENV.NEXTAUTH_SECRET)
+          } catch (e) {
+            set.status = 401
+            return 'Unauthorized'
+          }
+        }
+      },
+      (app) =>
+        app
+          // Bind Workflow Plugin
+          .use(WorkflowPlugin)
+    )
+  )
+
 const server = createServer(async (req, res) => {
   try {
     // Check if req is /user/get
@@ -37,6 +79,17 @@ const server = createServer(async (req, res) => {
     }
     if (req.url === '/user/email' && req.method === 'POST') {
       await handleGetUserByEmail(req, res)
+      return
+    }
+    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/ext/api')) {
+      const request = await convertIMessToRequest(req)
+      const output = await elysia.handle(request)
+      res.writeHead(output.status, {
+        'Content-Type': output.headers.get('content-type') ?? 'application/json'
+      })
+      const data = await output.text()
+      res.write(data)
+      res.end()
       return
     }
   } catch (e) {
