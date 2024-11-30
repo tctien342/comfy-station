@@ -185,6 +185,7 @@ export class ComfyPoolInstance {
                     builder.input(key, task.id)
                     break
                   case EValueType.String:
+                    console.log('WTF', key, inputData)
                     builder.input(key, String(inputData))
                     break
                   case EValueType.File:

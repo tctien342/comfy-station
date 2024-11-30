@@ -12,7 +12,8 @@ const main = defineCommand({
   },
   subCommands: {
     user: () => import('./commands/user').then((r) => r.default),
-    client: () => import('./commands/client').then((r) => r.default)
+    client: () => import('./commands/client').then((r) => r.default),
+    token: () => import('./commands/token').then((r) => r.default)
   }
 })
 

@@ -3,6 +3,7 @@ import { BackendENV } from '@/env'
 import { MikroORMInstance } from '@/services/mikro-orm'
 import Elysia, { t } from 'elysia'
 import { verify } from 'jsonwebtoken'
+import { EnsureMikroORMPlugin } from './ensure-mikro-orm.plugin'
 
 export const EnsureTokenPlugin = new Elysia()
   .guard({
@@ -10,18 +11,15 @@ export const EnsureTokenPlugin = new Elysia()
       authorization: t.TemplateLiteral('Bearer ${string}', { default: 'Bearer XXXX-XXXX-XXXX-XXXX' })
     })
   })
-  .resolve({ as: 'scoped' }, async ({ headers: { authorization } }) => {
+  .use(EnsureMikroORMPlugin)
+  .resolve({ as: 'scoped' }, async ({ headers: { authorization }, set, em }) => {
     const bearerToken = authorization.split(' ')[1]
-    const { tokenId } = verify(bearerToken, BackendENV.NEXTAUTH_SECRET) as { tokenId: string }
-    const em = await MikroORMInstance.getInstance().getEM()
-    const token = await em.findOne(Token, { id: tokenId })
-    return {
-      token
-    }
-  })
-  .onBeforeHandle(({ token, set }) => {
+    const token = await em!.findOne(Token, { id: bearerToken }, { populate: ['grantedWorkflows.*', 'createdBy'] })
     if (!token) {
       set.status = 401
-      return 'Unauthorized'
+      throw new Error('Unauthorized')
+    }
+    return {
+      token
     }
   })

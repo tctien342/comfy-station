@@ -5,7 +5,7 @@ import type { User } from '@/entities/user'
 import { BackendENV } from '@/env'
 import { getBaseUrl } from '@/utils/trpc'
 
-const getUserInfomationByCredentials = async (email: string, password: string): Promise<User | false> => {
+const getUserInformationByCredentials = async (email: string, password: string): Promise<User | false> => {
   return fetch(`${getBaseUrl()}/user/credential`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
@@ -15,17 +15,20 @@ const getUserInfomationByCredentials = async (email: string, password: string): 
     }
   })
     .then((res) => {
+      console.log(res)
+
       if (!res.ok) {
         return false
       }
       return res.json()
     })
     .catch((e) => {
+      console.log(e)
       return false
     })
 }
 
-const getUserInfomationByEmail = async (email: string): Promise<User | false> => {
+const getUserInformationByEmail = async (email: string): Promise<User | false> => {
   return fetch(`${getBaseUrl()}/user/email`, {
     method: 'POST',
     body: JSON.stringify({ email }),
@@ -55,7 +58,7 @@ export const NextAuthOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (credentials) {
-          const user = await getUserInfomationByCredentials(credentials.email, credentials.password)
+          const user = await getUserInformationByCredentials(credentials.email, credentials.password)
           if (user) {
             return { id: user.id, email: user.email }
           }
@@ -68,7 +71,7 @@ export const NextAuthOptions: AuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (token.email) {
-        const user = await getUserInfomationByEmail(token.email)
+        const user = await getUserInformationByEmail(token.email)
         if (user) {
           session.user = user
           session.accessToken = jwt.sign({ email: user.email }, BackendENV.NEXTAUTH_SECRET)

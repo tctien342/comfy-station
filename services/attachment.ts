@@ -181,7 +181,8 @@ class AttachmentService {
           Bucket: BackendENV.S3_BUCKET_NAME,
           Key: fileName,
           Body: file,
-          Metadata: meta
+          Metadata: meta,
+          ContentType: mimeType ?? undefined
         }
         const command = new PutObjectCommand(uploadParams)
         await this.s3.send(command)

@@ -5,13 +5,21 @@ export const convertIMessToRequest = async (req: IncomingMessage) => {
   for (var key in req.headers) {
     if (req.headers[key]) headers.append(key, req.headers[key] as string)
   }
-  const body = await new Promise<string>((resolve, reject) => {
-    let data = ''
+
+  const contentType = req.headers['content-type'] || ''
+  const isMultipart = contentType.includes('multipart/form-data')
+
+  const body = await new Promise<string | Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = []
     req.on('data', (chunk) => {
-      data += chunk
+      chunks.push(chunk)
     })
     req.on('end', () => {
-      resolve(data)
+      if (isMultipart) {
+        resolve(Buffer.concat(chunks))
+      } else {
+        resolve(Buffer.concat(chunks).toString())
+      }
     })
     req.on('error', (err) => {
       reject(err)
