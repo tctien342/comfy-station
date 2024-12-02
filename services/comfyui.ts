@@ -16,7 +16,7 @@ import { ClientMonitorEvent } from '@/entities/client_monitor_event'
 import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
 import CachingService from './caching'
 
-import { cloneDeep, throttle, uniqueId } from 'lodash'
+import { cloneDeep, throttle } from 'lodash'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { getBuilder, parseOutput } from '@/utils/workflow'
@@ -157,6 +157,7 @@ export class ComfyPoolInstance {
           const builder = getBuilder(workflow)
           await this.updateTaskEventFn(task, ETaskStatus.Pending)
           pool.run(async (api) => {
+            const start = performance.now()
             try {
               const client = await em.findOne(Client, { id: api.id })
               if (client) {
@@ -339,6 +340,7 @@ export class ComfyPoolInstance {
                         }
                       >
                     )
+                    task.executionTime = performance.now() - start
                     await Promise.all([
                       em.flush(),
                       this.updateTaskEventFn(task, ETaskStatus.Success, {

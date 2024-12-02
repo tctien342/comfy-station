@@ -2,7 +2,7 @@ import { AttachmentReview } from '@/components/AttachmentReview'
 import { MiniBadge } from '@/components/MiniBadge'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { Button } from '@/components/ui/button'
-import { ETaskStatus, EValueType } from '@/entities/enum'
+import { ETaskStatus, ETriggerBy, EValueType } from '@/entities/enum'
 import { WorkflowTask } from '@/entities/workflow_task'
 import useCopyAction from '@/hooks/useCopyAction'
 import { trpc } from '@/utils/trpc'
@@ -19,6 +19,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { LoadableButton } from '@/components/LoadableButton'
 import DownloadImagesButton from '@/components/ui-ext/download-button'
 import { AttachmentImage } from '@/components/AttachmentImage'
+import { Badge } from '@/components/ui/badge'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
@@ -172,7 +173,21 @@ export const TaskItem: IComponent<{
     )
   }, [isLoading, outputAttachments, task?.workflow.name, outputData, isCopied, copyToClipboard])
 
-  const shortName = task?.trigger.user?.email?.split('@')[0] ?? '-'
+  const shortName = useMemo(() => {
+    switch (task?.trigger.type) {
+      case ETriggerBy.User:
+        return `USER#${task?.trigger.user?.email?.split('@')[0] ?? '-'}`
+      case ETriggerBy.Job:
+        return `JOB#${task?.trigger.jobTask?.job?.id.slice(-4) ?? '-'}`
+      case ETriggerBy.Token:
+        return `TOKEN#${task?.trigger.token?.id?.slice(-4) ?? '-'}`
+      case ETriggerBy.System:
+        return `SYSTEM`
+      default:
+        return '-'
+    }
+  }, [task?.trigger.jobTask?.job.id, task?.trigger.token?.id, task?.trigger.type, task?.trigger.user?.email])
+
   const outputImageAttachments = outputAttachments.map((v) => v.value).flat() as string[]
 
   if (!task)
@@ -204,7 +219,11 @@ export const TaskItem: IComponent<{
             <Label className='text-base font-semibold'>{task.workflow.name}</Label>
             <p className='text-xs md:text-sm'>ID: #{task.id.split('-').pop()}</p>
             <p className='text-xs md:text-sm'>
-              Trigger by: @{shortName}, {new Date(task!.createdAt).toLocaleString()}
+              Trigger by:{' '}
+              <Badge className='text-xs p-1' variant='outline'>
+                {shortName?.split('#')[0]}
+              </Badge>{' '}
+              <strong>#{shortName?.split('#')[1]}</strong>, {new Date(task!.createdAt).toLocaleString()}
             </p>
             <div className='w-full flex flex-wrap gap-2 mt-2'>
               <MiniBadge

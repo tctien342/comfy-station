@@ -3,7 +3,6 @@ import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
-import { AttachmentSchema } from '../schemas/attachment'
 import { TaskEventSchema, TaskSchema } from '../schemas/task'
 import { ETaskStatus } from '@/entities/enum'
 
@@ -13,12 +12,28 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
   .get(
     '/',
     async ({ token, em, query: { offset = 0, limit = 10 } }) => {
-      const tasks = await em.find(WorkflowTask, { trigger: { token } }, { offset, limit })
-      return tasks
+      const tasks = await em.find(WorkflowTask, { parent: null, trigger: { token } }, { offset, limit })
+      return {
+        data: tasks,
+        total: await em.count(WorkflowTask, { parent: null, trigger: { token } })
+      }
     },
     {
       detail: {
-        description: 'Get list of tasks by given token'
+        description: 'Get list of tasks by given token',
+        responses: {
+          200: {
+            description: 'List of tasks',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  data: t.Array(TaskSchema),
+                  total: t.Number()
+                })
+              } as any
+            }
+          }
+        }
       },
       query: t.Object({
         offset: t.Optional(t.Number({ default: 0 })),

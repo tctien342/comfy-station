@@ -8,14 +8,18 @@ import { WorkflowTask } from '@/entities/workflow_task'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { Trigger } from '@/entities/trigger'
+import { Workflow } from '@/entities/workflow'
 
 export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: ['Workflow'] } })
   .use(EnsureMikroORMPlugin)
   .use(EnsureTokenPlugin)
   .get(
     '/list',
-    async ({ token }) => {
-      const workflows = token!.grantedWorkflows.map((wf) => wf.workflow)
+    async ({ em, token }) => {
+      let workflows = token!.grantedWorkflows.map((wf) => wf.workflow)
+      if (token.isMaster) {
+        workflows = await em.find(Workflow, {})
+      }
       return workflows.map((wf) => ({
         id: wf.id,
         name: wf.name,
@@ -82,7 +86,11 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
   .post(
     '/:id/execute',
     async ({ token, em, params: { id }, body: { input, repeat = 1 } }) => {
-      const workflow = token!.grantedWorkflows.find((wf) => wf.workflow.id === id)?.workflow
+      let workflow = token!.grantedWorkflows.find((wf) => wf.workflow.id === id)?.workflow
+
+      if (token.isMaster) {
+        workflow = (await em.findOne(Workflow, { id })) ?? undefined
+      }
 
       if (!workflow) {
         throw new NotFoundError('Workflow not found')
@@ -132,8 +140,6 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
       if (token.balance !== -1) {
         token.balance -= computedCost
       }
-
-      console.log('WY')
 
       // Create Parent Task
       const trigger = em.create(
@@ -246,6 +252,22 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
       body: t.Object({
         repeat: t.Optional(t.Number({ description: 'Repeat times', default: 1 })),
         input: t.Record(t.String(), t.Union([t.Optional(t.String()), t.Number(), t.Array(t.String())]))
-      })
+      }),
+      detail: {
+        responses: {
+          200: {
+            description: 'Task created',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  taskId: t.String({ description: 'Task ID', default: 'xxx-xxx-xxxxxx' }),
+                  cost: t.Number({ description: 'Task cost', default: 0 }),
+                  repeatCount: t.Number({ description: 'Repeat count', default: 1 })
+                })
+              } as any
+            }
+          }
+        }
+      }
     }
   )
