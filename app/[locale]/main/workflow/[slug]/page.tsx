@@ -3,7 +3,7 @@
 import { useContext } from 'react'
 import WorkflowGallery from './Gallery'
 import { WorkflowDetailContext } from '../layout'
-import { WorkflowApi } from './api'
+import { WorkflowApi } from './WorkflowApi'
 
 export default function WorkflowDetail() {
   const { viewTab } = useContext(WorkflowDetailContext)

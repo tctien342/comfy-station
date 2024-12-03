@@ -7,11 +7,14 @@ import { z } from 'zod'
 import { Workflow } from '@/entities/workflow'
 import { TokenPermission } from '@/entities/token_permission'
 import { User } from '@/entities/user'
+import { v4 } from 'uuid'
+import { sign } from 'jsonwebtoken'
+import { BackendENV } from '@/env'
 
 export const tokenRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {
     if (ctx.session.user?.role === EUserRole.Admin) {
-      return await ctx.em.find(Token, {}, { populate: ['sharedUsers'] })
+      return await ctx.em.find(Token, {}, { populate: ['sharedUsers', 'grantedWorkflows.workflow.name', 'createdBy'] })
     }
     const ownedTokens = await ctx.em.find(
       Token,
@@ -64,7 +67,7 @@ export const tokenRouter = router({
         tokens
       }
     }),
-  create: adminProcedure
+  create: privateProcedure
     .input(
       z.object({
         expiredAt: z.date().optional(),
@@ -77,6 +80,20 @@ export const tokenRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user!.role !== EUserRole.Admin) {
+        if (input.isMasterToken) {
+          throw new Error('Only admins can create master tokens')
+        }
+        if (input.balance) {
+          if (input.balance !== -1) {
+            if (ctx.session.user!.balance < input.balance) {
+              throw new Error('Insufficient balance')
+            } else {
+              ctx.session.user!.balance -= input.balance
+            }
+          }
+        }
+      }
       const token = ctx.em.create(
         Token,
         {
@@ -143,6 +160,41 @@ export const tokenRouter = router({
       const user = await ctx.em.findOneOrFail(User, { id: input.userId })
       const shared = ctx.em.create(TokenShared, { token, user }, { partial: true })
       token.sharedUsers.add(shared)
+      await ctx.em.persistAndFlush(token)
+      return true
+    }),
+  destroy: privateProcedure
+    .input(
+      z.object({
+        tokenId: z.string()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const token = await ctx.em.findOneOrFail(Token, { id: input.tokenId }, { populate: ['sharedUsers', 'createdBy'] })
+      if (ctx.session.user!.role !== EUserRole.Admin && token.createdBy.id !== ctx.session.user!.id) {
+        throw new Error('You do not have permission to delete this token')
+      }
+      if (token.sharedUsers.length > 0) {
+        // Remove shared users from token before deleting it.
+        for (const shared of token.sharedUsers) {
+          ctx.em.remove(shared)
+        }
+      }
+      await ctx.em.removeAndFlush(token)
+      return true
+    }),
+  reroll: privateProcedure
+    .input(
+      z.object({
+        tokenId: z.string()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const token = await ctx.em.findOneOrFail(Token, { id: input.tokenId }, { populate: ['sharedUsers', 'createdBy'] })
+      if (ctx.session.user!.role !== EUserRole.Admin && token.createdBy.id !== ctx.session.user!.id) {
+        throw new Error('You do not have permission to reroll this token')
+      }
+      token.id = sign({ id: v4() }, BackendENV.INTERNAL_SECRET)
       await ctx.em.persistAndFlush(token)
       return true
     })

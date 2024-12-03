@@ -61,7 +61,16 @@ const elysia = new Elysia()
           { name: 'Workflow', description: 'Workflow apis' },
           { name: 'Task', description: 'Task apis' },
           { name: 'Attachment', description: 'Attachment apis' }
-        ]
+        ],
+        components: {
+          securitySchemes: {
+            BearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT' // or whatever format you use
+            }
+          }
+        }
       }
     })
   )
@@ -86,9 +95,7 @@ const elysia = new Elysia()
       )
       .guard(
         {
-          headers: t.Object({
-            authorization: t.TemplateLiteral('Bearer ${string}', { default: 'Bearer XXXX-XXXX-XXXX-XXXX' })
-          })
+          detail: { security: [{ BearerAuth: [] }] }
         },
         (app) =>
           app
@@ -108,13 +115,16 @@ const server = createServer(async (req, res) => {
     if (req.url?.startsWith('/swagger') || req.url?.startsWith('/user') || req.url?.startsWith('/ext/api')) {
       const request = await convertIMessToRequest(req)
       const output = await elysia.handle(request)
-      res.writeHead(output.status, {
-        'Content-Type': output.headers.get('content-type') ?? 'application/json'
-      })
-      const data = await output.text()
-      res.write(data)
-      res.end()
-      return
+      // If the response is not a 404, then passthrough to tRPC handler
+      if (output.status !== 404) {
+        res.writeHead(output.status, {
+          'Content-Type': output.headers.get('content-type') ?? 'application/json'
+        })
+        const data = await output.text()
+        res.write(data)
+        res.end()
+        return
+      }
     }
   } catch (e) {
     console.error(e)

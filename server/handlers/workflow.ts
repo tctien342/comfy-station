@@ -1,5 +1,5 @@
 import Elysia, { NotFoundError, t } from 'elysia'
-import { ETaskStatus, ETriggerBy, EValueType, EValueUltilityType } from '@/entities/enum'
+import { ETaskStatus, ETriggerBy, EUserRole, EValueType, EValueUltilityType } from '@/entities/enum'
 import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
 import { WorkflowInputSchema, WorkflowOutputSchema } from '../schemas/workflow'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
@@ -85,7 +85,7 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
   )
   .post(
     '/:id/execute',
-    async ({ token, em, params: { id }, body: { input, repeat = 1 } }) => {
+    async ({ token, em, params: { id }, body: { input, repeat = 1 }, set }) => {
       let workflow = token!.grantedWorkflows.find((wf) => wf.workflow.id === id)?.workflow
 
       if (token.isMaster) {
@@ -102,15 +102,18 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
         if (keyConfig.type === EValueType.Number) {
           const temp = Number(input[key])
           if (keyConfig.min && temp < keyConfig.min) {
+            set.status = 400
             throw new Error(`Value of ${key} is less than min value`)
           }
           if (keyConfig.max && temp > keyConfig.max) {
+            set.status = 400
             throw new Error(`Value of ${key} is greater than max value`)
           }
         }
         if (keyConfig.type === EValueType.File || keyConfig.type === EValueType.Image) {
           const temp = input[key]
           if (Array.isArray(temp) && temp.length === 0) {
+            set.status = 400
             throw new Error(`Value of ${key} is empty`)
           }
         }
@@ -134,11 +137,25 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
       computedCost *= repeat ?? 1
       computedCost *= tasks.length
 
-      if (token.balance !== -1 && computedCost > token.balance) {
-        throw new Error('Insufficient balance')
-      }
       if (token.balance !== -1) {
-        token.balance -= computedCost
+        if (computedCost > token.balance) {
+          set.status = 402
+          throw new Error('Insufficient balance')
+        } else {
+          token.balance -= computedCost
+        }
+      } else {
+        // Using owned balance
+        if (token.createdBy.role !== EUserRole.Admin) {
+          if (token.createdBy.balance !== -1) {
+            if (computedCost > token.createdBy.balance) {
+              set.status = 402
+              throw new Error('Insufficient balance')
+            } else {
+              token.createdBy.balance -= computedCost
+            }
+          }
+        }
       }
 
       // Create Parent Task
@@ -265,6 +282,46 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
                   repeatCount: t.Number({ description: 'Repeat count', default: 1 })
                 })
               } as any
+            }
+          },
+          400: {
+            description: 'Invalid input',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  error: t.String({ description: 'Error message' })
+                })
+              }
+            }
+          },
+          402: {
+            description: 'Insufficient balance',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  error: t.String({ description: 'Error message', default: 'Insufficient balance' })
+                })
+              }
+            }
+          },
+          404: {
+            description: 'Workflow not found',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  error: t.String({ description: 'Error message', default: 'Workflow not found' })
+                })
+              }
+            }
+          },
+          500: {
+            description: 'Internal server error',
+            content: {
+              'application/json': {
+                schema: t.Object({
+                  error: t.String({ description: 'Error message', default: 'Internal server error' })
+                })
+              }
             }
           }
         }

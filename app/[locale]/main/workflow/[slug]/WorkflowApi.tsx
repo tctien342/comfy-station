@@ -8,6 +8,7 @@ export const WorkflowApi: IComponent = () => {
   const { slug } = useCurrentRoute()
   const user = data?.user
 
+  const creator = trpc.token.create.useMutation()
   const listTokens = trpc.token.listByWorkflow.useQuery({ workflowId: slug! })
 
   const handleCopyClick = async (tokenId: string) => {
@@ -38,6 +39,7 @@ export const WorkflowApi: IComponent = () => {
               <TableHead>Weight Offset</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,20 +48,6 @@ export const WorkflowApi: IComponent = () => {
                 <TableCell className='font-mono'>
                   <div className='flex items-center gap-2'>
                     <span>{token.id.substring(0, 4)}...</span>
-                    <button
-                      onClick={async (event) => {
-                        await handleCopyClick(token.id)
-                        const button = event.target as HTMLButtonElement
-                        button.textContent = '✓'
-                        setTimeout(() => {
-                          button.textContent = '📋'
-                        }, 1000)
-                      }}
-                      className='p-1 hover:bg-gray-100 text-green-500 rounded'
-                      title='Copy token ID'
-                    >
-                      📋
-                    </button>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -80,6 +68,22 @@ export const WorkflowApi: IComponent = () => {
                   ) : (
                     <span className='text-green-500'>Active</span>
                   )}
+                </TableCell>
+                <TableCell>
+                  <button
+                    onClick={async (event) => {
+                      await handleCopyClick(token.id)
+                      const button = event.target as HTMLButtonElement
+                      button.textContent = '✓'
+                      setTimeout(() => {
+                        button.textContent = '📋'
+                      }, 1000)
+                    }}
+                    className='p-1 hover:bg-gray-100 text-green-500 rounded'
+                    title='Copy token ID'
+                  >
+                    📋
+                  </button>
                 </TableCell>
               </TableRow>
             ))}

@@ -30,7 +30,7 @@ const Layout: IComponent = ({ children }) => {
         </Link>
       )
     })
-  }, [routeConf?.key])
+  }, [routeConf?.key, session.data])
 
   return (
     <div className='w-full h-full flex flex-row divide-x-[1px] border-t'>
