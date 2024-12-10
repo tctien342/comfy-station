@@ -1,13 +1,14 @@
 import Elysia, { NotFoundError, t } from 'elysia'
-import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
 import { Attachment } from '@/entities/attachment'
 import AttachmentService from '@/services/attachment'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
 import { EAttachmentStatus } from '@/entities/enum'
+import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
 
 export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { tags: ['Attachment'] } })
   .use(EnsureMikroORMPlugin)
+  .use(EnsureTokenPlugin)
   .get(
     '/:id',
     async ({ em, params: { id } }) => {
@@ -15,8 +16,22 @@ export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { ta
       if (!attachment) {
         return new NotFoundError('Attachment not found')
       }
-      const url = await AttachmentService.getInstance().getAttachmentURL(attachment)
-      return JSON.stringify({ attachment, url })
+      const stockName = attachment.fileName
+      const prevName = `${attachment.fileName}_preview.jpg`
+      const highName = `${attachment.fileName}_high.jpg`
+      const [stock, preview, high] = await Promise.all([
+        AttachmentService.getInstance().getFileURL(stockName),
+        AttachmentService.getInstance().getFileURL(prevName),
+        AttachmentService.getInstance().getFileURL(highName)
+      ])
+      return JSON.stringify({
+        attachment,
+        urls: {
+          stock,
+          preview,
+          high
+        }
+      })
     },
     {
       detail: {
@@ -28,34 +43,12 @@ export const AttachmentPlugin = new Elysia({ prefix: '/attachment', detail: { ta
               'application/json': {
                 schema: t.Object({
                   attachment: AttachmentSchema,
-                  url: AttachmentURLSchema
+                  url: t.Object({
+                    stock: AttachmentURLSchema,
+                    preview: AttachmentURLSchema,
+                    high: AttachmentURLSchema
+                  })
                 })
-              }
-            } as any
-          }
-        }
-      }
-    }
-  )
-  .get(
-    '/:id/url',
-    async ({ em, params: { id } }) => {
-      const attachment = await em.findOne(Attachment, { id })
-      if (!attachment) {
-        return new NotFoundError('Attachment not found')
-      }
-      const url = await AttachmentService.getInstance().getAttachmentURL(attachment)
-      return JSON.stringify({ url })
-    },
-    {
-      detail: {
-        description: 'Get attachment URL by given id',
-        responses: {
-          200: {
-            description: 'Attachment information',
-            content: {
-              'application/json': {
-                schema: AttachmentURLSchema
               }
             } as any
           }

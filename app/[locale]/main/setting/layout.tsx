@@ -35,7 +35,7 @@ const Layout: IComponent = ({ children }) => {
   return (
     <div className='w-full h-full flex flex-row divide-x-[1px] border-t'>
       <div className='h-full flex flex-col divide-y-[1px]'>{renderTabs}</div>
-      <div className='flex-1 h-full hidden md:block'>{children}</div>
+      <div className='flex-1 h-full hidden md:grid'>{children}</div>
     </div>
   )
 }

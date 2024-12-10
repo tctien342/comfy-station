@@ -10,6 +10,7 @@ import { User } from '@/entities/user'
 import { v4 } from 'uuid'
 import { sign } from 'jsonwebtoken'
 import { BackendENV } from '@/env'
+import CachingService from '@/services/caching'
 
 export const tokenRouter = router({
   list: privateProcedure.query(async ({ ctx }) => {
@@ -115,6 +116,7 @@ export const tokenRouter = router({
         }
       }
       await ctx.em.persistAndFlush(token)
+      await CachingService.getInstance().set('USER_BALANCE', ctx.session.user!.id, ctx.session.user!.balance)
       return token
     }),
   grantAccess: adminProcedure

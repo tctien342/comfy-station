@@ -167,11 +167,7 @@ export const ClientInfoMonitoring: IComponent<{
                   <span className='min-w-[100px]'>Cancel current task</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  disabled={status !== EClientStatus.Online}
-                  className='text-destructive cursor-pointer'
-                  onClick={handlePressDelete}
-                >
+                <DropdownMenuItem className='text-destructive cursor-pointer' onClick={handlePressDelete}>
                   <TrashIcon className='mr-2' width={16} height={16} />
                   <span className='min-w-[100px]'>Delete this client</span>
                 </DropdownMenuItem>

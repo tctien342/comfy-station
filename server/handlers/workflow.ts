@@ -1,5 +1,12 @@
 import Elysia, { NotFoundError, t } from 'elysia'
-import { ETaskStatus, ETriggerBy, EUserRole, EValueType, EValueUltilityType } from '@/entities/enum'
+import {
+  ETaskStatus,
+  ETriggerBy,
+  EUserRole,
+  EValueType,
+  EValueUltilityType,
+  EWorkflowActiveStatus
+} from '@/entities/enum'
 import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
 import { WorkflowInputSchema, WorkflowOutputSchema } from '../schemas/workflow'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
@@ -18,40 +25,44 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
     async ({ em, token }) => {
       let workflows = token!.grantedWorkflows.map((wf) => wf.workflow)
       if (token.isMaster) {
-        workflows = await em.find(Workflow, {})
+        workflows = await em.find(Workflow, {
+          status: EWorkflowActiveStatus.Activated
+        })
       }
-      return workflows.map((wf) => ({
-        id: wf.id,
-        name: wf.name,
-        cost: wf.cost,
-        input: Object.keys(wf.mapInput ?? {}).reduce(
-          (acc, cur) => {
-            const val = wf.mapInput![cur]
-            console.log(val)
-            acc[cur] = {
-              key: val.key,
-              type: val.type as EValueType,
-              description: val.description,
-              default: val.default
-            }
-            return acc
-          },
-          {} as Record<string, { key: string; type: EValueType; description?: string; default: any }>
-        ),
-        output: Object.values(wf.mapOutput ?? {}).reduce(
-          (acc, cur) => {
-            acc[cur.key] = {
-              type: cur.type as EValueType,
-              description: cur.description
-            }
-            return acc
-          },
-          {} as Record<string, { type: EValueType; description?: string }>
-        ),
-        description: wf.description,
-        createdAt: wf.createdAt.toISOString(),
-        updatedAt: wf.updateAt.toISOString()
-      }))
+      return workflows
+        .filter((v) => v.status === EWorkflowActiveStatus.Activated)
+        .map((wf) => ({
+          id: wf.id,
+          name: wf.name,
+          cost: wf.cost,
+          input: Object.keys(wf.mapInput ?? {}).reduce(
+            (acc, cur) => {
+              const val = wf.mapInput![cur]
+              console.log(val)
+              acc[cur] = {
+                key: val.key,
+                type: val.type as EValueType,
+                description: val.description,
+                default: val.default
+              }
+              return acc
+            },
+            {} as Record<string, { key: string; type: EValueType; description?: string; default: any }>
+          ),
+          output: Object.values(wf.mapOutput ?? {}).reduce(
+            (acc, cur) => {
+              acc[cur.key] = {
+                type: cur.type as EValueType,
+                description: cur.description
+              }
+              return acc
+            },
+            {} as Record<string, { type: EValueType; description?: string }>
+          ),
+          description: wf.description,
+          createdAt: wf.createdAt.toISOString(),
+          updatedAt: wf.updateAt.toISOString()
+        }))
     },
     {
       detail: {
@@ -143,6 +154,7 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
           throw new Error('Insufficient balance')
         } else {
           token.balance -= computedCost
+          await em.flush()
         }
       } else {
         // Using owned balance
@@ -153,6 +165,7 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
               throw new Error('Insufficient balance')
             } else {
               token.createdBy.balance -= computedCost
+              await em.flush()
             }
           }
         }

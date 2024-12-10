@@ -45,7 +45,6 @@ const Layout: IComponent = ({ children }) => {
           <TabsList>
             <TabsTrigger value='history'>History</TabsTrigger>
             <TabsTrigger value='visualize'>Gallery</TabsTrigger>
-            <TabsTrigger value='api'>API</TabsTrigger>
           </TabsList>
         </div>
       </Portal>
@@ -65,9 +64,6 @@ const Layout: IComponent = ({ children }) => {
             <TaskHistory />
           </TabsContent>
           <TabsContent value='visualize' className='w-full h-full mt-0 z-0 relative !ring-0'>
-            {children}
-          </TabsContent>
-          <TabsContent value='api' className='w-full h-full mt-0 z-0 relative !ring-0'>
             {children}
           </TabsContent>
         </SimpleTransitionLayout>

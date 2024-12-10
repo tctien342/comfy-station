@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { UserInfomation } from '@/components/UserInformation'
 import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
-import { SearchIcon } from 'lucide-react'
+import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
+import { Plus, SearchIcon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
 
@@ -44,6 +45,20 @@ export const TopBar: IComponent = () => {
               <SearchIcon size={16} />
             </Button>
             {role === EUserRole.Admin && <AddUserDialog />}
+          </>
+        )
+      case 'settingTokens':
+        return (
+          <>
+            <Button
+              onClick={() => dispatchGlobalEvent(EGlobalEvent.BTN_CREATE_TOKEN)}
+              size='icon'
+              variant='secondary'
+              className='rounded-full'
+              title='Create new token'
+            >
+              <Plus size={16} />
+            </Button>
           </>
         )
     }
