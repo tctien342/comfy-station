@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogHeader, DialogContent, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,7 +15,8 @@ import { trpc } from '@/utils/trpc'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -34,9 +36,12 @@ const TokenSchema = z.object({
 
 type TokenInput = z.infer<typeof TokenSchema>
 
-export const CreateTokenPopup: IComponent<{
+export const TokenPopup: IComponent<{
   onRefresh?: () => void
 }> = ({ onRefresh }) => {
+  const query = useSearchParams()
+  const tokenId = query.get('token_id')
+
   const { data: session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -44,35 +49,74 @@ export const CreateTokenPopup: IComponent<{
     resolver: zodResolver(TokenSchema),
     defaultValues: {
       balance: -1,
+      description: '',
       type: ETokenType.Both,
       weightOffset: 0,
       isMasterToken: false
     }
   })
+  const tokenData = trpc.token.get.useQuery(
+    { tokenId: tokenId! },
+    {
+      enabled: !!tokenId
+    }
+  )
+
   const workflows = trpc.workflow.listWorkflowSelections.useQuery()
 
   const isAdmin = session?.user?.role === EUserRole.Admin
   const isMasterToken = form.watch('isMasterToken')
 
   const creator = trpc.token.create.useMutation()
+  const updater = trpc.token.update.useMutation()
 
-  const handleCreateToken = form.handleSubmit(async (input) => {
-    creator
-      .mutateAsync(input)
-      .then(() => {
-        setIsOpen(false)
-        onRefresh?.()
-      })
-      .catch((err) => {
-        toast({
-          title: 'Failed to create token'
+  const handleSubmitToken = form.handleSubmit(async (input) => {
+    if (tokenId) {
+      updater
+        .mutateAsync({ tokenId, ...input })
+        .then(() => {
+          setIsOpen(false)
+          onRefresh?.()
         })
-      })
+        .catch((err) => {
+          toast({
+            title: 'Failed to update token'
+          })
+        })
+    } else {
+      creator
+        .mutateAsync(input)
+        .then(() => {
+          setIsOpen(false)
+          onRefresh?.()
+        })
+        .catch((err) => {
+          toast({
+            title: 'Failed to create token'
+          })
+        })
+    }
   })
 
   useGlobalEvent(EGlobalEvent.BTN_CREATE_TOKEN, () => {
     setIsOpen(true)
   })
+
+  useEffect(() => {
+    if (tokenData.data) {
+      form.setValue('description', tokenData.data.description ?? '')
+      form.setValue('type', tokenData.data.type)
+      form.setValue('balance', tokenData.data.balance)
+      form.setValue('weightOffset', tokenData.data.weightOffset)
+      form.setValue(
+        'expiredAt',
+        tokenData.data.expireAt ? (new Date(tokenData.data.expireAt).toISOString().substr(0, 10) as any) : undefined
+      )
+      form.setValue('isMasterToken', tokenData.data.isMaster)
+      form.setValue('workflowIds', tokenData.data.grantedWorkflows?.map((v) => v.workflow.id) ?? [])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenData.data])
 
   const workflowSelectionOptions = workflows.data?.map((v) => ({ value: v.id, label: v.name ?? '' })) ?? []
 
@@ -80,10 +124,10 @@ export const CreateTokenPopup: IComponent<{
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className='text-base font-bold'>Create API Token</DialogTitle>
+          <DialogTitle className='text-base font-bold'>{tokenId ? 'Update' : 'Create'} API Token</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={handleCreateToken} className='grid gap-2'>
+          <form onSubmit={handleSubmitToken} className='grid gap-2'>
             <FormField
               name='description'
               render={({ field }) => (
@@ -157,8 +201,18 @@ export const CreateTokenPopup: IComponent<{
                 <FormItem>
                   <FormLabel>Expired At</FormLabel>
                   <FormDescription>Set expired date for this token. Leave empty for no expired date.</FormDescription>
+                  <div className='flex items-center space-x-2'>
+                    <Switch
+                      id='unlimited-mode'
+                      checked={!form.watch('expiredAt')}
+                      onCheckedChange={(val) => {
+                        field.onChange(val ? undefined : (new Date().toISOString().substr(0, 10) as any))
+                      }}
+                    />
+                    <Label htmlFor='unlimited-mode'>Never Expired</Label>
+                  </div>
                   <FormControl>
-                    <Input type='date' {...field} />
+                    <Input disabled={form.watch('expiredAt') === undefined} type='date' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -206,11 +260,16 @@ export const CreateTokenPopup: IComponent<{
               )}
             />
             <DialogFooter className='mt-2'>
-              <Button type='button' disabled={creator.isPending} onClick={() => setIsOpen(false)} variant='secondary'>
+              <Button
+                type='button'
+                disabled={creator.isPending || updater.isPending}
+                onClick={() => setIsOpen(false)}
+                variant='secondary'
+              >
                 Cancel <X size={16} className='ml-1' />
               </Button>
-              <LoadableButton type='submit' loading={creator.isPending}>
-                Create <Check size={16} className='ml-1' />
+              <LoadableButton type='submit' loading={creator.isPending || updater.isPending}>
+                {!tokenId ? 'Create' : 'Update'} <Check size={16} className='ml-1' />
               </LoadableButton>
             </DialogFooter>
           </form>

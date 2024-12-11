@@ -6,10 +6,14 @@ import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/useToast'
 import { getBaseUrl, trpc } from '@/utils/trpc'
-import { RefreshCcwDot, Trash2 } from 'lucide-react'
-import { CreateTokenPopup } from './CreateTokenPopup'
+import { Pencil, RefreshCcwDot, Trash2 } from 'lucide-react'
+import { TokenPopup } from './TokenPopup'
+import { usePathname, useRouter } from 'next/navigation'
+import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 
 const TokenPage: IComponent = () => {
+  const router = useRouter()
+  const pathName = usePathname()
   const tokens = trpc.token.list.useQuery()
 
   const { toast } = useToast()
@@ -29,7 +33,7 @@ const TokenPage: IComponent = () => {
 
   return (
     <div className='w-full h-full flex flex-col'>
-      <CreateTokenPopup
+      <TokenPopup
         onRefresh={() => {
           tokens.refetch()
         }}
@@ -133,6 +137,19 @@ const TokenPage: IComponent = () => {
                   >
                     <RefreshCcwDot size={14} />
                   </LoadableButton>
+                  <Button
+                    size='icon'
+                    variant='outline'
+                    onClick={() => {
+                      // Navigate to the edit page for the token
+                      router.push(`${pathName}?token_id=${token.id}`)
+                      dispatchGlobalEvent(EGlobalEvent.BTN_CREATE_TOKEN)
+                    }}
+                    className='p-1 hover:bg-gray-100 rounded'
+                    title='Edit token'
+                  >
+                    <Pencil size={14} />
+                  </Button>
                   <LoadableButton
                     loading={destroyer.isPending}
                     onClick={() => destroyer.mutateAsync({ tokenId: token.id }).then(() => tokens.refetch())}

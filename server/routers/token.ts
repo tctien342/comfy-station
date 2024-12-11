@@ -32,6 +32,16 @@ export const tokenRouter = router({
     const tokens = [...ownedTokens, ...sharedTokens]
     return tokens
   }),
+  get: privateProcedure.input(z.object({ tokenId: z.string() })).query(async ({ ctx, input }) => {
+    if (ctx.session.user?.role === EUserRole.Admin) {
+      return await ctx.em.findOneOrFail(Token, { id: input.tokenId }, { populate: ['sharedUsers', 'createdBy'] })
+    }
+    return await ctx.em.findOneOrFail(
+      Token,
+      { id: input.tokenId, createdBy: ctx.session.user },
+      { populate: ['sharedUsers', 'createdBy'] }
+    )
+  }),
   listByWorkflow: privateProcedure
     .input(
       z.object({
@@ -109,6 +119,60 @@ export const tokenRouter = router({
         { partial: true }
       )
       if (input.workflowIds) {
+        for (const id of input.workflowIds) {
+          const workflow = await ctx.em.findOneOrFail(Workflow, { id })
+          const perm = ctx.em.create(TokenPermission, { token, workflow }, { partial: true })
+          token.grantedWorkflows.add(perm)
+        }
+      }
+      await ctx.em.persistAndFlush(token)
+      await CachingService.getInstance().set('USER_BALANCE', ctx.session.user!.id, ctx.session.user!.balance)
+      return token
+    }),
+  update: privateProcedure
+    .input(
+      z.object({
+        tokenId: z.string(),
+        expiredAt: z.date().optional(),
+        type: z.nativeEnum(ETokenType),
+        balance: z.number().optional(),
+        description: z.string().optional(),
+        weightOffset: z.number().optional(),
+        workflowIds: z.array(z.string()).optional(),
+        isMasterToken: z.boolean().optional()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const token = await ctx.em.findOneOrFail(
+        Token,
+        { id: input.tokenId },
+        { populate: ['grantedWorkflows.workflow'] }
+      )
+      if (ctx.session.user!.role !== EUserRole.Admin) {
+        if (token.createdBy.id !== ctx.session.user!.id) {
+          throw new Error('You do not have permission to update this token')
+        }
+        if (input.balance) {
+          if (input.balance !== -1 && ctx.session.user!.balance !== -1) {
+            const offset = input.balance - token.balance
+            if (ctx.session.user!.balance < offset) {
+              throw new Error('Insufficient balance')
+            } else {
+              ctx.session.user!.balance -= offset
+            }
+          }
+        }
+      }
+
+      token.expireAt = input.expiredAt
+      token.type = input.type
+      token.balance = input.balance || -1
+      token.description = input.description
+      token.weightOffset = input.weightOffset || 0
+      token.isMaster = input.isMasterToken || false
+
+      if (input.workflowIds) {
+        token.grantedWorkflows.removeAll()
         for (const id of input.workflowIds) {
           const workflow = await ctx.em.findOneOrFail(Workflow, { id })
           const perm = ctx.em.create(TokenPermission, { token, workflow }, { partial: true })
