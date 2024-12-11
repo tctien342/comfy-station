@@ -43,11 +43,15 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
                 key: val.key,
                 type: val.type as EValueType,
                 description: val.description,
-                default: val.default
+                default: val.default,
+                options: val.selections?.map((v) => v.value)
               }
               return acc
             },
-            {} as Record<string, { key: string; type: EValueType; description?: string; default: any }>
+            {} as Record<
+              string,
+              { key: string; type: EValueType; description?: string; default: any; options?: string[] }
+            >
           ),
           output: Object.values(wf.mapOutput ?? {}).reduce(
             (acc, cur) => {

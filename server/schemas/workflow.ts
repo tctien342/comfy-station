@@ -1,4 +1,4 @@
-import { EValueType } from '@/entities/enum'
+import { EValueSelectionType, EValueType } from '@/entities/enum'
 import { t } from 'elysia'
 
 export const WorkflowInputSchema = t.Record(
@@ -6,13 +6,15 @@ export const WorkflowInputSchema = t.Record(
   t.Object({
     type: t.Enum(EValueType),
     default: t.Optional(t.String()),
-    description: t.Optional(t.String())
+    description: t.Optional(t.String()),
+    options: t.Optional(t.Array(t.String()))
   }),
   {
     description: 'Workflow input',
     default: {
       caption: { type: EValueType.String, description: '', default: '' },
-      negative: { type: EValueType.String, description: '', default: '' }
+      negative: { type: EValueType.String, description: '', default: '' },
+      checkpoints: { type: EValueSelectionType.Checkpoint, description: '', default: '', options: [] }
     }
   }
 )
