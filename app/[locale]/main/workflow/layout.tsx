@@ -6,9 +6,11 @@ import { TaskHistory } from './TaskHistory'
 import { Portal } from '@/components/PortalWrapper'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
 import { useMemo } from 'react'
+import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
+import { TTab, WorkflowDetailContext } from './context'
 
 const Layout: IComponent = ({ children }) => {
-  const [viewMode, setViewMode] = useStorageState('workflow_view_mode', 'history')
+  const [viewMode, setViewMode] = useStorageState<TTab>('workflow_view_mode', 'history')
   const dyn = useDynamicValue()
 
   const renderMobile = useMemo(() => {
@@ -43,19 +45,23 @@ const Layout: IComponent = ({ children }) => {
   }, [])
 
   return (
-    <Tabs
-      value={viewMode}
-      onValueChange={setViewMode}
-      className='w-full h-full flex flex-col relative items-center justify-center'
-    >
-      {dyn([renderMobile, renderDesktop, renderDesktop])}
-      <TabsContent value='history' className='mt-0 w-full h-full relative'>
-        <TaskHistory />
-      </TabsContent>
-      <TabsContent value='visualize' className='w-full h-full mt-0 z-0 relative !ring-0'>
-        {children}
-      </TabsContent>
-    </Tabs>
+    <WorkflowDetailContext.Provider value={{ viewTab: viewMode }}>
+      <Tabs
+        value={viewMode}
+        onValueChange={(tab) => setViewMode(tab as TTab)}
+        className='w-full h-full flex flex-col relative items-center justify-center'
+      >
+        {dyn([renderMobile, renderDesktop, renderDesktop])}
+        <SimpleTransitionLayout deps={[viewMode]} className='w-full h-full relative'>
+          <TabsContent value='history' className='mt-0 w-full h-full relative'>
+            <TaskHistory />
+          </TabsContent>
+          <TabsContent value='visualize' className='w-full h-full mt-0 z-0 relative !ring-0'>
+            {children}
+          </TabsContent>
+        </SimpleTransitionLayout>
+      </Tabs>
+    </WorkflowDetailContext.Provider>
   )
 }
 

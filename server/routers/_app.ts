@@ -5,6 +5,7 @@ import { extensionRouter } from './extension'
 import { resourceRouter } from './resource'
 import { tagRouter } from './tag'
 import { taskRouter } from './task'
+import { tokenRouter } from './token'
 import { userRouter } from './user'
 import { watchRouter } from './watch'
 import { workflowRouter } from './workflow'
@@ -20,6 +21,7 @@ export const appRouter = router({
   workflow: workflowRouter,
   workflowTask: workflowTaskRouter,
   watch: watchRouter,
+  token: tokenRouter,
   user: userRouter
 })
 

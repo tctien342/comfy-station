@@ -1,17 +1,19 @@
 import { createServer } from 'http'
-import { createHTTPHandler } from '@trpc/server/adapters/standalone'
-import { appRouter } from './routers/_app'
-import { createContext } from './context'
-import { WebSocketServer } from 'ws'
 import cors from 'cors'
+import { WebSocketServer } from 'ws'
 import type { Socket } from 'net'
 import { applyWSSHandler } from '@trpc/server/adapters/ws'
 import AttachmentService from '@/services/attachment'
 import CachingService from '@/services/caching'
 import { ComfyPoolInstance } from '@/services/comfyui'
 import { MikroORMInstance } from '@/services/mikro-orm'
-import { handleGetUserByCredentials, handleGetUserByEmail } from './handlers/user'
 import { SharedStorage } from '@/services/shared'
+import { createHTTPHandler } from '@trpc/server/adapters/standalone'
+
+import { convertIMessToRequest } from './utils/request'
+import { ElysiaHandler } from './elysia'
+import { appRouter } from './routers/_app'
+import { createContext } from './context'
 
 /**
  * Initialize all services
@@ -22,7 +24,7 @@ AttachmentService.getInstance()
 CachingService.getInstance()
 SharedStorage.getInstance()
 
-const handler = createHTTPHandler({
+export const tRPCHandler = createHTTPHandler({
   middleware: cors(),
   router: appRouter,
   createContext: createContext as any
@@ -30,14 +32,22 @@ const handler = createHTTPHandler({
 
 const server = createServer(async (req, res) => {
   try {
-    // Check if req is /user/get
-    if (req.url === '/user/credential' && req.method === 'POST') {
-      await handleGetUserByCredentials(req, res)
-      return
-    }
-    if (req.url === '/user/email' && req.method === 'POST') {
-      await handleGetUserByEmail(req, res)
-      return
+    /**
+     * Handle the request using Elysia
+     */
+    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/user') || req.url?.startsWith('/ext/api')) {
+      const request = await convertIMessToRequest(req)
+      const output = await ElysiaHandler.handle(request)
+      // If the response is 404, then passthrough request to tRPC's handler
+      if (output.status !== 404) {
+        res.writeHead(output.status, {
+          'Content-Type': output.headers.get('content-type') ?? 'application/json'
+        })
+        const data = await output.text()
+        res.write(data)
+        res.end()
+        return
+      }
     }
   } catch (e) {
     console.error(e)
@@ -45,10 +55,9 @@ const server = createServer(async (req, res) => {
     res.end()
   }
   /**
-   * Handle the request however you like,
-   * just call the tRPC handler when you're ready
+   * Handle the request using tRPC
    */
-  handler(req, res)
+  tRPCHandler(req, res)
 })
 
 const wss = new WebSocketServer({ server })

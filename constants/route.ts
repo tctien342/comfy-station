@@ -1,5 +1,5 @@
 import { EUserRole } from '@/entities/enum'
-import { ChevronLeft, Cog, HomeIcon, Image, User, Users } from 'lucide-react'
+import { ChevronLeft, Cog, HomeIcon, Image, Key, User, Users } from 'lucide-react'
 
 export const RouteConf = {
   home: {
@@ -51,6 +51,16 @@ export const RouteConf = {
     backUrl: false,
     onNav: false,
     minPerm: EUserRole.Admin
+  },
+  settingTokens: {
+    key: 'settingTokens',
+    title: 'Setting Tokens',
+    group: 'Setting',
+    path: '/main/setting/tokens',
+    SubIcon: Key,
+    backUrl: false,
+    onNav: false,
+    minPerm: EUserRole.User
   },
   execute: {
     key: 'execute',

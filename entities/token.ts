@@ -6,11 +6,13 @@ import type { User } from './user'
 import type { TokenPermission } from './token_permission'
 import type { TokenShared } from './token_shared'
 import type { Trigger } from './trigger'
+import { sign } from 'jsonwebtoken'
+import { BackendENV } from '@/env'
 
 @Entity()
 export class Token {
   @PrimaryKey({ type: 'string' })
-  id = v4()
+  id = sign({ id: v4() }, BackendENV.INTERNAL_SECRET)
 
   @Property({ type: 'string', nullable: true })
   description?: string

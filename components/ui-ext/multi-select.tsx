@@ -161,7 +161,6 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     }
 
     const handlePressCreateNew = () => {
-      console.log('WTF')
       if (crrInputVal) {
         onCreateNew?.(crrInputVal)
         setCrrInputVal('')
@@ -280,20 +279,24 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
             <CommandList>
               <CommandEmpty className='p-1'>
                 {/* Create new */}
-                <Button onClick={handlePressCreateNew} className='w-full justify-start' variant='ghost'>
-                  Create new tag <Plus width={14} height={14} className='ml-auto' />
-                </Button>
+                {!!onCreateNew && (
+                  <Button onClick={handlePressCreateNew} className='w-full justify-start' variant='ghost'>
+                    Create new tag <Plus width={14} height={14} className='ml-auto' />
+                  </Button>
+                )}
               </CommandEmpty>
               <CommandGroup>
-                <Button
-                  disabled={crrInputVal.length === 0}
-                  variant='ghost'
-                  onClick={handlePressCreateNew}
-                  className='cursor-pointer w-full justify-start mb-1'
-                >
-                  <Plus width={14} height={14} className='mr-2 h-4 w-4 text-muted-foreground' />
-                  <span>Create new tag</span>
-                </Button>
+                {!!onCreateNew && (
+                  <Button
+                    disabled={crrInputVal.length === 0}
+                    variant='ghost'
+                    onClick={handlePressCreateNew}
+                    className='cursor-pointer w-full justify-start mb-1'
+                  >
+                    <Plus width={14} height={14} className='mr-2 h-4 w-4 text-muted-foreground' />
+                    <span>Create new tag</span>
+                  </Button>
+                )}
                 <CommandItem key='all' onSelect={toggleAll} className='cursor-pointer'>
                   <div
                     className={cn(

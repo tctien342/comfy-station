@@ -94,7 +94,7 @@ export const workflowTaskRouter = router({
     const task = await ctx.em.findOneOrFail(
       WorkflowTask,
       { id: input, ...extra },
-      { populate: ['workflow', 'trigger.user', 'events', 'subTasks', 'subTasks.events.*'] }
+      { populate: ['workflow', 'trigger.*', 'events', 'subTasks', 'subTasks.events.*'] }
     )
     if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {
       return task
