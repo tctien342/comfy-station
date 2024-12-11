@@ -11,7 +11,7 @@ import { TokenPopup } from './TokenPopup'
 import { usePathname, useRouter } from 'next/navigation'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 
-const TokenPage: IComponent = () => {
+export default function TokenPage() {
   const router = useRouter()
   const pathName = usePathname()
   const tokens = trpc.token.list.useQuery()
@@ -168,5 +168,3 @@ const TokenPage: IComponent = () => {
     </div>
   )
 }
-
-export default TokenPage

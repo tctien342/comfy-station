@@ -48,7 +48,7 @@ const Page: NextPage = () => {
         }
         if (response.ok) {
           // Reconnect to the websocket server to have the correct user session
-          wsClient.reconnect()
+          wsClient.reconnect(null)
           router.replace('/main')
         }
       })

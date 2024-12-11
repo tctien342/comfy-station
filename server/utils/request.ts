@@ -16,9 +16,9 @@ export const convertIMessToRequest = async (req: IncomingMessage) => {
     })
     req.on('end', () => {
       if (isMultipart) {
-        resolve(Buffer.concat(chunks))
+        resolve(Buffer.concat(chunks as any))
       } else {
-        resolve(Buffer.concat(chunks).toString())
+        resolve(Buffer.concat(chunks as any).toString())
       }
     })
     req.on('error', (err) => {

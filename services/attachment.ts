@@ -193,7 +193,7 @@ class AttachmentService {
         }
         // Save file locally
         const filePath = `${this.localPath}${fileName}`
-        fs.writeFileSync(filePath, file)
+        fs.writeFileSync(filePath, file as any)
         return true
       }
     } catch (e) {

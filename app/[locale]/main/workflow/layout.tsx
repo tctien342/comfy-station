@@ -5,16 +5,9 @@ import { useStorageState } from '@/hooks/useStorageState'
 import { TaskHistory } from './TaskHistory'
 import { Portal } from '@/components/PortalWrapper'
 import { useDynamicValue } from '@/hooks/useDynamicValue'
-import { createContext, useMemo } from 'react'
+import { useMemo } from 'react'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
-
-type TTab = 'history' | 'visualize' | 'api'
-
-export const WorkflowDetailContext = createContext<{
-  viewTab: TTab
-}>({
-  viewTab: 'history'
-})
+import { TTab, WorkflowDetailContext } from './context'
 
 const Layout: IComponent = ({ children }) => {
   const [viewMode, setViewMode] = useStorageState<TTab>('workflow_view_mode', 'history')

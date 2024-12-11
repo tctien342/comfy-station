@@ -14,7 +14,7 @@ export function setAuthToken(newToken: string) {
    * cookies above.
    */
   AuthToken = newToken
-  wsClient.reconnect()
+  wsClient.reconnect(null)
 }
 
 export function getBaseUrl() {
