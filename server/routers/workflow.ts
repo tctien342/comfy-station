@@ -94,12 +94,14 @@ export const workflowRouter = router({
         filter,
         direction === 'forward'
           ? {
+              exclude: ['rawWorkflow'],
               first: limit,
               after: { endCursor: cursor || null },
               orderBy: { createdAt: 'DESC' },
               populate: ['author', 'avatar']
             }
           : {
+              exclude: ['rawWorkflow'],
               last: limit,
               before: { startCursor: cursor || null },
               orderBy: { createdAt: 'DESC' },
@@ -195,8 +197,16 @@ export const workflowRouter = router({
         id: input,
         ...filter
       },
-      { populate: ['author.email', 'avatar'] }
+      { populate: ['author.email', 'avatar'], exclude: ['rawWorkflow'] }
     )
+  }),
+  getRawWorkflow: editorProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    const workflow = await ctx.em.findOneOrFail(Workflow, { id: input })
+    const raw = JSON.parse(workflow.rawWorkflow)
+    for (const key in raw) {
+      delete raw[key as keyof typeof raw].info
+    }
+    return JSON.stringify(raw)
   }),
   changeStatus: editorProcedure
     .input(

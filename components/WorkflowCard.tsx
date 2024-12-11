@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { trpc } from '@/utils/trpc'
 import { MiniBadge } from './MiniBadge'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from './ui/context-menu'
-import { PenBox, Trash2 } from 'lucide-react'
+import { DownloadCloud, PenBox, Trash2 } from 'lucide-react'
 import { LoadableButton } from './LoadableButton'
 import { useToast } from '@/hooks/useToast'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
@@ -14,12 +14,14 @@ import { EUserRole, EWorkflowActiveStatus } from '@/entities/enum'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 import { AttachmentImage } from './AttachmentImage'
+import { Loaded } from '@mikro-orm/core'
 
 export const WorkflowCard: IComponent<{
-  data: Workflow
+  data: Loaded<Workflow, 'avatar' | 'author', '*', 'rawWorkflow'>
 }> = ({ data }) => {
   const stator = trpc.workflowTask.workflowTaskStats.useQuery(data.id)
   const statusChanger = trpc.workflow.changeStatus.useMutation()
+  const downloader = trpc.workflow.getRawWorkflow.useMutation()
   const router = useRouter()
   const session = useSession()
   const { toast } = useToast()
@@ -33,6 +35,18 @@ export const WorkflowCard: IComponent<{
       title: 'Workflow Activated'
     })
     dispatchGlobalEvent(EGlobalEvent.RLOAD_WORKFLOW)
+  }
+
+  const handleDownloadWorkflow = async () => {
+    const workflowJson = await downloader.mutateAsync(data.id)
+    const blob = new Blob([workflowJson], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.target = '_blank'
+    a.download = `${data.name}.json`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   const handlePressDelete = async () => {
@@ -116,12 +130,26 @@ export const WorkflowCard: IComponent<{
         </Card>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem>
+        {/* <ContextMenuItem>
           <LoadableButton variant='ghost' size='sm' className='justify-start p-0 w-full'>
             <PenBox className='w-4 h-4 mr-2' />
             Edit
           </LoadableButton>
-        </ContextMenuItem>
+        </ContextMenuItem> */}
+        {session.data?.user.role !== EUserRole.User && (
+          <ContextMenuItem>
+            <LoadableButton
+              onClick={handleDownloadWorkflow}
+              loading={downloader.isPending}
+              variant='ghost'
+              size='sm'
+              className='justify-start p-0 w-full'
+            >
+              <DownloadCloud className='w-4 h-4 mr-2' />
+              Download Workflow
+            </LoadableButton>
+          </ContextMenuItem>
+        )}
         {data.status !== EWorkflowActiveStatus.Activated && (
           <ContextMenuItem className='text-primary'>
             <LoadableButton
