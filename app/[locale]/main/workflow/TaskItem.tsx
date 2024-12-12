@@ -1,4 +1,3 @@
-import { AttachmentReview } from '@/components/AttachmentReview'
 import { MiniBadge } from '@/components/MiniBadge'
 import { LoadingSVG } from '@/components/svg/LoadingSVG'
 import { Button } from '@/components/ui/button'
@@ -8,18 +7,17 @@ import useCopyAction from '@/hooks/useCopyAction'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Check, Copy, Download, Hourglass, Image, Repeat, Trash2 } from 'lucide-react'
+import { Check, Copy, Hourglass, Image, Repeat, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { AttachmentImageSlider } from '@/components/AttachmentImageSlider'
-import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { LoadableButton } from '@/components/LoadableButton'
 import DownloadImagesButton from '@/components/ui-ext/download-button'
-import { AttachmentImage } from '@/components/AttachmentImage'
 import { Badge } from '@/components/ui/badge'
+import LoadableImage from '@/components/LoadableImage'
+import { PhotoSlider } from 'react-photo-view'
 
 export const TaskItem: IComponent<{
   data: WorkflowTask
@@ -112,7 +110,6 @@ export const TaskItem: IComponent<{
     .filter((v) => !!v)
     .map((v) => Object.values(v))
     .flat()
-  const outputAttachments = outputData.filter((d) => d.type === EValueType.Image)
 
   const previewAttachment = useMemo(() => {
     if (isLoading) {
@@ -122,7 +119,7 @@ export const TaskItem: IComponent<{
         </div>
       )
     }
-    if (!outputAttachments || outputAttachments.length === 0) {
+    if (!attachments || attachments.length === 0) {
       const text = outputData.find((d) => d.type === EValueType.String)
       if (text) {
         return (
@@ -163,15 +160,14 @@ export const TaskItem: IComponent<{
       )
     }
     return (
-      <AttachmentImage
+      <LoadableImage
         onClick={() => setShowImages(true)}
         alt={task?.workflow.name || ''}
-        preferredSize='preview'
-        data={{ id: outputAttachments[0].value[0] as string }}
+        src={attachments[0]!.preview?.url}
         containerClassName='h-32 w-auto !aspect-square'
       />
     )
-  }, [isLoading, outputAttachments, task?.workflow.name, outputData, isCopied, copyToClipboard])
+  }, [isLoading, attachments, task?.workflow.name, outputData, isCopied, copyToClipboard])
 
   const shortName = useMemo(() => {
     switch (task?.trigger.type) {
@@ -187,8 +183,6 @@ export const TaskItem: IComponent<{
         return '-'
     }
   }, [task?.trigger.jobTask?.job.id, task?.trigger.token?.id, task?.trigger.type, task?.trigger.user?.email])
-
-  const outputImageAttachments = outputAttachments.map((v) => v.value).flat() as string[]
 
   if (!task)
     return (
@@ -210,11 +204,18 @@ export const TaskItem: IComponent<{
     <ContextMenu>
       <ContextMenuTrigger className='w-full flex relative'>
         <div className='w-full flex relative group pl-2'>
-          <AttachmentImageSlider
-            images={outputImageAttachments}
-            show={showImages}
-            onHide={() => setShowImages(false)}
-          />
+          {!!attachments && (
+            <PhotoSlider
+              images={attachments.map((item) => ({ src: item.high!.url, key: item.preview!.url }))}
+              visible={showImages}
+              onClose={() => setShowImages(false)}
+              loadingElement={
+                <div className='flex justify-center items-center h-full w-full'>
+                  <LoadingSVG width={32} height={32} />
+                </div>
+              }
+            />
+          )}
           <div className='flex-1 flex-col px-1 py-3'>
             <Label className='text-base font-semibold'>{task.workflow.name}</Label>
             <p className='text-xs md:text-sm'>ID: #{task.id.split('-').pop()}</p>
