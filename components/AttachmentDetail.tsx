@@ -6,7 +6,7 @@ import { Download } from 'lucide-react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import { useCallback, useRef } from 'react'
 import { useOnScreen } from '@/hooks/useOnScreen'
-import { EValueType, EValueUltilityType } from '@/entities/enum'
+import { EValueType, EValueUtilityType } from '@/entities/enum'
 import { isArray } from 'lodash'
 import LoadableImage from './LoadableImage'
 import { IconPicker } from './IconPicker'
@@ -95,7 +95,7 @@ export const AttachmentDetail: IComponent<{
             <h1 className='text-sm uppercase px-1'>{detail?.workflow?.description}</h1>
             <code className='whitespace-pre-wrap flex flex-col gap-2 mt-2'>
               {Object.entries(config)
-                .filter(([key]) => configMap[key].type !== EValueUltilityType.Prefixer)
+                .filter(([key]) => configMap[key].type !== EValueUtilityType.Prefixer)
                 .map(([key, value], idx) => {
                   return (
                     <div

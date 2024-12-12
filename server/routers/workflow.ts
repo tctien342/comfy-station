@@ -8,7 +8,7 @@ import { ComfyPoolInstance } from '@/services/comfyui'
 import { CallWrapper } from '@saintno/comfyui-sdk'
 import { cloneDeep, uniqueId } from 'lodash'
 import AttachmentService, { EAttachmentType } from '@/services/attachment'
-import { EUserRole, EValueSelectionType, EValueType, EValueUltilityType, EWorkflowActiveStatus } from '@/entities/enum'
+import { EUserRole, EValueSelectionType, EValueType, EValueUtilityType, EWorkflowActiveStatus } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { TWorkflowProgressMessage } from '@/types/task'
 import { ImageUtil } from '../utils/ImageUtil'
@@ -19,7 +19,7 @@ const ee = new EventEmitter()
 
 const BaseSchema = z.object({
   key: z.string(),
-  type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType), z.nativeEnum(EValueUltilityType)]),
+  type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType), z.nativeEnum(EValueUtilityType)]),
   iconName: z.string().optional(),
   description: z.string().optional()
 })
@@ -235,7 +235,7 @@ export const workflowRouter = router({
             }
             switch (data.workflow.mapInput?.[key].type) {
               case EValueType.Number:
-              case EValueUltilityType.Seed:
+              case EValueUtilityType.Seed:
                 builder.input(key, Number(inputData))
                 break
               case EValueType.String:

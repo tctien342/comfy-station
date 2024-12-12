@@ -4,7 +4,7 @@ import {
   ETriggerBy,
   EUserRole,
   EValueType,
-  EValueUltilityType,
+  EValueUtilityType,
   EWorkflowActiveStatus
 } from '@/entities/enum'
 import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
@@ -118,18 +118,18 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
           const temp = Number(input[key])
           if (keyConfig.min && temp < keyConfig.min) {
             set.status = 400
-            throw new Error(`Value of ${key} is less than min value`)
+            throw new Error(`Value of <${key}> is less than min value (min ${keyConfig.min})`)
           }
           if (keyConfig.max && temp > keyConfig.max) {
             set.status = 400
-            throw new Error(`Value of ${key} is greater than max value`)
+            throw new Error(`Value of <${key}> is greater than max value (max ${keyConfig.max})`)
           }
         }
         if (keyConfig.type === EValueType.File || keyConfig.type === EValueType.Image) {
           const temp = input[key]
           if (Array.isArray(temp) && temp.length === 0) {
             set.status = 400
-            throw new Error(`Value of ${key} is empty`)
+            throw new Error(`Value of "${key}" is empty`)
           }
         }
       }
@@ -155,7 +155,7 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
       if (token.balance !== -1) {
         if (computedCost > token.balance) {
           set.status = 402
-          throw new Error('Insufficient balance')
+          throw new Error(`Insufficient balance, token's balance: ${token.balance}, task cost: ${computedCost}`)
         } else {
           token.balance -= computedCost
           await em.flush()
@@ -166,7 +166,9 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
           if (token.createdBy.balance !== -1) {
             if (computedCost > token.createdBy.balance) {
               set.status = 402
-              throw new Error('Insufficient balance')
+              throw new Error(
+                `Insufficient balance, user's balance: ${token.createdBy.balance}, task cost: ${computedCost}`
+              )
             } else {
               token.createdBy.balance -= computedCost
               await em.flush()
@@ -254,7 +256,7 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
 
       if (isBatch) {
         let newSeed = 0
-        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueUltilityType.Seed)
+        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueUtilityType.Seed)
         for (let i = 0; i < repeat; i++) {
           for (const task of tasks) {
             if (!seedConf) {

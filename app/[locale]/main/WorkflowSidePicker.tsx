@@ -3,7 +3,7 @@ import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { WorkflowInputArea } from '@/components/WorkflowInputArea'
-import { EValueType, EValueUltilityType, EWorkflowActiveStatus } from '@/entities/enum'
+import { EValueType, EValueUtilityType, EWorkflowActiveStatus } from '@/entities/enum'
 import { useAttachmentUploader } from '@/hooks/useAttachmentUploader'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { EKeyboardKey, ESpecialKey, useShortcutKeyEvent } from '@/hooks/useShortcutKeyEvent'
@@ -35,7 +35,7 @@ export const WorkflowSidePicker: IComponent = () => {
   const runner = trpc.workflowTask.executeTask.useMutation()
 
   const seedInput = useMemo(() => {
-    return Object.values(crrWorkflowInfo.data?.mapInput || {}).find((input) => input.type === EValueUltilityType.Seed)
+    return Object.values(crrWorkflowInfo.data?.mapInput || {}).find((input) => input.type === EValueUtilityType.Seed)
   }, [crrWorkflowInfo.data?.mapInput])
 
   const { uploadAttachment } = useAttachmentUploader()

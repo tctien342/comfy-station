@@ -7,7 +7,7 @@ import {
   ETriggerBy,
   EUserRole,
   EValueType,
-  EValueUltilityType,
+  EValueUtilityType,
   EWorkflowActiveStatus
 } from '@/entities/enum'
 import { Workflow } from '@/entities/workflow'
@@ -127,7 +127,7 @@ export const workflowTaskRouter = router({
     }
     throw new Error('Unauthorized')
   }),
-  getOutputAttachementUrls: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
+  getOutputAttachmentUrls: privateProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['subTasks.events'] })
     let fileNames: string[] = []
 
@@ -360,7 +360,7 @@ export const workflowTaskRouter = router({
 
       if (isBatch) {
         let newSeed = 0
-        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueUltilityType.Seed)
+        const seedConf = Object.values(workflow.mapInput ?? {}).find((v) => v.type === EValueUtilityType.Seed)
         const repeat = input.repeat ?? 1
         for (let i = 0; i < repeat; i++) {
           for (const task of tasks) {

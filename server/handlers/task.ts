@@ -5,6 +5,10 @@ import { WorkflowTask } from '@/entities/workflow_task'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { TaskEventSchema, TaskSchema } from '../schemas/task'
 import { ETaskStatus } from '@/entities/enum'
+import { QueryOrder } from '@mikro-orm/core'
+import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
+import { Attachment } from '@/entities/attachment'
+import AttachmentService from '@/services/attachment'
 
 export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task'] } })
   .use(EnsureMikroORMPlugin)
@@ -12,7 +16,17 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
   .get(
     '/',
     async ({ token, em, query: { offset = 0, limit = 10 } }) => {
-      const tasks = await em.find(WorkflowTask, { parent: null, trigger: { token } }, { offset, limit })
+      const tasks = await em.find(
+        WorkflowTask,
+        { parent: null, trigger: { token } },
+        {
+          offset,
+          limit,
+          orderBy: {
+            createdAt: QueryOrder.DESC
+          }
+        }
+      )
       return {
         data: tasks,
         total: await em.count(WorkflowTask, { parent: null, trigger: { token } })
@@ -95,6 +109,119 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
                 schema: t.Object({
                   status: t.Union([t.Array(t.Enum(ETaskStatus)), t.Enum(ETaskStatus)])
                 })
+              } as any
+            }
+          }
+        }
+      }
+    }
+  )
+  .get(
+    '/:id/result',
+    async ({ em, params: { id } }) => {
+      const task = await em.findOne(WorkflowTask, { id }, { populate: ['attachments', 'subTasks.attachments'] })
+      if (!task) {
+        return new NotFoundError("Task doesn't exist")
+      }
+      if (task.status === ETaskStatus.Parent) {
+        return task.subTasks.map((v) => ({
+          taskId: v.id,
+          status: v.status,
+          output: v.outputValues,
+          attachments: Array.from(v.attachments)
+        }))
+      } else {
+        return {
+          taskId: task.id,
+          status: task.status,
+          output: task.outputValues,
+          attachments: Array.from(task.attachments)
+        }
+      }
+    },
+    {
+      detail: {
+        description: 'Get task result by given id',
+        responses: {
+          200: {
+            description: 'Result data',
+            content: {
+              'application/json': {
+                schema: t.Union([
+                  t.Object({
+                    taskId: t.String(),
+                    status: t.Enum(ETaskStatus),
+                    output: t.Optional(t.Record(t.String(), t.Any())),
+                    attachments: t.Array(AttachmentSchema)
+                  }),
+                  t.Array(
+                    t.Object({
+                      taskId: t.String(),
+                      status: t.Enum(ETaskStatus),
+                      output: t.Optional(t.Record(t.String(), t.Any())),
+                      attachments: t.Array(AttachmentSchema)
+                    })
+                  )
+                ])
+              } as any
+            }
+          }
+        }
+      }
+    }
+  )
+  .get(
+    '/:id/attachments',
+    async ({ em, params: { id } }) => {
+      const task = await em.findOne(WorkflowTask, { id }, { populate: ['attachments', 'subTasks.attachments'] })
+      if (!task) {
+        return new NotFoundError("Task doesn't exist")
+      }
+      const attachments: Attachment[] = []
+      if (task.status === ETaskStatus.Parent) {
+        attachments.push(...task.subTasks.map((v) => Array.from(v.attachments)).flat())
+      } else {
+        attachments.push(...task.attachments)
+      }
+      return await Promise.all(
+        attachments.map(async (attachment) => {
+          const stockName = attachment.fileName
+          const prevName = `${attachment.fileName}_preview.jpg`
+          const highName = `${attachment.fileName}_high.jpg`
+          const [stock, preview, high] = await Promise.all([
+            AttachmentService.getInstance().getFileURL(stockName),
+            AttachmentService.getInstance().getFileURL(prevName),
+            AttachmentService.getInstance().getFileURL(highName)
+          ])
+          return {
+            info: attachment,
+            urls: {
+              stock,
+              preview,
+              high
+            }
+          }
+        })
+      )
+    },
+    {
+      detail: {
+        description: 'Get task result by given id',
+        responses: {
+          200: {
+            description: 'Result data',
+            content: {
+              'application/json': {
+                schema: t.Array(
+                  t.Object({
+                    info: AttachmentSchema,
+                    urls: t.Object({
+                      stock: AttachmentURLSchema,
+                      preview: AttachmentURLSchema,
+                      high: AttachmentURLSchema
+                    })
+                  })
+                )
               } as any
             }
           }

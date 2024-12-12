@@ -32,7 +32,7 @@ export const TaskItem: IComponent<{
     refetchOnWindowFocus: false
   })
 
-  const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachementUrls.useQuery(
+  const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachmentUrls.useQuery(
     data.id,
     {
       enabled: !!data.id,
@@ -100,17 +100,17 @@ export const TaskItem: IComponent<{
     return ETaskStatus.Queuing
   }, [task?.status, task?.subTasks])
 
-  const finishedEv =
+  const finishedData =
     task?.status !== ETaskStatus.Parent
-      ? [task?.events.find((e) => !!e.data)]
+      ? [task?.outputValues]
       : task?.subTasks
-          ?.filter((t) => t.status === ETaskStatus.Success && !!t.events.find((e) => !!e.data))
-          .map((v) => v.events)
+          ?.filter((t) => t.status === ETaskStatus.Success)
+          .map((v) => v.outputValues)
           .flat()
 
-  const outputData = (finishedEv as WorkflowTaskEvent[])
+  const outputData = finishedData
     .filter((v) => !!v)
-    .map((v) => Object.values(v!.data ?? {}))
+    .map((v) => Object.values(v))
     .flat()
   const outputAttachments = outputData.filter((d) => d.type === EValueType.Image)
 

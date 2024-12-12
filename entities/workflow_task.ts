@@ -1,11 +1,19 @@
 import { Cascade, Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import { ETaskStatus } from './enum'
+import { ETaskStatus, EValueType } from './enum'
 
 import type { Client } from './client'
 import type { Workflow } from './workflow'
 import type { WorkflowTaskEvent } from './workflow_task_event'
 import type { Attachment } from './attachment'
 import type { Trigger } from './trigger'
+
+export interface ITaskEventData {
+  type: EValueType
+  /**
+   * Will be ID if type is File or Image
+   */
+  value: (string | number | boolean)[]
+}
 
 @Entity()
 export class WorkflowTask {
@@ -32,6 +40,9 @@ export class WorkflowTask {
 
   @Property({ type: 'json', nullable: true })
   inputValues?: { [key: string]: string | number | string[] }
+
+  @Property({ type: 'json', nullable: true })
+  outputValues?: { [key: string]: ITaskEventData }
 
   @Property({ type: 'int', nullable: true })
   executionTime?: number

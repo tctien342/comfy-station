@@ -9,7 +9,7 @@ import {
   EStorageType,
   ETaskStatus,
   EValueType,
-  EValueUltilityType
+  EValueUtilityType
 } from '@/entities/enum'
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientMonitorEvent } from '@/entities/client_monitor_event'
@@ -154,7 +154,7 @@ export class ComfyPoolInstance {
           const task = queuingTasks[i]
           const workflow = task.workflow
           const input = task.inputValues
-          const builder = getBuilder(workflow)
+          let builder = getBuilder(workflow)
           await this.updateTaskEventFn(task, ETaskStatus.Pending)
           pool.run(async (api) => {
             const start = performance.now()
@@ -179,10 +179,10 @@ export class ComfyPoolInstance {
                 }
                 switch (workflow.mapInput?.[key].type) {
                   case EValueType.Number:
-                  case EValueUltilityType.Seed:
+                  case EValueUtilityType.Seed:
                     builder.input(key, Number(inputData))
                     break
-                  case EValueUltilityType.Prefixer:
+                  case EValueUtilityType.Prefixer:
                     builder.input(key, task.id)
                     break
                   case EValueType.String:
@@ -341,12 +341,13 @@ export class ComfyPoolInstance {
                       >
                     )
                     task.executionTime = performance.now() - start
+                    task.outputValues = outputData
                     await Promise.all([
                       em.flush(),
                       this.updateTaskEventFn(task, ETaskStatus.Success, {
                         details: 'FINISHED',
                         clientId: api.id,
-                        data: outputData
+                        data: outData
                       })
                     ])
                   }

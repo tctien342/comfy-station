@@ -4,14 +4,6 @@ import { ETaskStatus, EValueType } from './enum'
 import type { WorkflowTask } from './workflow_task'
 import type { Attachment } from './attachment'
 
-export interface ITaskEventData {
-  type: EValueType
-  /**
-   * Will be ID if type is File or Image
-   */
-  value: (string | number | boolean)[]
-}
-
 @Entity()
 export class WorkflowTaskEvent {
   @PrimaryKey({ type: 'bigint' })
@@ -27,7 +19,7 @@ export class WorkflowTaskEvent {
   details?: string
 
   @Property({ type: 'json', nullable: true })
-  data?: { [key: string]: ITaskEventData }
+  data?: Record<string, any>
 
   @Property({ type: 'timestamp' })
   createdAt = new Date()

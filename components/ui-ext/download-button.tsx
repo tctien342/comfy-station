@@ -12,7 +12,7 @@ const DownloadImagesButton: IComponent<{
   workflowTaskId?: string
   className?: string
 }> = ({ workflowTaskId, className }) => {
-  const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachementUrls.useQuery(
+  const { data: attachments, refetch: refetchAttachments } = trpc.workflowTask.getOutputAttachmentUrls.useQuery(
     workflowTaskId!,
     {
       enabled: !!workflowTaskId,

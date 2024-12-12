@@ -12,7 +12,7 @@ import {
   SelectGroup,
   SelectSeparator
 } from '@/components/ui/select'
-import { EValueSelectionType, EValueType, EValueUltilityType } from '@/entities/enum'
+import { EValueSelectionType, EValueType, EValueUtilityType } from '@/entities/enum'
 import { IMapperInput, IMapTarget } from '@/entities/workflow'
 import {
   BeakerIcon,
@@ -56,7 +56,7 @@ export const CreateInputNode: IComponent<{
   const [connections, setConnections] = useState<Array<IMapTarget>>(config?.target ?? [])
   const formSchema = z.object({
     // Regex is url host name
-    type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType), z.nativeEnum(EValueUltilityType)]),
+    type: z.union([z.nativeEnum(EValueType), z.nativeEnum(EValueSelectionType), z.nativeEnum(EValueUtilityType)]),
     icon: z.string().optional(),
     costRelated: z.boolean().default(false),
     costPerUnit: z.coerce.number().optional(),
@@ -84,12 +84,10 @@ export const CreateInputNode: IComponent<{
   const mappingType = form.watch('type')
 
   const isSelectionType = z.nativeEnum(EValueSelectionType).safeParse(mappingType)
-  const allowDefaultType = z
-    .enum([EValueType.Boolean, EValueType.String, EValueType.Number])
-    .safeParse(mappingType)
+  const allowDefaultType = z.enum([EValueType.Boolean, EValueType.String, EValueType.Number]).safeParse(mappingType)
 
   useEffect(() => {
-    if (mappingType === EValueUltilityType.Prefixer && !form.getValues('name')) {
+    if (mappingType === EValueUtilityType.Prefixer && !form.getValues('name')) {
       form.setValue('name', 'Prefixer')
     }
     if (mappingType === config?.type) return
@@ -109,10 +107,10 @@ export const CreateInputNode: IComponent<{
       case EValueType.Boolean:
         form.setValue('icon', 'CheckIcon')
         break
-      case EValueUltilityType.Seed:
+      case EValueUtilityType.Seed:
         form.setValue('icon', 'SparklesIcon')
         break
-      case EValueUltilityType.Prefixer:
+      case EValueUtilityType.Prefixer:
         form.setValue('icon', 'BoldIcon')
         break
       case EValueSelectionType.Checkpoint:
@@ -147,9 +145,9 @@ export const CreateInputNode: IComponent<{
         return 'Use for file input like load_audio, load_text,...'
       case EValueType.Boolean:
         return 'Use for boolean input like switchs,...'
-      case EValueUltilityType.Seed:
+      case EValueUtilityType.Seed:
         return 'Use for seed input. Need for repeat feature!'
-      case EValueUltilityType.Prefixer:
+      case EValueUtilityType.Prefixer:
         return 'Use for adding prefix into output images for preventing duplicated name. This is needed for server that have multiple ComfyUI instance running on same folder. Used for node like SaveImage-FilenamePrefix'
       case EValueSelectionType.Checkpoint:
         return 'Use for select checkpoint from list.'
@@ -288,13 +286,13 @@ export const CreateInputNode: IComponent<{
                       <SelectSeparator />
                       <SelectGroup>
                         <SelectLabel>Ultility</SelectLabel>
-                        <SelectItem value={EValueUltilityType.Seed}>
+                        <SelectItem value={EValueUtilityType.Seed}>
                           <div className='flex items-center'>
                             <SparklesIcon className='mr-2 h-4 w-4' />
                             Seed
                           </div>
                         </SelectItem>
-                        <SelectItem value={EValueUltilityType.Prefixer}>
+                        <SelectItem value={EValueUtilityType.Prefixer}>
                           <div className='flex items-center'>
                             <BoldIcon className='mr-2 h-4 w-4' />
                             Prefixer
@@ -438,7 +436,7 @@ export const CreateInputNode: IComponent<{
                       <Input
                         placeholder='...'
                         type={
-                          [EValueType.Number, EValueUltilityType.Seed].includes(mappingType as EValueType)
+                          [EValueType.Number, EValueUtilityType.Seed].includes(mappingType as EValueType)
                             ? 'number'
                             : 'text'
                         }
@@ -463,7 +461,7 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
-          {mappingType !== EValueUltilityType.Prefixer && (
+          {mappingType !== EValueUtilityType.Prefixer && (
             <FormField
               name='description'
               render={({ field }) => (

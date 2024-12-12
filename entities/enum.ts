@@ -55,7 +55,7 @@ export enum EValueType {
   Boolean = 'Boolean'
 }
 
-export enum EValueUltilityType {
+export enum EValueUtilityType {
   /**
    * Seed is a value that is used to generate, change when re-run a task.
    */

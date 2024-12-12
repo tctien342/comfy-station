@@ -1,7 +1,7 @@
 import { Workflow } from '@/entities/workflow'
 import { Label } from './ui/label'
 import { Textarea } from './ui/textarea'
-import { EValueSelectionType, EValueType, EValueUltilityType } from '@/entities/enum'
+import { EValueSelectionType, EValueType, EValueUtilityType } from '@/entities/enum'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select'
 import DropFileInput from './DropFileInput'
 import { CardDescription } from './ui/card'
@@ -52,7 +52,7 @@ export const WorkflowInputArea: IComponent<{
       const target = input?.target || []
       const mainItem = target[0]
       if (!input) return null
-      if (input.type === EValueUltilityType.Prefixer) return null
+      if (input.type === EValueUtilityType.Prefixer) return null
 
       return (
         <div
@@ -92,7 +92,7 @@ export const WorkflowInputArea: IComponent<{
               defaultFiles={data}
             />
           )}
-          {[EValueType.Number, EValueUltilityType.Seed].includes(input.type as EValueType) && (
+          {[EValueType.Number, EValueUtilityType.Seed].includes(input.type as EValueType) && (
             <>
               <div className='w-full gap-2 flex'>
                 <Input
@@ -106,7 +106,7 @@ export const WorkflowInputArea: IComponent<{
                   max={input.max}
                   type='number'
                 />
-                {input.type === EValueUltilityType.Seed && (
+                {input.type === EValueUtilityType.Seed && (
                   <Button
                     onClick={() => {
                       setInputData((prev) => ({ ...prev, [val]: seed() }))
@@ -118,7 +118,7 @@ export const WorkflowInputArea: IComponent<{
                   </Button>
                 )}
               </div>
-              {input.type === EValueUltilityType.Seed && (
+              {input.type === EValueUtilityType.Seed && (
                 <div className='flex items-center space-x-2 w-full'>
                   <Switch checked={randomSeedEnabled} onCheckedChange={changeRandomSeedEnabled} />
                   <Label htmlFor='airplane-mode'>Random seed after run</Label>
@@ -155,7 +155,7 @@ export const WorkflowInputArea: IComponent<{
   useEffect(() => {
     if (workflow.mapInput) {
       const seedInputKey = Object.keys(workflow.mapInput).find(
-        (key) => workflow.mapInput?.[key].type === EValueUltilityType.Seed
+        (key) => workflow.mapInput?.[key].type === EValueUtilityType.Seed
       )
 
       if (seedInputKey && !inputData[seedInputKey]) {
