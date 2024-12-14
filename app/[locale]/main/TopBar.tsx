@@ -2,7 +2,7 @@ import { AddUserDialog } from '@/components/dialogs/AddUserDialog'
 import { AddWorkflowDialog } from '@/components/dialogs/AddWorkflowDialog'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Button } from '@/components/ui/button'
-import { UserInfomation } from '@/components/UserInformation'
+import { UserInformation } from '@/components/UserInformation'
 import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
@@ -85,7 +85,7 @@ export const TopBar: IComponent = () => {
       <div className='flex-auto items-center justify-end flex gap-2'>{renderToolBox}</div>
       {role < EUserRole.Admin && (
         <div>
-          <UserInfomation />
+          <UserInformation />
         </div>
       )}
     </div>

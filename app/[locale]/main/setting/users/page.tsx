@@ -91,7 +91,7 @@ export default function SettingUserPage() {
                 <TableCell>
                   <MiniBadge
                     Icon={DollarSign}
-                    count={user.balance === -1 ? 'Unlimited' : user.balance}
+                    count={user.balance === -1 ? 'Unlimited' : user.balance.toFixed(2)}
                     className='px-0 w-min border-none'
                   />
                 </TableCell>

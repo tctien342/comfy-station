@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
 
-export const UserInfomation: IComponent = () => {
+export const UserInformation: IComponent = () => {
   const session = useSession()
   const { theme, setTheme } = useAppStore()
   const [balance, setBalance] = useState(session.data?.user.balance || -1)
@@ -59,13 +59,13 @@ export const UserInfomation: IComponent = () => {
             <span className={cn('px-2 hidden md:block')}>{session.data?.user?.email}</span>
             <span className={cn('px-2 md:hidden block')}>@{shortEmail}</span>
             <div className='w-full text-xs px-2 text-foreground/50 hidden md:flex items-center gap-2'>
-              <span>{balance === -1 ? 'Unlimited' : balance} credits</span>
+              <span>{balance === -1 ? 'Unlimited' : balance.toFixed(2)} credits</span>
               <MiniBadge
                 title={EUserRole[session.data!.user.role]}
                 className={cn('w-min', {
                   'bg-green-500 text-white border-none': session.data!.user.role === EUserRole.Admin,
                   'bg-blue-500 text-white border-none': session.data!.user.role === EUserRole.Editor,
-                  'bg-black text-white border-none': session.data!.user.role === EUserRole.User,
+                  'bg-black text-white border-none': session.data!.user.role === EUserRole.User
                 })}
               />
             </div>

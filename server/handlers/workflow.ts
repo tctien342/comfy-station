@@ -17,6 +17,7 @@ import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { Trigger } from '@/entities/trigger'
 import { Workflow } from '@/entities/workflow'
 import { repeat } from 'lodash'
+import CachingService from '@/services/caching'
 
 export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: ['Workflow'] } })
   .use(EnsureMikroORMPlugin)
@@ -278,7 +279,12 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
           }
         }
       }
-      await em.flush()
+      await Promise.all([
+        em.flush(),
+        CachingService.getInstance().set('LAST_TASK_CLIENT', -1, Date.now()),
+        CachingService.getInstance().set('WORKFLOW', parentTask.id, Date.now()),
+        CachingService.getInstance().set('HISTORY_LIST', token.createdBy.id, Date.now())
+      ])
       return {
         taskId: parentTask.id,
         cost: computedCost,

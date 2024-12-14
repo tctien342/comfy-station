@@ -3,7 +3,7 @@ import { AddClientDialog } from '@/components/dialogs/AddClientDialog'
 import { MiniBadge } from '@/components/MiniBadge'
 import { TaskBar } from '@/components/TaskBar'
 import { TaskBigStat } from '@/components/TaskBigStat'
-import { UserInfomation } from '@/components/UserInformation'
+import { UserInformation } from '@/components/UserInformation'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { EGlobalEvent, useGlobalEvent } from '@/hooks/useGlobalEvent'
 import { trpc } from '@/utils/trpc'
@@ -41,7 +41,7 @@ export const AdminSideInfo: IComponent = () => {
   return (
     <div className='w-full h-full flex flex-col items-start'>
       <div className='w-full hidden md:block py-2'>
-        <UserInfomation />
+        <UserInformation />
       </div>
       <div className='flex w-full flex-row md:flex-col gap-6 p-2 md:p-4 items-center'>
         <div className='flex md:w-full flex-col md:flex-row justify-around gap-2'>

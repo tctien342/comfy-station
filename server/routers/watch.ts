@@ -3,7 +3,7 @@ import { adminProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { z } from 'zod'
 import { observable } from '@trpc/server/observable'
-import { EUserRole } from '@/entities/enum'
+import { ETriggerBy, EUserRole } from '@/entities/enum'
 import CachingService from '@/services/caching'
 import { WorkflowTask } from '@/entities/workflow_task'
 
@@ -28,9 +28,15 @@ export const watchRouter = router({
       const taskInfo = await ctx.em.findOneOrFail(
         WorkflowTask,
         { id: input },
-        { populate: ['trigger', 'trigger.user'] }
+        { populate: ['trigger', 'trigger.user', 'trigger.token'] }
       )
-      if (taskInfo.trigger?.user?.id !== ctx.session.user!.id) {
+      if (taskInfo.trigger.type === ETriggerBy.User && taskInfo.trigger?.user?.id !== ctx.session.user!.id) {
+        throw new Error('Unauthorized')
+      }
+      if (
+        taskInfo.trigger.type === ETriggerBy.Token &&
+        taskInfo.trigger?.token?.createdBy.id !== ctx.session.user!.id
+      ) {
         throw new Error('Unauthorized')
       }
     }

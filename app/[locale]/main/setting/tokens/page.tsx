@@ -55,7 +55,7 @@ export default function TokenPage() {
       <div className='flex-1 relative border-t'>
         <Table divClassname='absolute top-0 left-0 w-full h-full pb-10'>
           <TableHeader>
-            <TableRow>
+            <TableRow className='whitespace-nowrap'>
               <TableHead>Token Key</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Type</TableHead>
@@ -83,8 +83,8 @@ export default function TokenPage() {
                   {token.balance === -1
                     ? token.createdBy.balance === -1
                       ? 'Unlimited'
-                      : `${token.createdBy.balance} (Synced)`
-                    : token.balance}
+                      : `${token.createdBy.balance.toFixed(2)} (Synced)`
+                    : token.balance.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <TooltipPopup
@@ -105,7 +105,7 @@ export default function TokenPage() {
                       </Table>
                     }
                   >
-                    {token.isMaster ? 'All' : token.grantedWorkflows?.length}
+                    {token.isMaster ? 'All' : (token.grantedWorkflows?.length ?? 'Empty')}
                   </TooltipPopup>
                 </TableCell>
                 <TableCell>{token.weightOffset}</TableCell>
