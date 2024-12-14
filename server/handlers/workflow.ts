@@ -146,9 +146,10 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
 
       // Cost calculation
       let computedCost = workflow.cost
-      for (const [key, value] of Object.entries(input)) {
-        if (workflow.mapInput?.[key]?.cost?.related) {
-          computedCost += workflow.mapInput[key].cost.costPerUnit * Number(value)
+      for (const [key, config] of Object.entries(workflow.mapInput!)) {
+        const value = input[key] ?? config.default
+        if (config.cost?.related) {
+          computedCost += config.cost.costPerUnit * Number(value)
         }
       }
       computedCost *= repeat ?? 1
@@ -173,7 +174,10 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
               )
             } else {
               token.createdBy.balance -= computedCost
-              await em.flush()
+              await Promise.all([
+                em.flush(),
+                CachingService.getInstance().set('USER_BALANCE', token.createdBy.id, token.createdBy.balance)
+              ])
             }
           }
         }

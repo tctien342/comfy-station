@@ -285,9 +285,10 @@ export const workflowTaskRouter = router({
 
       // Cost calculation
       let computedCost = workflow.cost
-      for (const [key, value] of Object.entries(input.input)) {
-        if (workflow.mapInput?.[key]?.cost?.related) {
-          computedCost += workflow.mapInput[key].cost.costPerUnit * Number(value)
+      for (const [key, config] of Object.entries(workflow.mapInput!)) {
+        const value = input.input[key] ?? config.default
+        if (config.cost?.related) {
+          computedCost += config.cost.costPerUnit * Number(value)
         }
       }
       computedCost *= input.repeat ?? 1

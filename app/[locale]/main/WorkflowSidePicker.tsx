@@ -68,6 +68,13 @@ export const WorkflowSidePicker: IComponent = () => {
     if (!crrWorkflowInfo.data) {
       return
     }
+    if (repeat < 1) {
+      toast({
+        title: 'Repeat must be greater than 0',
+        variant: 'destructive'
+      })
+      return
+    }
     setLoading(true)
     const input = crrWorkflowInfo.data.mapInput
     const inputRecord: Record<string, any> = {}
@@ -125,11 +132,11 @@ export const WorkflowSidePicker: IComponent = () => {
     const inputConf = crrWorkflowInfo.data?.mapInput
     const tasks = convertObjectToArrayOfObjects(inputData)
     if (inputConf) {
-      for (const conf in inputConf) {
-        if (inputConf[conf].cost?.related) {
-          const crrValue = inputData[conf]
+      for (const [key, config] of Object.entries(inputConf)) {
+        if (config.cost?.related) {
+          const crrValue = inputData[key] || config.default
           if (crrValue) {
-            val += Number(crrValue) * inputConf[conf].cost.costPerUnit
+            val += Number(crrValue) * config.cost.costPerUnit
           }
         }
       }
