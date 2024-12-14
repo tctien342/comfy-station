@@ -144,7 +144,16 @@ export const workflowRouter = router({
           : {
               task: {
                 trigger: {
-                  user: ctx.session.user
+                  $or: [
+                    {
+                      user: ctx.session.user
+                    },
+                    {
+                      token: {
+                        createdBy: ctx.session.user
+                      }
+                    }
+                  ]
                 }
               }
             }

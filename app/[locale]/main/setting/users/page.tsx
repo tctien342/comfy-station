@@ -52,7 +52,9 @@ export default function SettingUserPage() {
           <TableRow>
             <TableHead>User</TableHead>
             <TableHead>Role</TableHead>
-            <TableHead>Stats</TableHead>
+            <TableHead>Balance</TableHead>
+            <TableHead>Priority</TableHead>
+            <TableHead>Executed</TableHead>
             <TableHead className='w-[100px]'>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -82,16 +84,22 @@ export default function SettingUserPage() {
                     className={cn('w-min', {
                       'bg-green-500 text-white border-none': user.role === EUserRole.Admin,
                       'bg-blue-500 text-white border-none': user.role === EUserRole.Editor,
-                      'bg-black text-white border-none': user.role === EUserRole.User
+                      'bg-black text-white border': user.role === EUserRole.User
                     })}
                   />
                 </TableCell>
                 <TableCell>
-                  <div className='flex flex-wrap gap-1'>
-                    <MiniBadge Icon={DollarSign} title='Balance' count={user.balance} />
-                    <MiniBadge Icon={Dumbbell} title='Priority' count={user.weightOffset} />
-                    <MiniBadge Icon={Play} title='Tasks' count={`${runCount}`} />
-                  </div>
+                  <MiniBadge
+                    Icon={DollarSign}
+                    count={user.balance === -1 ? 'Unlimited' : user.balance}
+                    className='px-0 w-min border-none'
+                  />
+                </TableCell>
+                <TableCell>
+                  <MiniBadge Icon={Dumbbell} count={user.weightOffset} className='px-0 w-min border-none' />
+                </TableCell>
+                <TableCell>
+                  <MiniBadge Icon={Play} count={`${runCount}`} className='px-0 w-min border-none' />
                 </TableCell>
                 <TableCell>
                   <Button variant='ghost' size='icon' onClick={() => setSelectedUser(user.id)}>

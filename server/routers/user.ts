@@ -75,7 +75,7 @@ export const userRouter = router({
       }
       if (input.weightOffset !== undefined) user.weightOffset = input.weightOffset
       if (input.password !== undefined && input.password.length >= 8) user.password = User.hashPassword(input.password)
-      await ctx.em.persistAndFlush(user)
+      await ctx.em.flush()
       return true
     }),
   userUpdate: adminProcedure
@@ -92,7 +92,7 @@ export const userRouter = router({
         user.avatar = avatar
       }
       if (input.password !== undefined && input.password.length >= 8) user.password = User.hashPassword(input.password)
-      await ctx.em.persistAndFlush(user)
+      await ctx.em.flush()
       return true
     }),
   delete: adminProcedure

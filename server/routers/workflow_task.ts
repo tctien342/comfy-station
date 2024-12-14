@@ -46,9 +46,18 @@ export const workflowTaskRouter = router({
               }
             : {
                 trigger: {
-                  user: {
-                    id: ctx.session.user?.id
-                  }
+                  $or: [
+                    {
+                      user: {
+                        id: ctx.session.user?.id
+                      }
+                    },
+                    {
+                      token: {
+                        createdBy: ctx.session.user?.id
+                      }
+                    }
+                  ]
                 },
                 workflow: {
                   status: {
@@ -109,18 +118,18 @@ export const workflowTaskRouter = router({
     if (ctx.session.user?.role && ctx.session.user?.role === EUserRole.Admin) {
       return task
     }
-    if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
+    if (task.trigger.user?.id === ctx.session.user?.id || task.trigger.token?.createdBy?.id === ctx.session.user?.id) {
       return task
     }
     throw new Error('Unauthorized')
   }),
   delete: privateProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger.user', 'attachments'] })
+    const task = await ctx.em.findOneOrFail(WorkflowTask, { id: input }, { populate: ['trigger.*', 'attachments'] })
     let allow = false
     if (ctx.session.user!.role === EUserRole.Admin) {
       allow = true
     }
-    if (task.trigger.type === ETriggerBy.User && task.trigger.user!.id === ctx.session.user?.id) {
+    if (task.trigger.user?.id === ctx.session.user?.id || task.trigger.token?.createdBy?.id === ctx.session.user?.id) {
       allow = true
     }
     if (allow) {
@@ -408,11 +417,33 @@ export const workflowTaskRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const query = input.workflowId ? { workflow: { id: input.workflowId } } : {}
+      const triggerQuery =
+        ctx.session.user!.role === EUserRole.Admin
+          ? {}
+          : {
+              trigger: {
+                $or: [
+                  {
+                    user: {
+                      id: ctx.session.user?.id
+                    }
+                  },
+                  {
+                    token: {
+                      createdBy: ctx.session.user?.id
+                    }
+                  }
+                ]
+              }
+            }
       return ctx.em.find(WorkflowTask, {
         ...query,
+        ...triggerQuery,
         status: {
-          $in: [ETaskStatus.Pending, ETaskStatus.Queuing, ETaskStatus.Running]
-        }
+          $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
+        },
+        attachments: null,
+        executionTime: null
       })
     })
 })

@@ -16,6 +16,7 @@ import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { Trigger } from '@/entities/trigger'
 import { Workflow } from '@/entities/workflow'
+import { repeat } from 'lodash'
 
 export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: ['Workflow'] } })
   .use(EnsureMikroORMPlugin)
@@ -287,7 +288,12 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
     {
       body: t.Object({
         repeat: t.Optional(t.Number({ description: 'Repeat times', default: 1 })),
-        input: t.Record(t.String(), t.Union([t.Optional(t.String()), t.Number(), t.Array(t.String())]))
+        input: t.Record(t.String(), t.Union([t.Optional(t.String()), t.Number(), t.Array(t.String())]), {
+          default: {
+            Caption: 'A picture of cute cat',
+            Seed: 123123
+          }
+        })
       }),
       detail: {
         responses: {

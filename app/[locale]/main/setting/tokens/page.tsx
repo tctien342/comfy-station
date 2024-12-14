@@ -79,7 +79,13 @@ export default function TokenPage() {
                 </TableCell>
                 <TableCell>{token.description ?? '-'}</TableCell>
                 <TableCell>{token.type}</TableCell>
-                <TableCell>{token.balance === -1 ? 'Unlimited' : token.balance}</TableCell>
+                <TableCell>
+                  {token.balance === -1
+                    ? token.createdBy.balance === -1
+                      ? 'Unlimited'
+                      : `${token.createdBy.balance} (Synced)`
+                    : token.balance}
+                </TableCell>
                 <TableCell>
                   <TooltipPopup
                     tooltipContent={

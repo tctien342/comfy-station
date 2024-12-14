@@ -16,14 +16,14 @@ export const TaskHistory: IComponent = () => {
   )
 
   const { toast } = useToast()
-  const deletor = trpc.workflowTask.delete.useMutation()
+  const remover = trpc.workflowTask.delete.useMutation()
 
   trpc.watch.historyList.useSubscription(undefined, {
     onData: () => tasker.refetch()
   })
 
   const handlePressDelete = async (data: WorkflowTask) => {
-    await deletor.mutateAsync(data.id)
+    await remover.mutateAsync(data.id)
     toast({
       title: 'Workflow Deleted'
     })
@@ -58,7 +58,7 @@ export const TaskHistory: IComponent = () => {
       }}
       estimateSize={() => 130}
       renderItem={(item) => {
-        return <TaskItem data={item} onPressDelete={() => handlePressDelete(item)} deleting={deletor.isPending} />
+        return <TaskItem data={item} onPressDelete={() => handlePressDelete(item)} deleting={remover.isPending} />
       }}
       overscan={5}
     />

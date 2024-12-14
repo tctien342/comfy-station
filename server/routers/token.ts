@@ -246,6 +246,11 @@ export const tokenRouter = router({
           ctx.em.remove(shared)
         }
       }
+      // Add balance back to user
+      if (token.balance !== -1) {
+        token.createdBy.balance += token.balance
+        await CachingService.getInstance().set('USER_BALANCE', token.createdBy.id, token.createdBy.balance)
+      }
       await ctx.em.removeAndFlush(token)
       return true
     }),

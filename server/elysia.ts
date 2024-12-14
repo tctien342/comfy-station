@@ -23,6 +23,10 @@ export const ElysiaHandler = new Elysia()
   .use(
     swagger({
       documentation: {
+        info: {
+          title: 'API Document | ComfyUI-Station',
+          version: '1.0.0'
+        },
         tags: [
           { name: 'Others', description: 'Other app api' },
           { name: 'Workflow', description: 'Workflow apis' },

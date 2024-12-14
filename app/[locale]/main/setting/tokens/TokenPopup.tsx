@@ -15,8 +15,8 @@ import { trpc } from '@/utils/trpc'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Check, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -40,6 +40,8 @@ export const TokenPopup: IComponent<{
   onRefresh?: () => void
 }> = ({ onRefresh }) => {
   const query = useSearchParams()
+  const pathname = usePathname()
+  const route = useRouter()
   const tokenId = query.get('token_id')
 
   const { data: session } = useSession()
@@ -118,11 +120,19 @@ export const TokenPopup: IComponent<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokenData.data])
 
+  useEffect(() => {
+    // Clear tokenId from query
+    if (!isOpen) {
+      route.push(pathname)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
+
   const workflowSelectionOptions = workflows.data?.map((v) => ({ value: v.id, label: v.name ?? '' })) ?? []
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent>
+      <DialogContent className='max-w-2xl'>
         <DialogHeader>
           <DialogTitle className='text-base font-bold'>{tokenId ? 'Update' : 'Create'} API Token</DialogTitle>
         </DialogHeader>
@@ -164,37 +174,39 @@ export const TokenPopup: IComponent<{
                 </FormItem>
               )}
             />
-            <FormField
-              name='balance'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Balance</FormLabel>
-                  <FormDescription>
-                    Balance of this token. Set <strong>-1</strong> for sync with owner balance. Any other value will
-                    reduce your balance.
-                  </FormDescription>
-                  <FormControl>
-                    <Input type='number' placeholder='-1' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name='weightOffset'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Weight Offset</FormLabel>
-                  <FormDescription>
-                    More offset mean lower priority. Only Admin can create negative offset.
-                  </FormDescription>
-                  <FormControl>
-                    <Input type='number' placeholder='0' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className='w-full grid grid-cols-2 gap-2'>
+              <FormField
+                name='balance'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Balance</FormLabel>
+                    <FormDescription>
+                      Balance of this token. Set <strong>-1</strong> for sync with owner balance. Any other value will
+                      reduce your balance.
+                    </FormDescription>
+                    <FormControl>
+                      <Input type='number' placeholder='-1' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name='weightOffset'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight Offset</FormLabel>
+                    <FormDescription>
+                      More offset mean lower priority. Only Admin can create negative offset.
+                    </FormDescription>
+                    <FormControl>
+                      <Input type='number' placeholder='0' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               name='expiredAt'
               render={({ field }) => (
