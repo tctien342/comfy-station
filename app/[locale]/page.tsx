@@ -1,10 +1,15 @@
 'use client'
 
-import { redirect } from '@/routing'
+import { redirect } from '@routing'
 
 /**
  * Current redirect to /auth/basic
  */
 export default function Home() {
-  redirect('/auth/basic')
+  redirect({
+    href: {
+      pathname: '/auth/basic'
+    },
+    locale: 'en'
+  })
 }

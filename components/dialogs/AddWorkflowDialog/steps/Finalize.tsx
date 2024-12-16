@@ -245,7 +245,7 @@ export const FinalizeStep: IComponent = () => {
                     items.push(
                       ...imageURLs.map((url, idx) => (
                         <PhotoView key={idx} src={url.url}>
-                          <img src={url.url} alt='output' className='w-20 h-20 object-cover rounded-xl' />
+                          <img alt='output' src={url.url} className='w-20 h-20 object-cover rounded-xl' />
                         </PhotoView>
                       ))
                     )

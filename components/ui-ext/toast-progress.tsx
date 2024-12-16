@@ -63,6 +63,7 @@ export default function ToastProgress() {
         updateToast(download)
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [downloads])
 
   const simulateFileDownload = () => {

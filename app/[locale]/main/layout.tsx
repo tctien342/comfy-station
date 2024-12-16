@@ -2,7 +2,7 @@
 
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { usePathname } from '@/routing'
+import { usePathname } from '@routing'
 import { useSession } from 'next-auth/react'
 import { AdminSideInfo } from './AdminSideInfo'
 import { TopBar } from './TopBar'

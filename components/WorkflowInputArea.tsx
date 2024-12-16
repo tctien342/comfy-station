@@ -149,6 +149,7 @@ export const WorkflowInputArea: IComponent<{
         </div>
       )
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [disabled, setInputData, updateSelecting, workflow]
   )
 

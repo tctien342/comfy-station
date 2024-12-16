@@ -3,7 +3,7 @@
 import { RouteConf } from '@/constants/route'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
 import { cn } from '@/lib/utils'
-import { Link } from '@/routing'
+import { Link } from '@routing'
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
 

@@ -27,13 +27,23 @@ async function getBackendURL() {
   return BackendENV.BACKEND_URL
 }
 
-export default async function RootLayout({
-  children,
-  params: { session, locale }
-}: Readonly<{
-  children: React.ReactNode
-  params: { locale: string; session: any }
-}>) {
+export default async function RootLayout(
+  props: Readonly<{
+    children: React.ReactNode
+    params: { locale: string; session: any }
+  }>
+) {
+  const params = await props.params;
+
+  const {
+    session,
+    locale
+  } = params;
+
+  const {
+    children
+  } = props;
+
   const messages = await getMessages()
   const backendURL = await getBackendURL()
 

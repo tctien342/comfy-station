@@ -1,5 +1,5 @@
 import { RouteConf } from '@/constants/route'
-import { usePathname, useRouter } from '@/routing'
+import { usePathname, useRouter } from '@routing'
 import { useMemo } from 'react'
 
 export const useCurrentRoute = () => {
