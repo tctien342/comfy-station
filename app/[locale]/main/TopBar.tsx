@@ -5,18 +5,32 @@ import { Button } from '@/components/ui/button'
 import { UserInformation } from '@/components/UserInformation'
 import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
+import useDarkMode, { useSystemDarkMode } from '@/hooks/useDarkmode'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
-import { Plus, SearchIcon } from 'lucide-react'
+import { useAppStore } from '@/states/app'
+import { Moon, Plus, SearchIcon, Sun, SunMoon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
 
 export const TopBar: IComponent = () => {
   const { data: session } = useSession()
+  const isDark = useSystemDarkMode()
+  const { setTheme, theme } = useAppStore()
   const { routeConf, router } = useCurrentRoute()
 
   const Icon = routeConf?.SubIcon
 
   const role = session?.user.role || EUserRole.User
+
+  const toggleTheme = () => {
+    if (theme === 'system') {
+      isDark ? setTheme('light') : setTheme('dark')
+    } else if (theme === 'dark') {
+      isDark ? setTheme('system') : setTheme('light')
+    } else {
+      isDark ? setTheme('dark') : setTheme('system')
+    }
+  }
 
   const renderToolBox = useMemo(() => {
     switch (routeConf?.key) {
@@ -82,7 +96,20 @@ export const TopBar: IComponent = () => {
         )}
         <h1 className='text-sm md:text-xl font-black uppercase'>{routeConf?.title}</h1>
       </SimpleTransitionLayout>
-      <div className='flex-auto items-center justify-end flex gap-2'>{renderToolBox}</div>
+      <div className='flex-auto items-center justify-end flex gap-2'>
+        {renderToolBox}
+        <Button
+          title={`Toggle theme - ${theme}`}
+          onClick={toggleTheme}
+          size='icon'
+          variant='secondary'
+          className='rounded-full'
+        >
+          {theme === 'system' && <SunMoon size={16} />}
+          {theme === 'dark' && <Moon size={16} />}
+          {theme === 'light' && <Sun size={16} />}
+        </Button>
+      </div>
       {role < EUserRole.Admin && (
         <div>
           <UserInformation />

@@ -15,7 +15,7 @@ export class UserNotification {
   id!: number
 
   @Property({ type: 'boolean', default: false, index: true })
-  read!: boolean
+  read: boolean = false
 
   @ManyToOne({ entity: 'User', inversedBy: 'notifications', index: true, deleteRule: 'cascade' })
   user: User

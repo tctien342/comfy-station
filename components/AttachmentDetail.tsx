@@ -94,7 +94,7 @@ export const AttachmentDetail: IComponent<{
             <h1 className='text-xl font-bold uppercase px-1'>{detail?.workflow?.name}</h1>
             <h1 className='text-sm uppercase px-1'>{detail?.workflow?.description}</h1>
             <code className='whitespace-pre-wrap flex flex-col gap-2 mt-2'>
-              {Object.entries(config)
+              {Object.entries(configMap)
                 .filter(([key]) => configMap[key].type !== EValueUtilityType.Prefixer)
                 .map(([key, value], idx) => {
                   return (
@@ -104,7 +104,7 @@ export const AttachmentDetail: IComponent<{
                         'bg-secondary': idx % 2 === 0
                       })}
                     >
-                      {renderMapperInput(configMap[key], value)}
+                      {renderMapperInput(value, config[key] || value.default)}
                     </div>
                   )
                 })}

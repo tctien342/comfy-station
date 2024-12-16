@@ -2,7 +2,6 @@ import { Attachment } from '@/entities/attachment'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ReactNode, useEffect, useRef } from 'react'
 import { AttachmentReview } from './AttachmentReview'
-import { delay } from '@/utils/tools'
 import { useActionDebounce, useActionThreshold } from '@/hooks/useAction'
 import { useOnScreen } from '@/hooks/useOnScreen'
 

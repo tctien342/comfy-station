@@ -7,7 +7,7 @@ import useCopyAction from '@/hooks/useCopyAction'
 import { trpc } from '@/utils/trpc'
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { Check, Copy, Hourglass, Image, Repeat, Trash2 } from 'lucide-react'
+import { Check, Copy, DollarSign, Hourglass, Image, Repeat, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -219,13 +219,13 @@ export const TaskItem: IComponent<{
           <div className='flex-1 flex-col px-1 py-3'>
             <Label className='text-base font-semibold'>{task.workflow.name}</Label>
             <p className='text-xs md:text-sm'>ID: #{task.id.split('-').pop()}</p>
-            <p className='text-xs md:text-sm'>
+            <div className='text-xs md:text-sm'>
               Trigger by:{' '}
               <Badge className='text-xs p-1' variant='outline'>
                 {shortName?.split('#')[0]}
               </Badge>{' '}
               <strong>#{shortName?.split('#')[1]}</strong>, {new Date(task!.createdAt).toLocaleString()}
-            </p>
+            </div>
             <div className='w-full flex flex-wrap gap-2 mt-2'>
               <MiniBadge
                 dotClassName={cn({
@@ -240,6 +240,9 @@ export const TaskItem: IComponent<{
               {runningTime >= 0 && <MiniBadge Icon={Hourglass} title='Take' count={`${runningTime}s`} />}
               {task.repeatCount > 1 && <MiniBadge Icon={Repeat} title='Repeat' count={task.repeatCount} />}
               {!!attachments?.length && <MiniBadge Icon={Image} title='Images' count={attachments.length} />}
+              {task.computedCost > 0 && (
+                <MiniBadge Icon={DollarSign} title='Credits' count={task.computedCost.toFixed(2)} />
+              )}
             </div>
           </div>
           {previewAttachment}

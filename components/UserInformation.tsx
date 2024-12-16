@@ -1,11 +1,10 @@
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
 import { ExitIcon } from '@radix-ui/react-icons'
-import { MoonIcon, SunIcon, BellIcon } from 'lucide-react'
+import { BellIcon } from 'lucide-react'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { signOut, useSession } from 'next-auth/react'
 import { trpc } from '@/utils/trpc'
-import { useAppStore } from '@/states/app'
 import { EUserRole } from '@/entities/enum'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -13,7 +12,6 @@ import { MiniBadge } from './MiniBadge'
 
 export const UserInformation: IComponent = () => {
   const session = useSession()
-  const { theme, setTheme } = useAppStore()
   const [balance, setBalance] = useState(session.data?.user.balance || -1)
   const shortUsername = (session.data?.user?.email || '?').split('@')[0].slice(0, 2).toUpperCase()
   const { data: avatarInfo } = trpc.attachment.get.useQuery({ id: session.data?.user?.avatar?.id || '' })
@@ -29,13 +27,6 @@ export const UserInformation: IComponent = () => {
       callbackUrl: '/',
       redirect: true
     })
-  }
-
-  const toggleTheme = () => {
-    const choice = ['system', 'light', 'dark']
-    const crr = choice.indexOf(theme)
-    const next = (crr + 1) % 3
-    setTheme(choice[next] as any)
   }
 
   const notAdmin = session.data?.user?.role !== EUserRole.Admin
@@ -72,12 +63,6 @@ export const UserInformation: IComponent = () => {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align='start' sideOffset={10}>
-          <DropdownMenuItem onClick={toggleTheme} className='min-w-[100px] flex justify-between cursor-pointer'>
-            <span>Theme</span>
-            {theme === 'dark' && <MoonIcon className='ml-2' width={16} height={16} />}
-            {theme === 'light' && <SunIcon className='ml-2' width={16} height={16} />}
-            {theme === 'system' && <span className='text-xs'>AUTO</span>}
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={handlePressLogout} className='min-w-[100px] flex justify-between cursor-pointer'>
             <span>Logout</span>
             <ExitIcon className='ml-2' width={16} height={16} />

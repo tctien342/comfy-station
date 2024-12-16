@@ -443,6 +443,7 @@ export const workflowTaskRouter = router({
         status: {
           $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
         },
+        outputValues: null,
         attachments: null,
         executionTime: null
       })

@@ -20,26 +20,30 @@ export const tokenRouter = router({
     const ownedTokens = await ctx.em.find(
       Token,
       { createdBy: ctx.session.user },
-      { populate: ['sharedUsers', 'createdBy'] }
+      { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow.name'] }
     )
     const sharedTokens = await ctx.em.find(
       Token,
       {
         sharedUsers: { user: ctx.session.user }
       },
-      { populate: ['sharedUsers', 'createdBy'] }
+      { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow.name'] }
     )
     const tokens = [...ownedTokens, ...sharedTokens]
     return tokens
   }),
   get: privateProcedure.input(z.object({ tokenId: z.string() })).query(async ({ ctx, input }) => {
     if (ctx.session.user?.role === EUserRole.Admin) {
-      return await ctx.em.findOneOrFail(Token, { id: input.tokenId }, { populate: ['sharedUsers', 'createdBy'] })
+      return await ctx.em.findOneOrFail(
+        Token,
+        { id: input.tokenId },
+        { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow'] }
+      )
     }
     return await ctx.em.findOneOrFail(
       Token,
       { id: input.tokenId, createdBy: ctx.session.user },
-      { populate: ['sharedUsers', 'createdBy'] }
+      { populate: ['sharedUsers', 'createdBy', 'grantedWorkflows.workflow'] }
     )
   }),
   listByWorkflow: privateProcedure
@@ -152,8 +156,18 @@ export const tokenRouter = router({
         if (token.createdBy.id !== ctx.session.user!.id) {
           throw new Error('You do not have permission to update this token')
         }
-        if (input.balance) {
-          if (input.balance !== -1 && ctx.session.user!.balance !== -1) {
+        if (input.balance !== undefined && ctx.session.user!.balance !== -1) {
+          if (input.balance === -1 && token.balance !== -1) {
+            ctx.session.user!.balance += token.balance
+          }
+          if (token.balance === -1 && input.balance !== -1) {
+            if (ctx.session.user!.balance < input.balance) {
+              throw new Error('Insufficient balance')
+            } else {
+              ctx.session.user!.balance -= input.balance
+            }
+          }
+          if (token.balance !== -1 && input.balance !== -1) {
             const offset = input.balance - token.balance
             if (ctx.session.user!.balance < offset) {
               throw new Error('Insufficient balance')

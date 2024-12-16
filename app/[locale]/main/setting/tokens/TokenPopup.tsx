@@ -80,9 +80,9 @@ export const TokenPopup: IComponent<{
           setIsOpen(false)
           onRefresh?.()
         })
-        .catch((err) => {
+        .catch((err: Error) => {
           toast({
-            title: 'Failed to update token'
+            title: err.message || 'Failed to update token'
           })
         })
     } else {
