@@ -9,6 +9,8 @@ import { EUserRole } from '@/entities/enum'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { MiniBadge } from './MiniBadge'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import { UserNotificationCenter } from './UserNotificationCenter'
 
 export const UserInformation: IComponent = () => {
   const session = useSession()
@@ -69,16 +71,7 @@ export const UserInformation: IComponent = () => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button
-        size='icon'
-        variant='secondary'
-        className={cn('rounded-full ml-auto', {
-          'order-0': notAdmin,
-          'order-2': !notAdmin
-        })}
-      >
-        <BellIcon className='rounded-full' width={16} height={16} />
-      </Button>
+      <UserNotificationCenter isAdmin={!notAdmin} />
     </div>
   )
 }

@@ -14,6 +14,7 @@ import { convertIMessToRequest } from './utils/request'
 import { ElysiaHandler } from './elysia'
 import { appRouter } from './routers/_app'
 import { createContext } from './context'
+import { NotificationManagement } from '@/services/notification'
 
 /**
  * Initialize all services
@@ -23,6 +24,7 @@ ComfyPoolInstance.getInstance()
 AttachmentService.getInstance()
 CachingService.getInstance()
 SharedStorage.getInstance()
+NotificationManagement.getInstance()
 
 export const tRPCHandler = createHTTPHandler({
   middleware: cors(),
@@ -35,7 +37,7 @@ const server = createServer(async (req, res) => {
     /**
      * Handle the request using Elysia
      */
-    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/user') || req.url?.startsWith('/ext/api')) {
+    if (req.url?.startsWith('/swagger') || req.url?.startsWith('/user/') || req.url?.startsWith('/ext/api')) {
       const request = await convertIMessToRequest(req)
       const output = await ElysiaHandler.handle(request)
       // If the response is 404, then passthrough request to tRPC's handler

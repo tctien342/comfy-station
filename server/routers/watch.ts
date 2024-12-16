@@ -3,7 +3,7 @@ import { adminProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { z } from 'zod'
 import { observable } from '@trpc/server/observable'
-import { ETriggerBy, EUserRole } from '@/entities/enum'
+import { ETaskStatus, ETriggerBy, EUserRole } from '@/entities/enum'
 import CachingService from '@/services/caching'
 import { WorkflowTask } from '@/entities/workflow_task'
 
@@ -60,6 +60,44 @@ export const watchRouter = router({
       subscriber.next(ctx.session.user!.balance)
       return cacher.on('USER_BALANCE', ctx.session.user!.id, (ev) => {
         subscriber.next(ev.detail)
+      })
+    })
+  }),
+  notification: privateProcedure.subscription(async ({ ctx }) => {
+    const cacher = CachingService.getInstance()
+    return observable<number>((subscriber) => {
+      return cacher.on('USER_NOTIFICATION', ctx.session.user!.id, (ev) => {
+        subscriber.next(ev.detail)
+      })
+    })
+  }),
+  executing: privateProcedure.subscription(async ({ ctx }) => {
+    const cacher = CachingService.getInstance()
+    return observable<boolean>((subscriber) => {
+      return cacher.on('USER_EXECUTING_TASK', ctx.session.user!.id, async (ev) => {
+        const task = await ctx.em.findOne(WorkflowTask, {
+          trigger: {
+            $or: [
+              {
+                user: {
+                  id: ctx.session.user?.id
+                }
+              },
+              {
+                token: {
+                  createdBy: ctx.session.user?.id
+                }
+              }
+            ]
+          },
+          status: {
+            $nin: [ETaskStatus.Failed, ETaskStatus.Parent]
+          },
+          outputValues: null,
+          attachments: null,
+          executionTime: null
+        })
+        subscriber.next(!!task)
       })
     })
   })

@@ -1,4 +1,14 @@
-import { Cascade, Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import {
+  Cascade,
+  Collection,
+  Entity,
+  EntityRepositoryType,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property
+} from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import { createHmac } from 'crypto'
 import { EUserRole } from './enum'
@@ -11,6 +21,7 @@ import type { Job } from './job'
 import type { UserNotification } from './user_notifications'
 import type { Attachment } from './attachment'
 import type { Trigger } from './trigger'
+import { UserRepository } from './repositories/user'
 
 export interface IMaper {
   key: string
@@ -18,8 +29,10 @@ export interface IMaper {
   description: string
 }
 
-@Entity()
+@Entity({ repository: () => UserRepository })
 export class User {
+  [EntityRepositoryType]?: UserRepository
+
   @PrimaryKey({ type: 'string' })
   id = v4()
 

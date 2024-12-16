@@ -7,6 +7,7 @@ import { tagRouter } from './tag'
 import { taskRouter } from './task'
 import { tokenRouter } from './token'
 import { userRouter } from './user'
+import { userNotificationRouter } from './user_notification'
 import { watchRouter } from './watch'
 import { workflowRouter } from './workflow'
 import { workflowTaskRouter } from './workflow_task'
@@ -22,7 +23,8 @@ export const appRouter = router({
   workflowTask: workflowTaskRouter,
   watch: watchRouter,
   token: tokenRouter,
-  user: userRouter
+  user: userRouter,
+  notification: userNotificationRouter
 })
 
 // Export only the type of a router!

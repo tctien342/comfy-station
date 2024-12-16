@@ -22,7 +22,7 @@ export const AttachmentReview: IComponent<{
   isFavorited?: boolean
   loading?: boolean
   className?: string
-  tryPreivew?: boolean
+  tryPreview?: boolean
 }> = ({ data, mode = 'image', shortName = 'N/A', onClick, className, isFavorited, loading, onPressFavorite }) => {
   const enabled = !!data?.id
   const { data: image, isLoading } = trpc.attachment.get.useQuery(

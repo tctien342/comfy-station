@@ -1,4 +1,4 @@
-import { CallWrapper, ComfyApi, ComfyPool, EQueueMode, PromptBuilder, TMonitorEvent } from '@saintno/comfyui-sdk'
+import { CallWrapper, ComfyApi, ComfyPool, TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
 import { MikroORMInstance } from './mikro-orm'
 import { Client } from '@/entities/client'
@@ -6,6 +6,8 @@ import {
   EAttachmentStatus,
   EAuthMode,
   EClientStatus,
+  ENotificationTarget,
+  ENotificationType,
   EStorageType,
   ETaskStatus,
   EValueType,
@@ -24,6 +26,7 @@ import { Attachment } from '@/entities/attachment'
 import AttachmentService, { EAttachmentType } from './attachment'
 import { ImageUtil } from '@/server/utils/ImageUtil'
 import { delay } from '@/utils/tools'
+import { User } from '@/entities/user'
 
 const MONITOR_INTERVAL = 5000
 
@@ -119,7 +122,7 @@ export class ComfyPoolInstance {
     }
     if ([ETaskStatus.Failed, ETaskStatus.Success, ETaskStatus.Pending].includes(status)) {
       if (status === ETaskStatus.Success && extra?.details !== 'FINISHED') return
-      await CachingService.getInstance().set('WORKFLOW', task.workflow.id, Date.now())
+      await this.cachingService.set('WORKFLOW', task.workflow.id, Date.now())
     }
   }
 
@@ -133,12 +136,19 @@ export class ComfyPoolInstance {
     for (const task of processingTasks) {
       task.status = ETaskStatus.Queuing
     }
+    const processedTaskWithoutData = await em.find(WorkflowTask, {
+      status: ETaskStatus.Success,
+      attachments: null
+    })
+    em.remove(processedTaskWithoutData)
     await em.flush()
   }
 
   private async pickingJob() {
     const pool = this.pool
     const em = await MikroORMInstance.getInstance().getEM()
+    const userRep = em.getRepository(User)
+
     const queuingTasks = await em.find(
       WorkflowTask,
       {
@@ -152,10 +162,14 @@ export class ComfyPoolInstance {
       if (queuingTasks.length > 0) {
         for (let i = 0; i < queuingTasks.length; i++) {
           const task = queuingTasks[i]
+          const user = task.trigger?.user
           const workflow = task.workflow
           const input = task.inputValues
           let builder = getBuilder(workflow)
           await this.updateTaskEventFn(task, ETaskStatus.Pending)
+          if (user) {
+            this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+          }
           pool.run(async (api) => {
             const start = performance.now()
             try {
@@ -342,6 +356,17 @@ export class ComfyPoolInstance {
                     )
                     task.executionTime = performance.now() - start
                     task.outputValues = outputData
+                    if (user) {
+                      userRep.makeNotify(user, {
+                        title: `Task is finished`,
+                        type: ENotificationType.Info,
+                        target: {
+                          targetType: ENotificationTarget.WorkflowTask,
+                          targetId: task.id
+                        }
+                      })
+                      this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+                    }
                     await Promise.all([
                       em.flush(),
                       this.updateTaskEventFn(task, ETaskStatus.Success, {
@@ -363,6 +388,19 @@ export class ComfyPoolInstance {
                   })
                 })
                 .onFailed(async (e) => {
+                  if (user) {
+                    userRep.makeNotify(user, {
+                      title: `Task is failed`,
+                      type: ENotificationType.Error,
+                      priority: 2,
+                      description: (e.cause as any)?.error?.message || e.message,
+                      target: {
+                        targetType: ENotificationTarget.WorkflowTask,
+                        targetId: task.id
+                      }
+                    })
+                    this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+                  }
                   await this.updateTaskEventFn(task, ETaskStatus.Failed, {
                     details: (e.cause as any)?.error?.message || e.message,
                     clientId: api.id
@@ -374,6 +412,19 @@ export class ComfyPoolInstance {
                   throw e
                 })
             } catch (e: any) {
+              if (user) {
+                userRep.makeNotify(user, {
+                  title: `Task is failed`,
+                  type: ENotificationType.Error,
+                  description: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
+                  priority: 2,
+                  target: {
+                    targetType: ENotificationTarget.WorkflowTask,
+                    targetId: task.id
+                  }
+                })
+                this.cachingService.set('USER_EXECUTING_TASK', user.id, Date.now())
+              }
               await this.updateTaskEventFn(task, ETaskStatus.Failed, {
                 details: (e.cause as any)?.error?.message || e?.message || "Can't execute task",
                 clientId: api.id

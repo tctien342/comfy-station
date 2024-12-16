@@ -1,11 +1,15 @@
+'use client'
+
 import { useAppStore } from '@/states/app'
 import { useEffect, useState } from 'react'
 
 export const useSystemDarkMode = (): boolean => {
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(mediaQuery.matches)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    setIsDarkMode(mediaQuery.matches)
+
     const handleChange = (event: MediaQueryListEvent) => {
       setIsDarkMode(event.matches)
     }
@@ -15,7 +19,7 @@ export const useSystemDarkMode = (): boolean => {
     return () => {
       mediaQuery.removeEventListener('change', handleChange)
     }
-  }, [mediaQuery])
+  }, [])
 
   return isDarkMode
 }

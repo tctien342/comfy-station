@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { adminProcedure } from '../procedure'
+import { adminProcedure, privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { User } from '@/entities/user'
 import { ETaskStatus, EUserRole } from '@/entities/enum'
@@ -78,7 +78,7 @@ export const userRouter = router({
       await ctx.em.flush()
       return true
     }),
-  userUpdate: adminProcedure
+  userUpdate: privateProcedure
     .input(
       z.object({
         avatarId: z.string().optional(),

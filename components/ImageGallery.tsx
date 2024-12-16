@@ -109,7 +109,7 @@ export const ImageGallery: IComponent<{
                     isFavorited={favoriteIds?.includes(item.id)}
                     onPressFavorite={onPressFavorite}
                     className='w-full h-full object-cover'
-                    tryPreivew
+                    tryPreview
                     data={item}
                     shortName='NA'
                   />
