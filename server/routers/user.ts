@@ -40,7 +40,7 @@ export const userRouter = router({
           role: input.role,
           balance: input.balance,
           weightOffset: input.weightOffset,
-          password: User.hashPassword(input.password)
+          password: input.password
         },
         { partial: true }
       )
