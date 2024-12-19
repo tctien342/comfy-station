@@ -51,6 +51,10 @@ export interface IMapperInput extends IMaperBase {
     id?: string
     value: string
   }>
+  generative?: {
+    enabled: boolean
+    instruction?: string
+  }
   default?: string | number | boolean
 }
 

@@ -16,6 +16,9 @@ import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
 import { Switch } from './ui/switch'
 import { useWorkflowStore } from '@/states/workflow'
+import { useGenerative } from '@/hooks/useGenerative'
+import { MagicWandIcon } from '@radix-ui/react-icons'
+import { LoadableButton } from './LoadableButton'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -29,6 +32,7 @@ export const WorkflowInputArea: IComponent<{
   data: Record<string, any>
   onChange?: (data: Record<string, any>) => void
 }> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange, randomSeedEnabled, changeRandomSeedEnabled }) => {
+  const { isActive, prompter } = useGenerative()
   const { updateSelecting, recenter } = useWorkflowVisStore()
   const { setCurrentInput } = useWorkflowStore()
   const inputData = data
@@ -80,15 +84,38 @@ export const WorkflowInputArea: IComponent<{
           </div>
           {!!input.description && <CardDescription>{input.description}</CardDescription>}
           {input.type === EValueType.String && (
-            <Textarea
-              disabled={disabled}
-              className='min-h-[240px] max-w-full'
-              onChange={(e) => {
-                setInputData((prev) => ({ ...prev, [val]: e.target.value }))
-              }}
-              value={data}
-              placeholder={String(input.default ?? '')}
-            />
+            <div className='relative'>
+              <Textarea
+                disabled={disabled}
+                className='min-h-[240px] max-w-full'
+                onChange={(e) => {
+                  setInputData((prev) => ({ ...prev, [val]: e.target.value }))
+                }}
+                value={data}
+                placeholder={String(input.default ?? '')}
+              />
+              {isActive && !!input.generative?.enabled && (
+                <LoadableButton
+                  loading={prompter.isPending}
+                  title='Use AI to regenerate this input'
+                  className='absolute bottom-2 right-2'
+                  variant='outline'
+                  onClick={() => {
+                    prompter
+                      .mutateAsync({
+                        describe: data,
+                        requirement: input.generative?.instruction
+                      })
+                      .then((res) => {
+                        setInputData((prev) => ({ ...prev, [val]: res.output }))
+                      })
+                  }}
+                  size='icon'
+                >
+                  <MagicWandIcon className='w-4 h-4' />
+                </LoadableButton>
+              )}
+            </div>
           )}
           {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
             <DropFileInput
@@ -168,7 +195,7 @@ export const WorkflowInputArea: IComponent<{
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [disabled, setInputData, updateSelecting, workflow]
+    [disabled, setInputData, updateSelecting, workflow, isActive, prompter.isPending]
   )
 
   useEffect(() => {

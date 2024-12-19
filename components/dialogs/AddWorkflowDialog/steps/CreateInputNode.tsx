@@ -29,7 +29,7 @@ import {
   VariableIcon
 } from '@heroicons/react/24/outline'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronLeft, PlusIcon, Trash } from 'lucide-react'
+import { ChevronLeft, PlusIcon, Stars, Trash } from 'lucide-react'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -40,6 +40,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ConnectionList } from './ConnectionList'
 import { AddWorkflowDialogContext } from '..'
+import { MagicWandIcon } from '@radix-ui/react-icons'
 
 export const CreateInputNode: IComponent<{
   config?: IMapperInput
@@ -64,6 +65,8 @@ export const CreateInputNode: IComponent<{
     min: z.coerce.number().optional(),
     max: z.coerce.number().optional(),
     name: z.string(),
+    generative: z.boolean().default(false),
+    generativeInstruction: z.string().optional(),
     description: z.string().optional()
   })
   const form = useForm<z.infer<typeof formSchema>>({
@@ -77,6 +80,8 @@ export const CreateInputNode: IComponent<{
       min: config?.min,
       max: config?.max,
       name: config?.key,
+      generative: config?.generative?.enabled,
+      generativeInstruction: config?.generative?.instruction,
       description: config?.description
     }
   })
@@ -181,6 +186,10 @@ export const CreateInputNode: IComponent<{
               related: data.costRelated ?? false,
               costPerUnit: data.costPerUnit ?? 0
             },
+            generative: {
+              enabled: data.generative,
+              instruction: data.generativeInstruction
+            },
             target: connections
           }
         }
@@ -197,6 +206,10 @@ export const CreateInputNode: IComponent<{
             cost: {
               related: data.costRelated ?? false,
               costPerUnit: data.costPerUnit ?? 0
+            },
+            generative: {
+              enabled: data.generative ?? false,
+              instruction: data.generativeInstruction
             },
             selections,
             target: connections
@@ -461,6 +474,49 @@ export const CreateInputNode: IComponent<{
               </FormItem>
             )}
           />
+          {mappingType === EValueType.String && (
+            <>
+              <FormField
+                name='generative'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='flex gap-2'>
+                      Allow generative <MagicWandIcon width={14} height={14} />
+                    </FormLabel>
+                    <FormDescription>
+                      Allow user to use generative feature. This will generate better prompt using openai model.
+                    </FormDescription>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name='generativeInstruction'
+                disabled={!form.watch('generative')}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className='flex gap-2'>
+                      Generative instruction <Stars width={14} height={14} />
+                    </FormLabel>
+                    <FormDescription>
+                      Instruction for generative feature. This will be used to generate better prompt.
+                    </FormDescription>
+                    <FormControl>
+                      <Textarea
+                        disabled={!form.watch('generative')}
+                        placeholder='Generete a better prompt for stable diffusion.'
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
           {mappingType !== EValueUtilityType.Prefixer && (
             <FormField
               name='description'

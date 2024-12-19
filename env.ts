@@ -8,7 +8,11 @@ const ENVBackendSchema = z.object({
   S3_BUCKET_NAME: z.string().optional(),
   S3_REGION: z.string().optional(),
   S3_ACCESS_KEY: z.string().optional(),
-  S3_SECRET_KEY: z.string().optional()
+  S3_SECRET_KEY: z.string().optional(),
+
+  OPENAI_BASE_URL: z.string().optional().default('https://api.openai.com/v1'),
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL: z.string().optional().default('gpt-4o-mini')
 })
 
 export const BackendENV = ENVBackendSchema.parse({
@@ -19,5 +23,8 @@ export const BackendENV = ENVBackendSchema.parse({
   S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
   S3_REGION: process.env.S3_REGION,
   S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
-  S3_SECRET_KEY: process.env.S3_SECRET_KEY
+  S3_SECRET_KEY: process.env.S3_SECRET_KEY,
+  OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  OPENAI_MODEL: process.env.OPENAI_MODEL
 })

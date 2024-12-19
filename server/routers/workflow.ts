@@ -51,6 +51,10 @@ const InputSchema = z.record(
           })
         )
         .optional(),
+      generative: z.object({
+        enabled: z.boolean(),
+        instruction: z.string().optional()
+      }),
       default: z.any().optional()
     })
     .and(BaseSchema)
