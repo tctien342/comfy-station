@@ -14,27 +14,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Link } from '@/i18n/routing'
 import { RouteConf } from '@/constants/route'
 import { useClipboardCopyFn } from '@/hooks/useClipboardCopyFn'
+import { useWorkflowStore } from '@/states/workflow'
 
 export const WorkflowApiSnippet = () => {
   const isDark = useDarkMode()
+  const [open, setOpen] = useState(false)
   const [tabIndx, setTabIndx] = useState<number>(0)
   const { copy } = useClipboardCopyFn()
   const [token, setToken] = useState('')
   const [language, setLanguage] = useState<ESupportedSnippetLanguage>(ESupportedSnippetLanguage.JAVASCRIPT_FETCH)
   const { slug } = useCurrentRoute()
+  const { currentInput } = useWorkflowStore()
+
   const { data: info } = trpc.workflow.get.useQuery(slug!, {
-    enabled: !!slug
+    enabled: !!slug && open
   })
   const workflowSnippets = trpc.snippet.workflow.useQuery(
-    { id: slug! },
+    { id: slug!, input: currentInput },
     {
-      enabled: !!slug
+      enabled: !!slug && open
     }
   )
   const tokenData = trpc.token.listByWorkflow.useQuery(
     { workflowId: slug! },
     {
-      enabled: !!slug
+      enabled: !!slug && open
     }
   )
 
@@ -52,11 +56,13 @@ export const WorkflowApiSnippet = () => {
   return (
     <Dialog
       modal
+      open={open}
       onOpenChange={(open) => {
         if (!open) {
           setToken('')
           setTabIndx(0)
         }
+        setOpen(open)
       }}
     >
       <DialogTrigger asChild>

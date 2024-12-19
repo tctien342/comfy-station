@@ -15,6 +15,7 @@ import { Dice5, Repeat } from 'lucide-react'
 import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
 import { Switch } from './ui/switch'
+import { useWorkflowStore } from '@/states/workflow'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -29,6 +30,7 @@ export const WorkflowInputArea: IComponent<{
   onChange?: (data: Record<string, any>) => void
 }> = ({ data, workflow, disabled, repeat, onChangeRepeat, onChange, randomSeedEnabled, changeRandomSeedEnabled }) => {
   const { updateSelecting, recenter } = useWorkflowVisStore()
+  const { setCurrentInput } = useWorkflowStore()
   const inputData = data
 
   const setInputData = useCallback(
@@ -45,6 +47,10 @@ export const WorkflowInputArea: IComponent<{
   const inputKeys: Array<keyof typeof workflow.mapInput> = useMemo(() => {
     return Object.keys(workflow?.mapInput || {}) as any
   }, [workflow?.mapInput])
+
+  useEffect(() => {
+    setCurrentInput(data)
+  }, [data])
 
   const renderInput = useCallback(
     (val: keyof typeof workflow.mapInput, data: any) => {
