@@ -11,7 +11,7 @@ import { z } from 'zod'
 import { IconPicker } from './IconPicker'
 import { OverflowText } from './OverflowText'
 import { Button } from './ui/button'
-import { Dice5, Repeat } from 'lucide-react'
+import { ChevronLeft, Dice5, Repeat } from 'lucide-react'
 import { seed } from '@/utils/tools'
 import { useWorkflowVisStore } from './WorkflowVisualize/state'
 import { Switch } from './ui/switch'
@@ -50,6 +50,7 @@ export const WorkflowInputArea: IComponent<{
 
   useEffect(() => {
     setCurrentInput(data)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   const renderInput = useCallback(
@@ -102,6 +103,17 @@ export const WorkflowInputArea: IComponent<{
             <>
               <div className='w-full gap-2 flex'>
                 <Input
+                  startAdornment={
+                    <div className='flex items-center gap-2'>
+                      {input.min} <ChevronLeft size={16} />
+                    </div>
+                  }
+                  endAdornment={
+                    <div className='flex items-center gap-2'>
+                      <ChevronLeft size={16} /> {input.max}
+                    </div>
+                  }
+                  adornmentCls='text-sm pt-[1px]'
                   disabled={disabled}
                   placeholder={String(input.default ?? '')}
                   value={data}

@@ -4,22 +4,25 @@ import * as React from 'react'
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   startAdornment?: JSX.Element
   endAdornment?: JSX.Element
+  adornmentCls?: string
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, startAdornment, endAdornment, ...props }, ref) => {
+  ({ className, type, startAdornment, endAdornment, adornmentCls, ...props }, ref) => {
     const hasAdornment = Boolean(startAdornment) || Boolean(endAdornment)
     return (
       <>
         {hasAdornment ? (
           <div
             className={cn(
-              'flex items-center justify-center gap-2 px-3 h-10 rounded-md border border-input bg-transparent ring-offset-background focus-within:ring-1 focus-within:ring-ring focus-within:ring-offset-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50',
+              'flex w-full items-center justify-center gap-2 px-3 h-10 rounded-md border border-input bg-transparent ring-offset-background focus-within:ring-1 focus-within:ring-ring focus-within:ring-offset-2 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:opacity-50',
               className
             )}
             data-disabled={props.disabled}
           >
-            {startAdornment && <div className={cn('text-muted-foreground whitespace-nowrap')}>{startAdornment}</div>}
+            {startAdornment && (
+              <div className={cn('text-muted-foreground whitespace-nowrap', adornmentCls)}>{startAdornment}</div>
+            )}
             <input
               type={type}
               className={cn(
@@ -29,7 +32,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               ref={ref}
               {...props}
             />
-            {endAdornment && <div className={cn('text-muted-foreground')}>{endAdornment}</div>}
+            {endAdornment && <div className={cn('text-muted-foreground', adornmentCls)}>{endAdornment}</div>}
           </div>
         ) : (
           <input
