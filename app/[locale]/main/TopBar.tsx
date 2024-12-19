@@ -3,9 +3,10 @@ import { AddWorkflowDialog } from '@/components/dialogs/AddWorkflowDialog'
 import { SimpleTransitionLayout } from '@/components/SimpleTranslation'
 import { Button } from '@/components/ui/button'
 import { UserInformation } from '@/components/UserInformation'
+import { WorkflowApiSnippet } from '@/components/WorkflowApiSnippet'
 import { EUserRole } from '@/entities/enum'
 import { useCurrentRoute } from '@/hooks/useCurrentRoute'
-import useDarkMode, { useSystemDarkMode } from '@/hooks/useDarkmode'
+import { useSystemDarkMode } from '@/hooks/useDarkmode'
 import { dispatchGlobalEvent, EGlobalEvent } from '@/hooks/useGlobalEvent'
 import { useAppStore } from '@/states/app'
 import { Moon, Plus, SearchIcon, Sun, SunMoon } from 'lucide-react'
@@ -46,6 +47,7 @@ export const TopBar: IComponent = () => {
       case 'execute': {
         return (
           <>
+            <WorkflowApiSnippet />
             <Button size='icon' variant='secondary' className='rounded-full'>
               <SearchIcon size={16} />
             </Button>

@@ -10,7 +10,7 @@ import {
 import { EnsureTokenPlugin } from '../plugins/ensure-token.plugin'
 import { WorkflowInputSchema, WorkflowOutputSchema } from '../schemas/workflow'
 import { EnsureMikroORMPlugin } from '../plugins/ensure-mikro-orm.plugin'
-import { convertObjectToArrayOfObjects, delay } from '@/utils/tools'
+import { convertObjectToArrayOfObjects, delay, seed } from '@/utils/tools'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { v4 } from 'uuid'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
@@ -133,6 +133,9 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
             set.status = 400
             throw new Error(`Value of "${key}" is empty`)
           }
+        }
+        if (keyConfig.type === EValueUtilityType.Seed && input[key] === -1) {
+          input[key] = seed()
         }
       }
 

@@ -54,29 +54,19 @@ export const tokenRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const workflow = await ctx.em.findOneOrFail(Workflow, { id: input.workflowId })
-
+      const filter =
+        ctx.session.user?.role === EUserRole.Admin
+          ? {}
+          : { $or: [{ createdBy: ctx.session.user }, { sharedUsers: { user: ctx.session.user } }] }
       // Find tokens created by user
-      const ownedTokens = await ctx.em.find(
+      const tokens = await ctx.em.find(
         Token,
         {
-          grantedWorkflows: { workflow },
-          createdBy: ctx.session.user
+          $or: [{ grantedWorkflows: { workflow } }, { isMaster: true }],
+          ...filter
         },
         { populate: ['sharedUsers', 'createdBy'] }
       )
-
-      // Find tokens shared with user
-      const sharedTokens = await ctx.em.find(
-        Token,
-        {
-          grantedWorkflows: { workflow },
-          sharedUsers: { user: ctx.session.user }
-        },
-        { populate: ['sharedUsers', 'createdBy'] }
-      )
-
-      // Combine both sets of tokens
-      const tokens = [...ownedTokens, ...sharedTokens]
 
       return {
         tokens

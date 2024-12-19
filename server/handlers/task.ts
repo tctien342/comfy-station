@@ -90,11 +90,18 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
   .get(
     '/:id/status',
     async ({ em, params: { id } }) => {
-      const task = await em.findOne(WorkflowTask, { id }, { populate: ['subTasks.attachments'] })
+      const task = await em.findOneOrFail(WorkflowTask, { id }, { populate: ['subTasks.*'] })
+      let isDone = false
+      if (task.status === ETaskStatus.Parent) {
+        isDone = Array.from(task.subTasks).every((v) => v.executionTime !== null)
+      } else {
+        isDone = task.executionTime !== null
+      }
       if (!task) {
         return new NotFoundError("Task doesn't exist")
       }
       return {
+        isDone,
         status: task.status === ETaskStatus.Parent ? task.subTasks.map((v) => v.status) : task.status
       }
     },
@@ -107,6 +114,7 @@ export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task']
             content: {
               'application/json': {
                 schema: t.Object({
+                  isDone: t.Boolean(),
                   status: t.Union([t.Array(t.Enum(ETaskStatus)), t.Enum(ETaskStatus)])
                 })
               } as any

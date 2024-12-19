@@ -9,6 +9,9 @@ const withNextIntl = createNextIntlPlugin()
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    webpackMemoryOptimizations: true
+  },
   webpack: (config, { isServer, nextRuntime, webpack }) => {
     /**
      * Fix for ts-morph warning

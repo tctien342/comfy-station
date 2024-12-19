@@ -10,6 +10,7 @@ import { userRouter } from './user'
 import { userNotificationRouter } from './user_notification'
 import { watchRouter } from './watch'
 import { workflowRouter } from './workflow'
+import { snippetRouter } from './snippet'
 import { workflowTaskRouter } from './workflow_task'
 
 export const appRouter = router({
@@ -20,6 +21,7 @@ export const appRouter = router({
   tag: tagRouter,
   extension: extensionRouter,
   workflow: workflowRouter,
+  snippet: snippetRouter,
   workflowTask: workflowTaskRouter,
   watch: watchRouter,
   token: tokenRouter,
