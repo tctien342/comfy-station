@@ -5,7 +5,7 @@ import { User } from '@/entities/user'
 import { ETaskStatus, EUserRole } from '@/entities/enum'
 import { Attachment } from '@/entities/attachment'
 import { WorkflowTask } from '@/entities/workflow_task'
-import CachingService from '@/services/caching'
+import CachingService from '@/services/caching.service'
 
 export const userRouter = router({
   list: adminProcedure.query(async ({ ctx }) => {

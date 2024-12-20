@@ -8,7 +8,7 @@ import { ETaskStatus } from '@/entities/enum'
 import { QueryOrder } from '@mikro-orm/core'
 import { AttachmentSchema, AttachmentURLSchema } from '../schemas/attachment'
 import { Attachment } from '@/entities/attachment'
-import AttachmentService from '@/services/attachment'
+import AttachmentService from '@/services/attachment.service'
 
 export const TaskPlugin = new Elysia({ prefix: '/task', detail: { tags: ['Task'] } })
   .use(EnsureMikroORMPlugin)

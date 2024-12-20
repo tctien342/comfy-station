@@ -6,6 +6,7 @@ import { AttachmentPlugin } from './handlers/attachment'
 import { TaskPlugin } from './handlers/task'
 import { TokenPlugin } from './handlers/token'
 import { WorkflowPlugin } from './handlers/workflow'
+import { CleanUpJobPlugin } from './plugins/cleanup-jobs.plugin'
 
 export const ElysiaHandler = new Elysia()
   .decorate(() => {
@@ -19,6 +20,8 @@ export const ElysiaHandler = new Elysia()
       time: Math.round((performance.now() - start) / 1000) + 'ms'
     })
   })
+  // Bind cleanup service
+  .use(CleanUpJobPlugin)
   // Bind Swagger to Elysia
   .use(
     swagger({

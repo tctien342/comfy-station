@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { privateProcedure } from '../procedure'
 import { router } from '../trpc'
 import { UserNotification } from '@/entities/user_notifications'
-import CachingService from '@/services/caching'
+import CachingService from '@/services/caching.service'
 
 export const userNotificationRouter = router({
   list: privateProcedure

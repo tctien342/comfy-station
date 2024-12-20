@@ -3,18 +3,19 @@ import cors from 'cors'
 import { WebSocketServer } from 'ws'
 import type { Socket } from 'net'
 import { applyWSSHandler } from '@trpc/server/adapters/ws'
-import AttachmentService from '@/services/attachment'
-import CachingService from '@/services/caching'
-import { ComfyPoolInstance } from '@/services/comfyui'
-import { MikroORMInstance } from '@/services/mikro-orm'
-import { SharedStorage } from '@/services/shared'
+import AttachmentService from '@/services/attachment.service'
+import CachingService from '@/services/caching.service'
+import { ComfyPoolInstance } from '@/services/comfyui.service'
+import { MikroORMInstance } from '@/services/mikro-orm.service'
+import { SharedStorage } from '@/services/shared.service'
 import { createHTTPHandler } from '@trpc/server/adapters/standalone'
 
 import { convertIMessToRequest } from './utils/request'
 import { ElysiaHandler } from './elysia'
 import { appRouter } from './routers/_app'
 import { createContext } from './context'
-import { NotificationManagement } from '@/services/notification'
+import { NotificationManagement } from '@/services/notification.service'
+import { CleanupService } from '@/services/cleanup.service'
 
 /**
  * Initialize all services
@@ -25,6 +26,12 @@ AttachmentService.getInstance()
 CachingService.getInstance()
 SharedStorage.getInstance()
 NotificationManagement.getInstance()
+/**
+ * Start cleanup after 5 seconds
+ */
+setTimeout(() => {
+  CleanupService.getInstance().handleCleanupClientEvents()
+}, 5000)
 
 export const tRPCHandler = createHTTPHandler({
   middleware: cors(),

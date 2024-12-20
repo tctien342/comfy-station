@@ -1,6 +1,6 @@
 import { CallWrapper, ComfyApi, ComfyPool, TMonitorEvent } from '@saintno/comfyui-sdk'
 import { Logger } from '@saintno/needed-tools'
-import { MikroORMInstance } from './mikro-orm'
+import { MikroORMInstance } from './mikro-orm.service'
 import { Client } from '@/entities/client'
 import {
   EAttachmentStatus,
@@ -16,14 +16,14 @@ import {
 import { ClientStatusEvent } from '@/entities/client_status_event'
 import { ClientMonitorEvent } from '@/entities/client_monitor_event'
 import { ClientMonitorGpu } from '@/entities/client_monitor_gpu'
-import CachingService from './caching'
+import CachingService from './caching.service'
 
 import { cloneDeep, throttle } from 'lodash'
 import { WorkflowTask } from '@/entities/workflow_task'
 import { WorkflowTaskEvent } from '@/entities/workflow_task_event'
 import { getBuilder, parseOutput } from '@/utils/workflow'
 import { Attachment } from '@/entities/attachment'
-import AttachmentService, { EAttachmentType } from './attachment'
+import AttachmentService, { EAttachmentType } from './attachment.service'
 import { ImageUtil } from '@/server/utils/ImageUtil'
 import { delay } from '@/utils/tools'
 import { User } from '@/entities/user'
