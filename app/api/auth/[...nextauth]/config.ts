@@ -15,8 +15,6 @@ const getUserInformationByCredentials = async (email: string, password: string):
     }
   })
     .then((res) => {
-      console.log(res)
-
       if (!res.ok) {
         return false
       }

@@ -40,7 +40,6 @@ export const WorkflowPlugin = new Elysia({ prefix: '/workflow', detail: { tags: 
           input: Object.keys(wf.mapInput ?? {}).reduce(
             (acc, cur) => {
               const val = wf.mapInput![cur]
-              console.log(val)
               acc[cur] = {
                 key: val.key,
                 type: val.type as EValueType,

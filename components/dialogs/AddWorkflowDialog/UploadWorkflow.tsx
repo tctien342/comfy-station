@@ -13,8 +13,6 @@ export const UploadWorkflow: IComponent = () => {
   const { setRawWorkflow, setWorkflow, setStep } = useContext(AddWorkflowDialogContext)
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      // Handle the files here
-      console.log(acceptedFiles)
       const reader = new FileReader()
       reader.onload = async () => {
         try {

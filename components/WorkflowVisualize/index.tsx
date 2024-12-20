@@ -42,7 +42,6 @@ export const WorkflowVisualize: IComponent<{
             return b.type - a.type
           })
           .find((hl) => hl.id === node.id)
-        console.log(hightlightArr)
         let borderColor = undefined
         if (hlData?.processing) {
           borderColor = '#F87171'

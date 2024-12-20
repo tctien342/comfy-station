@@ -21,7 +21,7 @@ export const generativeRouter = router({
       if (output.ok) {
         return output.val.data
       } else {
-        console.log(output.val)
+        console.warn(output.val)
         throw new Error('Failed to generate better prompt.')
       }
     })

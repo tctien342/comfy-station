@@ -19,6 +19,7 @@ import { useWorkflowStore } from '@/states/workflow'
 import { useGenerative } from '@/hooks/useGenerative'
 import { MagicWandIcon } from '@radix-ui/react-icons'
 import { LoadableButton } from './LoadableButton'
+import { GenerativeTextarea } from './GenerativeTextarea'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -84,38 +85,17 @@ export const WorkflowInputArea: IComponent<{
           </div>
           {!!input.description && <CardDescription>{input.description}</CardDescription>}
           {input.type === EValueType.String && (
-            <div className='relative'>
-              <Textarea
-                disabled={disabled}
-                className='min-h-[240px] max-w-full'
-                onChange={(e) => {
-                  setInputData((prev) => ({ ...prev, [val]: e.target.value }))
-                }}
-                value={data}
-                placeholder={String(input.default ?? '')}
-              />
-              {isActive && !!input.generative?.enabled && (
-                <LoadableButton
-                  loading={prompter.isPending}
-                  title='Use AI to regenerate this input'
-                  className='absolute bottom-2 right-2'
-                  variant='outline'
-                  onClick={() => {
-                    prompter
-                      .mutateAsync({
-                        describe: data,
-                        requirement: input.generative?.instruction
-                      })
-                      .then((res) => {
-                        setInputData((prev) => ({ ...prev, [val]: res.output }))
-                      })
-                  }}
-                  size='icon'
-                >
-                  <MagicWandIcon className='w-4 h-4' />
-                </LoadableButton>
-              )}
-            </div>
+            <GenerativeTextarea
+              disabled={disabled}
+              className='min-h-[240px] max-w-full'
+              onChange={(e) => {
+                setInputData((prev) => ({ ...prev, [val]: e.target.value }))
+              }}
+              value={data}
+              generative={!!input.generative?.enabled}
+              instruction={input.generative?.instruction}
+              placeholder={String(input.default ?? '')}
+            />
           )}
           {[EValueType.File, EValueType.Image].includes(input.type as EValueType) && (
             <DropFileInput

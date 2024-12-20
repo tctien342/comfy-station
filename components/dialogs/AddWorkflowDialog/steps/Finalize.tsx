@@ -65,7 +65,7 @@ export const FinalizeStep: IComponent = () => {
     }
   })
   const { mutateAsync } = trpc.workflow.startTestWorkflow.useMutation()
-  const sumbiter = trpc.workflow.importWorkflow.useMutation()
+  const submitter = trpc.workflow.importWorkflow.useMutation()
 
   const handlePressTest = async () => {
     if (!workflow) return
@@ -96,7 +96,7 @@ export const FinalizeStep: IComponent = () => {
     if (rawWorkflow) {
       try {
         setLoading(true)
-        await sumbiter.mutateAsync({
+        await submitter.mutateAsync({
           ...workflow,
           rawWorkflow: JSON.stringify(rawWorkflow)
         })

@@ -51,10 +51,12 @@ const InputSchema = z.record(
           })
         )
         .optional(),
-      generative: z.object({
-        enabled: z.boolean(),
-        instruction: z.string().optional()
-      }),
+      generative: z
+        .object({
+          enabled: z.boolean(),
+          instruction: z.string().optional()
+        })
+        .optional(),
       default: z.any().optional()
     })
     .and(BaseSchema)
@@ -266,7 +268,6 @@ export const workflowRouter = router({
                   subscriber.next({ key: 'failed', detail: 'failed to upload image' })
                   return
                 }
-                console.log('Uploaded image', uploadedImg)
                 builder.input(key, uploadedImg.info.filename)
                 break
               default:
@@ -339,7 +340,7 @@ export const workflowRouter = router({
               subscriber.next({ key: 'finished', data: { output: outputData } })
             })
             .onFailed((e) => {
-              console.log('WTF', e)
+              console.warn(e)
               subscriber.next({ key: 'failed', detail: (e.cause as any)?.error?.message || e.message })
             })
             .run()
