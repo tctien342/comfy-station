@@ -9,6 +9,7 @@ import { SessionLayout } from './layout.session'
 import { ClientLayout } from './layout.client'
 import { BackendENV } from '@/env'
 import TRPCLayout from './layout.trpc'
+import { Snow } from '@/components/Snow'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -33,16 +34,11 @@ export default async function RootLayout(
     params: { locale: string; session: any }
   }>
 ) {
-  const params = await props.params;
+  const params = await props.params
 
-  const {
-    session,
-    locale
-  } = params;
+  const { session, locale } = params
 
-  const {
-    children
-  } = props;
+  const { children } = props
 
   const messages = await getMessages()
   const backendURL = await getBackendURL()
@@ -50,6 +46,7 @@ export default async function RootLayout(
   return (
     <html lang={locale} data-backend-url={backendURL}>
       <body>
+        <Snow count={50} />
         <SessionLayout session={session}>
           <NextIntlClientProvider timeZone='UTC' messages={messages}>
             <BackgroundSVG
