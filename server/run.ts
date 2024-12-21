@@ -7,7 +7,6 @@ import AttachmentService from '@/services/attachment.service'
 import CachingService from '@/services/caching.service'
 import { ComfyPoolInstance } from '@/services/comfyui.service'
 import { MikroORMInstance } from '@/services/mikro-orm.service'
-import { SharedStorage } from '@/services/shared.service'
 import { createHTTPHandler } from '@trpc/server/adapters/standalone'
 
 import { convertIMessToRequest } from './utils/request'
@@ -24,7 +23,6 @@ MikroORMInstance.getInstance()
 ComfyPoolInstance.getInstance()
 AttachmentService.getInstance()
 CachingService.getInstance()
-SharedStorage.getInstance()
 NotificationManagement.getInstance()
 /**
  * Start cleanup after 5 seconds

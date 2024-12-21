@@ -13,7 +13,7 @@ export default function GalleryPage() {
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   )
-  const dyn = useDynamicValue()
+  const dyn = useDynamicValue([720, 1200, 1800])
 
   const runningTask = trpc.workflowTask.getRunning.useQuery({})
 
@@ -33,7 +33,7 @@ export default function GalleryPage() {
   return (
     <div className='absolute top-0 left-0 w-full h-full flex flex-col shadow-inner'>
       <ImageGallery
-        imgPerRow={dyn([2, 3, 4])}
+        imgPerRow={dyn([2, 3, 4, 5])}
         items={[...pending, ...images]}
         hasNextPage={infoLoader.hasNextPage}
         isFetchingNextPage={infoLoader.isFetchingNextPage}

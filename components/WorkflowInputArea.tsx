@@ -6,7 +6,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '.
 import DropFileInput from './DropFileInput'
 import { CardDescription } from './ui/card'
 import { Input } from './ui/input'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { IconPicker } from './IconPicker'
 import { OverflowText } from './OverflowText'
@@ -17,9 +17,8 @@ import { useWorkflowVisStore } from './WorkflowVisualize/state'
 import { Switch } from './ui/switch'
 import { useWorkflowStore } from '@/states/workflow'
 import { useGenerative } from '@/hooks/useGenerative'
-import { MagicWandIcon } from '@radix-ui/react-icons'
-import { LoadableButton } from './LoadableButton'
 import { GenerativeTextarea } from './GenerativeTextarea'
+import { useIsolateState } from '@/hooks/useIsolateState'
 
 const SelectionSchema = z.nativeEnum(EValueSelectionType)
 
@@ -37,6 +36,10 @@ export const WorkflowInputArea: IComponent<{
   const { updateSelecting, recenter } = useWorkflowVisStore()
   const { setCurrentInput } = useWorkflowStore()
   const inputData = data
+
+  const setInputStateIsolate = useIsolateState((state) => {
+    setInputData((prev) => ({ ...prev, ...state }))
+  })
 
   const setInputData = useCallback(
     (input: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => {
@@ -57,6 +60,10 @@ export const WorkflowInputArea: IComponent<{
     setCurrentInput(data)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
+
+  const handleUpdateInput = useRef((key: keyof typeof workflow.mapInput, val: any) => {
+    setInputStateIsolate({ [key]: val })
+  })
 
   const renderInput = useCallback(
     (val: keyof typeof workflow.mapInput, data: any) => {
@@ -89,7 +96,7 @@ export const WorkflowInputArea: IComponent<{
               disabled={disabled}
               className='min-h-[240px] max-w-full'
               onChange={(e) => {
-                setInputData((prev) => ({ ...prev, [val]: e.target.value }))
+                handleUpdateInput.current(val, e.target.value)
               }}
               value={data}
               generative={!!input.generative?.enabled}
@@ -101,7 +108,7 @@ export const WorkflowInputArea: IComponent<{
             <DropFileInput
               disabled={disabled}
               onChanges={(files) => {
-                setInputData((prev) => ({ ...prev, [val]: files }))
+                handleUpdateInput.current(val, files)
               }}
               defaultFiles={data}
             />
@@ -111,21 +118,25 @@ export const WorkflowInputArea: IComponent<{
               <div className='w-full gap-2 flex'>
                 <Input
                   startAdornment={
-                    <div className='flex items-center gap-2'>
-                      {input.min} <ChevronLeft size={16} />
-                    </div>
+                    input.type === EValueType.Number ? (
+                      <div className='flex items-center gap-2'>
+                        {input.min} <ChevronLeft size={16} />
+                      </div>
+                    ) : undefined
                   }
                   endAdornment={
-                    <div className='flex items-center gap-2'>
-                      <ChevronLeft size={16} /> {input.max}
-                    </div>
+                    input.type === EValueType.Number ? (
+                      <div className='flex items-center gap-2'>
+                        <ChevronLeft size={16} /> {input.max}
+                      </div>
+                    ) : undefined
                   }
                   adornmentCls='text-sm pt-[1px]'
                   disabled={disabled}
                   placeholder={String(input.default ?? '')}
                   value={data}
                   onChange={(e) => {
-                    setInputData((prev) => ({ ...prev, [val]: e.target.value }))
+                    handleUpdateInput.current(val, e.target.value)
                   }}
                   min={input.min}
                   max={input.max}
@@ -134,7 +145,7 @@ export const WorkflowInputArea: IComponent<{
                 {input.type === EValueUtilityType.Seed && (
                   <Button
                     onClick={() => {
-                      setInputData((prev) => ({ ...prev, [val]: seed() }))
+                      handleUpdateInput.current(val, seed())
                     }}
                     variant='outline'
                     size='icon'
@@ -156,7 +167,7 @@ export const WorkflowInputArea: IComponent<{
               defaultValue={String(input.default ?? '')}
               value={data}
               onValueChange={(value) => {
-                setInputData((prev) => ({ ...prev, [val]: value }))
+                handleUpdateInput.current(val, value)
               }}
             >
               <SelectTrigger>
@@ -175,7 +186,7 @@ export const WorkflowInputArea: IComponent<{
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [disabled, setInputData, updateSelecting, workflow, isActive, prompter.isPending]
+    [disabled, updateSelecting, handleUpdateInput, workflow, isActive, prompter.isPending]
   )
 
   useEffect(() => {

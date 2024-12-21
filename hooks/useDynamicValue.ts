@@ -2,18 +2,25 @@ import { useCallback, useEffect, useState } from 'react'
 
 /**
  * Make dynamic value base on client screen status
+ * @param breakPoints Array of pixel values defining the breakpoints [small/medium, medium/large, large/xlarge?]
+ * @param mode Dimension to check against breakpoints ('width' or 'height')
+ * @returns Function that returns appropriate value based on current screen size
  */
 export const useDynamicValue = (
-  breakPoints = [720, 960],
+  breakPoints: [number, number] | [number, number, number] = [720, 960],
   mode: 'width' | 'height' = 'width'
-): (<T = undefined>(values: [T, T, T], fallBack?: T) => T) => {
+): (<T = undefined>(values: [T, T, T] | [T, T, T, T], fallBack?: T) => T) => {
   const [sel, setSel] = useState(-1)
 
   const handleResize = useCallback(() => {
     const currentSize = mode === 'width' ? document.documentElement.clientWidth : document.documentElement.clientHeight
-    if (currentSize > breakPoints[1]) {
+    const thirdBreakpoint = breakPoints[2] ?? breakPoints[1]
+
+    if (currentSize > thirdBreakpoint) {
+      setSel(3)
+    } else if (currentSize > breakPoints[1]) {
       setSel(2)
-    } else if (currentSize <= breakPoints[1] && currentSize > breakPoints[0]) {
+    } else if (currentSize > breakPoints[0]) {
       setSel(1)
     } else {
       setSel(0)
@@ -28,14 +35,19 @@ export const useDynamicValue = (
 
   /**
    * Return size base on screen status
-   * @param values [small,medium,large] dynamic size to be used
+   * @param values [small, medium, large] or [small, medium, large, xlarge] dynamic values to be used
+   * @param fallBack Default value to use if selection is not yet determined
    */
-  const getValue = <T = undefined>(values: [T, T, T], fallBack?: T): T => {
+  const getValue = <T = undefined>(values: [T, T, T] | [T, T, T, T], fallBack?: T): T => {
     if (sel === -1) {
-      if (fallBack !== undefined) return fallBack
-      return values[0]
+      return fallBack !== undefined ? fallBack : values[0]
+    }
+    // If no fourth value provided, use the third value for both large and xlarge cases
+    if (sel === 3 && values.length === 3) {
+      return values[2]
     }
     return values[sel]
   }
+
   return getValue
 }

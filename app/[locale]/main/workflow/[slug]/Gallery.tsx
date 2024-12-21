@@ -20,7 +20,7 @@ export default function WorkflowGallery() {
     },
     { getNextPageParam: (lastPage) => lastPage.nextCursor, enabled: !!slug }
   )
-  const dyn = useDynamicValue([1200, 1800])
+  const dyn = useDynamicValue([1200, 1800, 2400])
 
   const avatarSetter = trpc.workflow.setAvatar.useMutation()
 
@@ -78,7 +78,7 @@ export default function WorkflowGallery() {
         </Select>
       </div>
       <ImageGallery
-        imgPerRow={dyn([2, 3, 4])}
+        imgPerRow={dyn([2, 3, 4, 5])}
         items={[...pending, ...images]}
         favoriteIds={[taskInfo.data?.avatar?.id ?? '']}
         onPressFavorite={allowFav ? handlePressFavorite : undefined}

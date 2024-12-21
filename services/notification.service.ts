@@ -6,6 +6,7 @@ import { User } from '@/entities/user'
 import { UserNotification } from '@/entities/user_notifications'
 import { ENotificationTarget, ETaskStatus } from '@/entities/enum'
 
+// TODO: Handle notification using this service
 export class NotificationManagement {
   private static instance: NotificationManagement
   private caching: CachingService

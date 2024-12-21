@@ -15,6 +15,35 @@ export const GenerativeTextarea: IComponent<IGenerativeTextareaProps> = ({ gener
   const id = useId()
   const { toast } = useToast()
   const { isActive, prompter } = useGenerative()
+
+  const handleAIRegenerate = () => {
+    prompter
+      .mutateAsync({
+        describe: (props.value as string) ?? props.placeholder,
+        requirement: instruction ?? ''
+      })
+      .then((res) => {
+        const ele = document.getElementById(id) as HTMLTextAreaElement
+        const output = res.output
+        ele.value = output
+        const nativeInputEvent = new Event('input')
+        const reactChangeEvent = new Event('change')
+        ele.dispatchEvent(nativeInputEvent)
+        ele.dispatchEvent(reactChangeEvent)
+        // Trigger React's synthetic onChange event
+        props.onChange?.({
+          target: ele,
+          currentTarget: ele
+        } as React.ChangeEvent<HTMLTextAreaElement>)
+      })
+      .catch((err) => {
+        toast({
+          title: 'Failed to regenerate new input',
+          variant: 'destructive'
+        })
+      })
+  }
+
   return (
     <div className='relative'>
       <Textarea
@@ -30,35 +59,7 @@ export const GenerativeTextarea: IComponent<IGenerativeTextareaProps> = ({ gener
           title='Use AI to regenerate this input'
           className='absolute bottom-2 right-2'
           variant='outline'
-          onClick={() => {
-            const ele = document.getElementById(id) as HTMLTextAreaElement
-            if (!ele) return
-            const content = ele.value
-            prompter
-              .mutateAsync({
-                describe: content ?? props.placeholder,
-                requirement: instruction ?? ''
-              })
-              .then((res) => {
-                const output = res.output
-                ele.value = output
-                const nativeInputEvent = new Event('input', { bubbles: true })
-                const reactChangeEvent = new Event('change', { bubbles: true })
-                ele.dispatchEvent(nativeInputEvent)
-                ele.dispatchEvent(reactChangeEvent)
-                // Trigger React's synthetic onChange event
-                props.onChange?.({
-                  target: ele,
-                  currentTarget: ele
-                } as React.ChangeEvent<HTMLTextAreaElement>)
-              })
-              .catch((err) => {
-                toast({
-                  title: 'Failed to regenerate new input',
-                  variant: 'destructive'
-                })
-              })
-          }}
+          onClick={handleAIRegenerate}
           size='icon'
         >
           <MagicWandIcon className='w-4 h-4' />
